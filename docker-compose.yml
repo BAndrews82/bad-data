@@ -10,6 +10,18 @@ services:
       - PORT=3000
       - HOST_IP=${HOST_IP:-}
       - BASE_URL=${BASE_URL:-}
+      - PIPER_TTS_URL=http://piper-tts:5000
     volumes:
       - ./data:/app/data
+    depends_on:
+      - piper-tts
+    restart: unless-stopped
+
+  # Piper Neural Text-To-Speech (Offline Homelab Sidecar Container)
+  piper-tts:
+    image: rhasspy/piper-http:latest
+    container_name: bad-data-piper-tts
+    ports:
+      - "5000:5000"
+    command: --voice en_US-lessac-medium
     restart: unless-stopped

@@ -52,7 +52,8 @@ app.get('/api/config', (req, res) => {
   res.json({
     hostIp,
     baseUrl,
-    port: PORT
+    port: PORT,
+    piperTtsUrl: process.env.PIPER_TTS_URL || null
   });
 });
 
@@ -106,16 +107,42 @@ app.post('/api/questions', (req, res) => {
   res.status(201).json({ success: true, question: newQuestion });
 });
 
-// Server-Side Text-To-Speech Endpoint (Reliable HTML5 Audio Stream)
-app.get('/api/tts', (req, res) => {
+// Server-Side Text-To-Speech Endpoint (Piper Neural TTS Sidecar + Online Fallback)
+app.get('/api/tts', async (req, res) => {
   const text = (req.query.text || '').substring(0, 200).trim();
   if (!text) {
     return res.status(400).send('No text specified.');
   }
 
-  const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text)}`;
+  const piperUrl = process.env.PIPER_TTS_URL || 'http://localhost:5000';
 
-  const ttsReq = https.get(ttsUrl, {
+  // 1. Attempt Piper Neural TTS Sidecar Container
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
+
+    const piperRes = await fetch(`${piperUrl}/api/tts?text=${encodeURIComponent(text)}`, {
+      signal: controller.signal
+    }).catch(() =>
+      fetch(`${piperUrl}/?text=${encodeURIComponent(text)}`, { signal: controller.signal })
+    );
+
+    clearTimeout(timeoutId);
+
+    if (piperRes && piperRes.ok) {
+      const contentType = piperRes.headers.get('content-type') || 'audio/wav';
+      res.setHeader('Content-Type', contentType);
+      const arrayBuffer = await piperRes.arrayBuffer();
+      console.log(`[TTS Endpoint] Served speech via Piper Neural TTS Sidecar (${piperUrl})`);
+      return res.send(Buffer.from(arrayBuffer));
+    }
+  } catch (err) {
+    // Piper container offline/unreachable - fallback to online stream
+  }
+
+  // 2. Fallback to Cloud/Online TTS Stream
+  const fallbackUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text)}`;
+  const ttsReq = https.get(fallbackUrl, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
     }
