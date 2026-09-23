@@ -341,6 +341,39 @@
         setTimeout(() => this.playTone(783.99, 'triangle', 0.15, 0.5), 240);
         setTimeout(() => this.playTone(1046.50, 'triangle', 0.5, 0.6), 360);
       }
+
+      enhanceAudioElement(audioEl) {
+        if (!this.ctx) this.init();
+        if (!this.ctx) return;
+        try {
+          if (!this.audioSourceMap) this.audioSourceMap = new WeakMap();
+          if (!this.audioSourceMap.has(audioEl)) {
+            const source = this.ctx.createMediaElementSource(audioEl);
+
+            // Broadcast Radio Dynamics Compressor Node for Voice Punch & Presence
+            const compressor = this.ctx.createDynamicsCompressor();
+            compressor.threshold.setValueAtTime(-24, this.ctx.currentTime);
+            compressor.knee.setValueAtTime(12, this.ctx.currentTime);
+            compressor.ratio.setValueAtTime(4, this.ctx.currentTime);
+            compressor.attack.setValueAtTime(0.003, this.ctx.currentTime);
+            compressor.release.setValueAtTime(0.25, this.ctx.currentTime);
+
+            // Presence Boost EQ filter (3.2kHz peak filter for vocal clarity)
+            const eq = this.ctx.createBiquadFilter();
+            eq.type = 'peaking';
+            eq.frequency.setValueAtTime(3200, this.ctx.currentTime);
+            eq.Q.setValueAtTime(1.0, this.ctx.currentTime);
+            eq.gain.setValueAtTime(3.0, this.ctx.currentTime);
+
+            source.connect(eq);
+            eq.connect(compressor);
+            compressor.connect(this.ctx.destination);
+            this.audioSourceMap.set(audioEl, source);
+          }
+        } catch(e) {
+          // Fallback if media element graph creation fails
+        }
+      }
     }
 
     const sfx = new SoundFX();
@@ -437,15 +470,15 @@
     function testSoundAndVoice() {
       unlockAudioHost();
       sfx.playQuestionChime();
-      speakText("Audio host activated. Welcome to Bad Data!");
+      speakText("Audio host activated! ... Welcome to Bad Data!");
     }
 
-    // Voice Host (HTML5 MP3 Audio Server Stream + Browser Fallback)
+    // Expressive Game Host Voice Function with Dramatic Pacing
     function speakText(text) {
       sfx.init();
       if (!ttsEnabled) return;
 
-      const cleanText = text.substring(0, 180).trim();
+      const cleanText = text.substring(0, 200).trim();
       if (!cleanText) return;
 
       if (currentAudio) {
@@ -458,6 +491,7 @@
       const ttsApiUrl = `/api/tts?text=${encodeURIComponent(cleanText)}`;
       currentAudio = new Audio(ttsApiUrl);
       currentAudio.volume = 1.0;
+      sfx.enhanceAudioElement(currentAudio);
 
       const playPromise = currentAudio.play();
       if (playPromise !== undefined) {
@@ -468,6 +502,8 @@
               window.speechSynthesis.resume();
               const u = new SpeechSynthesisUtterance(cleanText);
               u.volume = 1.0;
+              u.rate = 0.95;
+              u.pitch = 1.05;
               window.speechSynthesis.speak(u);
             } catch(e) {}
           }
@@ -574,9 +610,9 @@
         }
       }
 
-      // Play Chime + Voice Narration
+      // Play Chime + Expressive Game Host Phrasing
       sfx.playQuestionChime();
-      speakText(`Question ${data.questionNum}. ${data.question}`);
+      speakText(`Question ${data.questionNum}! ... ${data.question}`);
 
       // Start dynamic timer ticker
       startTimerTicker(data.durationMs, data.baseValue);
@@ -622,9 +658,9 @@
       document.getElementById('reveal-correct-letter').textContent = labels[data.correctIndex];
       document.getElementById('reveal-correct-text').textContent = data.correctAnswerText;
 
-      // Play Reveal Sound + Voice Narration
+      // Play Reveal Sound + Expressive Host Announcer Phrasing
       sfx.playRevealChime();
-      speakText(`The correct answer was option ${labels[data.correctIndex]}. ${data.correctAnswerText}`);
+      speakText(`The correct answer was... option ${labels[data.correctIndex]}! ... ${data.correctAnswerText}`);
 
       // Render Leaderboard & Cash Changes
       const listContainer = document.getElementById('reveal-leaderboard-list');
@@ -658,7 +694,7 @@
       if (winner) {
         document.getElementById('winner-name-text').textContent = winner.nickname;
         document.getElementById('winner-cash-text').textContent = `$${winner.score.toLocaleString()}`;
-        speakText(`Game Over! Congratulations to ${winner.nickname} for winning with ${winner.score} dollars!`);
+        speakText(`Game Over! ... Congratulations to ${winner.nickname} for winning with ${winner.score.toLocaleString()} dollars!`);
       }
 
       const listContainer = document.getElementById('final-leaderboard-list');

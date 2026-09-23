@@ -17,11 +17,11 @@ services:
       - piper-tts
     restart: unless-stopped
 
-  # Piper Neural Text-To-Speech (Offline Homelab Sidecar Container)
+  # Piper Neural Text-To-Speech (Expressive Game Host Voice)
   piper-tts:
     image: rhasspy/piper-http:latest
     container_name: bad-data-piper-tts
     ports:
       - "5000:5000"
-    command: --voice en_US-lessac-medium
+    command: --voice ${PIPER_VOICE:-en_US-ryan-high}
     restart: unless-stopped

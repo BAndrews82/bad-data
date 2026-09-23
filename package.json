@@ -10,6 +10,8 @@
     "test": "node test/simulate_game.js"
   },
   "dependencies": {
+    "@bestcodes/edge-tts": "^3.0.1",
+    "edge-tts": "^1.0.1",
     "express": "^4.19.2",
     "he": "^1.2.0",
     "qrcode": "^1.5.3",

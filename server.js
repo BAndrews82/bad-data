@@ -107,24 +107,67 @@ app.post('/api/questions', (req, res) => {
   res.status(201).json({ success: true, question: newQuestion });
 });
 
+/**
+ * Preprocesses raw text for maximum TTS expressiveness, natural pauses, and cadence.
+ */
+function preprocessTtsText(rawText) {
+  if (!rawText) return '';
+  let clean = rawText
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&amp;/g, " and ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\bvs\./gi, 'versus')
+    .replace(/\bvs\b/gi, 'versus')
+    .replace(/\betc\./gi, 'et cetera')
+    .replace(/\be\.g\./gi, 'for example')
+    .replace(/\bi\.e\./gi, 'that is')
+    .replace(/\bDr\./gi, 'Doctor')
+    .replace(/\bMr\./gi, 'Mister')
+    .replace(/\bMrs\./gi, 'Missus')
+    .replace(/\bProf\./gi, 'Professor')
+    .replace(/\bSt\./gi, 'Saint')
+    .replace(/\bNo\./gi, 'Number')
+    .replace(/\$/g, ' dollars ')
+    .replace(/%/g, ' percent ')
+    .replace(/Question (\d+)!/gi, 'Question $1... ')
+    .replace(/Question (\d+):/gi, 'Question $1... ')
+    .replace(/\.{2,}/g, '... ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (clean && !/[.!?]$/.test(clean)) {
+    clean += '.';
+  }
+  return clean;
+}
+
 // Server-Side Text-To-Speech Endpoint (Piper Neural TTS Sidecar + Online Fallback)
 app.get('/api/tts', async (req, res) => {
-  const text = (req.query.text || '').substring(0, 200).trim();
-  if (!text) {
+  const rawText = (req.query.text || '').substring(0, 250).trim();
+  if (!rawText) {
     return res.status(400).send('No text specified.');
   }
 
+  const text = preprocessTtsText(rawText);
   const piperUrl = process.env.PIPER_TTS_URL || 'http://localhost:5000';
+
+  // Tuned parameters for fluid & expressive speech cadence:
+  // - length_scale=1.02: slight pace relaxation for clarity
+  // - noise_scale=0.75: higher phoneme pitch variance (reduces monotone robot sound)
+  // - noise_w=0.85: phoneme width/rhythm variance
+  const piperQueryParams = `text=${encodeURIComponent(text)}&length_scale=1.02&noise_scale=0.75&noise_w=0.85`;
 
   // 1. Attempt Piper Neural TTS Sidecar Container
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1500);
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-    const piperRes = await fetch(`${piperUrl}/api/tts?text=${encodeURIComponent(text)}`, {
+    const piperRes = await fetch(`${piperUrl}/api/tts?${piperQueryParams}`, {
       signal: controller.signal
     }).catch(() =>
-      fetch(`${piperUrl}/?text=${encodeURIComponent(text)}`, { signal: controller.signal })
+      fetch(`${piperUrl}/?${piperQueryParams}`, { signal: controller.signal })
     );
 
     clearTimeout(timeoutId);
