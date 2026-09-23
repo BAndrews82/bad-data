@@ -35,9 +35,15 @@
 </head>
 <body onclick="unlockAudioHost()" class="h-screen w-screen flex flex-col justify-between p-4 sm:p-6 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black relative">
 
-  <!-- Voice Control & Audio Host Toggle (Top Right) -->
+  <!-- Voice Control & Sound Test (Top Right) -->
   <div class="absolute top-4 right-6 z-50 flex items-center gap-3">
-    <button id="tts-toggle-btn" onclick="event.stopPropagation(); toggleTTS();" class="flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-semibold text-slate-300 hover:text-white transition border border-slate-700 shadow-lg">
+    <!-- Test Sound Button -->
+    <button onclick="event.stopPropagation(); testSoundAndVoice();" class="flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition border border-indigo-400/40 shadow-lg cursor-pointer">
+      <span>🔊 TEST AUDIO & VOICE</span>
+    </button>
+
+    <!-- TTS Toggle Button -->
+    <button id="tts-toggle-btn" onclick="event.stopPropagation(); toggleTTS();" class="flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-semibold text-slate-300 hover:text-white transition border border-slate-700 shadow-lg cursor-pointer">
       <svg id="tts-icon-on" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.707 12 4.414 12 5.414v13.172c0 1.000-1.077 1.707-1.707 1.077L5.586 15z"></path>
       </svg>
@@ -70,9 +76,9 @@
   <!-- ==================== SCREEN 1: LOBBY SCREEN ==================== -->
   <section id="screen-lobby" class="flex-1 flex flex-col items-center justify-center gap-4 z-10 py-2 min-h-0">
     <div class="text-center max-w-2xl">
-      <span id="audio-prompt-badge" class="px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-bold uppercase tracking-widest animate-pulse">
-        🔊 Click screen anywhere to test/enable Audio Sound
-      </span>
+      <button onclick="event.stopPropagation(); testSoundAndVoice();" id="audio-prompt-badge" class="px-4 py-1.5 rounded-full bg-indigo-500/30 border border-indigo-400/50 text-indigo-200 text-xs font-bold uppercase tracking-widest hover:bg-indigo-500/50 transition cursor-pointer shadow-lg animate-pulse">
+        🔊 Click Here to Enable & Test Sound/Voice
+      </button>
       <h2 class="text-4xl sm:text-5xl font-black text-white mt-2 mb-1">Scan QR or Visit Play URL</h2>
     </div>
 
@@ -109,7 +115,7 @@
         </div>
 
         <!-- Start Game Button -->
-        <button id="start-game-btn" onclick="event.stopPropagation(); triggerStartGame();" disabled class="w-full mt-4 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-lg tracking-wider shadow-lg transition transform hover:-translate-y-0.5 active:translate-y-0">
+        <button id="start-game-btn" onclick="event.stopPropagation(); triggerStartGame();" disabled class="w-full mt-4 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-lg tracking-wider shadow-lg transition transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
           START GAME
         </button>
       </div>
@@ -158,7 +164,7 @@
       <div id="question-timer-bar" class="bg-gradient-to-r from-emerald-400 via-amber-400 to-red-500 h-full w-full transition-all duration-100 ease-linear"></div>
     </div>
 
-    <!-- 4 Choice Cards Grid (Fit dynamically within screen) -->
+    <!-- 4 Choice Cards Grid -->
     <div class="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-6xl mx-auto shrink-0 mb-1">
       <!-- Card A -->
       <div id="choice-card-0" class="card-choice glass-panel p-4 rounded-xl flex items-center gap-4 border-2 border-red-500/40 bg-red-950/20">
@@ -249,7 +255,7 @@
       </div>
     </div>
 
-    <button onclick="event.stopPropagation(); window.location.reload();" class="mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-lg shadow-xl transition">
+    <button onclick="event.stopPropagation(); window.location.reload();" class="mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-lg shadow-xl transition cursor-pointer">
       PLAY AGAIN
     </button>
   </section>
@@ -260,8 +266,64 @@
     <span>Google Cast CAF Receiver Enabled</span>
   </footer>
 
-  <!-- Socket Logic & Receiver Script -->
+  <!-- Web Audio FX & Speech Engine Script -->
   <script>
+    // Web Audio API Synthesizer (Works 100% on all browsers & TVs)
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            this.ctx = new AudioCtx();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playTone(freq = 440, type = 'sine', duration = 0.15, vol = 0.3) {
+        if (!this.ctx) this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+      }
+
+      playQuestionChime() {
+        this.playTone(523.25, 'sine', 0.12, 0.4); // C5
+        setTimeout(() => this.playTone(659.25, 'sine', 0.12, 0.4), 100); // E5
+        setTimeout(() => this.playTone(783.99, 'sine', 0.25, 0.5), 200); // G5
+      }
+
+      playRevealChime() {
+        this.playTone(587.33, 'triangle', 0.15, 0.4); // D5
+        setTimeout(() => this.playTone(880, 'triangle', 0.3, 0.5), 120); // A5
+      }
+
+      playVictoryFanfare() {
+        this.playTone(523.25, 'triangle', 0.15, 0.5);
+        setTimeout(() => this.playTone(659.25, 'triangle', 0.15, 0.5), 120);
+        setTimeout(() => this.playTone(783.99, 'triangle', 0.15, 0.5), 240);
+        setTimeout(() => this.playTone(1046.50, 'triangle', 0.5, 0.6), 360);
+      }
+    }
+
+    const sfx = new SoundFX();
+
     let socket;
     let roomCode = '';
     let ttsEnabled = true;
@@ -277,8 +339,7 @@
       if (!('speechSynthesis' in window)) return;
       const voices = window.speechSynthesis.getVoices();
       if (voices.length > 0) {
-        // Prefer English voices
-        selectedVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
+        selectedVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural'))) ||
                         voices.find(v => v.lang.startsWith('en')) ||
                         voices[0];
       }
@@ -291,42 +352,74 @@
 
     // Unlock audio context on user click/interaction
     function unlockAudioHost() {
+      sfx.init();
       if (audioUnlocked) return;
       audioUnlocked = true;
 
       const badge = document.getElementById('audio-prompt-badge');
       if (badge) {
-        badge.textContent = '🔊 Audio Host Enabled & Ready!';
-        badge.className = 'px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold uppercase tracking-widest';
+        badge.textContent = '✓ Sound & Voice Host Active!';
+        badge.className = 'px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold uppercase tracking-widest';
       }
 
       if ('speechSynthesis' in window) {
-        window.speechSynthesis.resume();
-        // Warm up speech synthesis
-        const testUtterance = new SpeechSynthesisUtterance('Audio connected');
-        testUtterance.volume = 0.8;
-        if (selectedVoice) testUtterance.voice = selectedVoice;
-        window.speechSynthesis.speak(testUtterance);
+        try {
+          window.speechSynthesis.resume();
+        } catch(e) {}
       }
     }
 
-    // Web Speech API Voice Host
+    function testSoundAndVoice() {
+      unlockAudioHost();
+      sfx.playQuestionChime();
+      speakText("Audio host activated. Welcome to Bad Data!");
+    }
+
+    // Web Speech API Voice Host + Fallback
     function speakText(text) {
-      if (!ttsEnabled || !('speechSynthesis' in window)) return;
+      sfx.init();
+      if (!ttsEnabled) return;
 
+      const cleanText = text.substring(0, 180);
+
+      if ('speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.resume();
+
+          const utterance = new SpeechSynthesisUtterance(cleanText);
+          utterance.rate = 1.0;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+          if (selectedVoice) utterance.voice = selectedVoice;
+
+          let started = false;
+          utterance.onstart = () => { started = true; };
+
+          window.speechSynthesis.speak(utterance);
+
+          // Fallback if SpeechSynthesis stays silent for 600ms
+          setTimeout(() => {
+            if (!started && !window.speechSynthesis.speaking) {
+              playAudioTTSFallback(cleanText);
+            }
+          }, 600);
+          return;
+        } catch (err) {
+          console.warn('[TTS] SpeechSynthesis error:', err);
+        }
+      }
+
+      playAudioTTSFallback(cleanText);
+    }
+
+    function playAudioTTSFallback(text) {
       try {
-        window.speechSynthesis.resume();
-        window.speechSynthesis.cancel(); // Clear prior queue
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
-        utterance.volume = 1.0;
-        if (selectedVoice) utterance.voice = selectedVoice;
-
-        window.speechSynthesis.speak(utterance);
-      } catch (err) {
-        console.warn('[TTS] Speech error:', err);
+        const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text)}`;
+        const audio = new Audio(audioUrl);
+        audio.volume = 1.0;
+        audio.play().catch(e => console.warn('[TTS Fallback] Audio play blocked:', e));
+      } catch(e) {
+        console.warn('[TTS Fallback] Error:', e);
       }
     }
 
@@ -348,7 +441,7 @@
         console.log('[CastReceiver] CAF Receiver Started successfully.');
       }
     } catch (e) {
-      console.log('[CastReceiver] Standalone browser mode (Not Google Cast hardware).');
+      console.log('[CastReceiver] Standalone browser mode.');
     }
 
     // Socket.io Connection
@@ -395,6 +488,7 @@
     function triggerStartGame() {
       if (!roomCode) return;
       unlockAudioHost();
+      sfx.playQuestionChime();
       socket.emit('start_game', { roomCode });
     }
 
@@ -420,7 +514,8 @@
         }
       }
 
-      // Voice Narration
+      // Play Chime + Voice Narration
+      sfx.playQuestionChime();
       speakText(`Question ${data.questionNum}. ${data.question}`);
 
       // Start dynamic timer ticker
@@ -467,6 +562,8 @@
       document.getElementById('reveal-correct-letter').textContent = labels[data.correctIndex];
       document.getElementById('reveal-correct-text').textContent = data.correctAnswerText;
 
+      // Play Reveal Sound + Voice Narration
+      sfx.playRevealChime();
       speakText(`The correct answer was option ${labels[data.correctIndex]}. ${data.correctAnswerText}`);
 
       // Render Leaderboard & Cash Changes
@@ -496,6 +593,7 @@
     // Game Over Phase
     socket.on('game_over', (data) => {
       showScreen('screen-gameover');
+      sfx.playVictoryFanfare();
       const winner = data.leaderboard[0];
       if (winner) {
         document.getElementById('winner-name-text').textContent = winner.nickname;
