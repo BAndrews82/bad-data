@@ -56,6 +56,15 @@ app.get('/api/config', (req, res) => {
   });
 });
 
+// REST API: Get available JSON question packs
+app.get('/api/packs', (req, res) => {
+  const packs = TriviaService.getAvailablePacks();
+  res.json({
+    count: packs.length,
+    packs
+  });
+});
+
 // REST API: Get all loaded custom JSON questions
 app.get('/api/questions', (req, res) => {
   const customQuestions = TriviaService.loadCustomQuestions();
@@ -153,7 +162,8 @@ io.on('connection', (socket) => {
       roomCode: room.code,
       qrCodeDataUrl,
       playUrl,
-      players: room.players
+      players: room.players,
+      availablePacks: TriviaService.getAvailablePacks()
     });
   });
 
@@ -182,8 +192,8 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Host starts the game (Accepts sourceMode: 'mix' | 'custom' | 'api')
-  socket.on('start_game', async ({ roomCode, sourceMode }) => {
+  // Host starts the game (Accepts sourceMode: 'mix' | 'custom' | 'api' & selectedPacks: [])
+  socket.on('start_game', async ({ roomCode, sourceMode, selectedPacks }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || room.hostSocketId !== socket.id) {
       return socket.emit('error_message', { message: 'Only room host can start game.' });
@@ -194,10 +204,11 @@ io.on('connection', (socket) => {
     }
 
     const mode = sourceMode || 'mix';
-    console.log(`[Room ${roomCode}] Starting game (Source Mode: ${mode})... Fetching 10 questions...`);
+    const packIds = Array.isArray(selectedPacks) ? selectedPacks : [];
+    console.log(`[Room ${roomCode}] Starting game (Mode: ${mode}, Packs: [${packIds.join(', ')}])...`);
     io.to(`room_${roomCode}`).emit('game_starting_notice');
 
-    const questions = await TriviaService.fetchQuestions(10, mode);
+    const questions = await TriviaService.fetchQuestions(10, mode, packIds);
     roomManager.setupGame(roomCode, questions);
 
     runQuestionRound(io, roomCode);

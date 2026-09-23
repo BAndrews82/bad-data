@@ -103,15 +103,23 @@
 
         <!-- Trivia Source Mode Selector -->
         <div class="w-full my-2">
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-left">Question Source</label>
-          <div class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs font-bold">
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-left">Question Mode</label>
+          <div class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs font-bold mb-2">
             <button id="mode-btn-mix" onclick="event.stopPropagation(); setSourceMode('mix')" class="py-1.5 rounded-lg bg-indigo-600 text-white transition">🔀 Mix</button>
             <button id="mode-btn-custom" onclick="event.stopPropagation(); setSourceMode('custom')" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">📁 JSON Only</button>
             <button id="mode-btn-api" onclick="event.stopPropagation(); setSourceMode('api')" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">🌐 API Only</button>
           </div>
+
+          <!-- Active JSON Question Packs Selection -->
+          <div id="packs-selector-container" class="w-full text-left bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Select Custom Packs to Include</span>
+            <div id="packs-grid" class="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
         </div>
 
-        <div class="w-full border-t border-slate-800 my-3"></div>
+        <div class="w-full border-t border-slate-800 my-2"></div>
 
         <!-- Joined Players Roster -->
         <div class="w-full">
@@ -119,7 +127,7 @@
             <span class="text-xs font-bold text-slate-300">Joined Players (<span id="player-count">0</span>)</span>
             <span class="text-[10px] text-slate-500">Need >= 1 player</span>
           </div>
-          <div id="player-roster-grid" class="flex flex-wrap justify-center gap-2 max-h-28 overflow-y-auto p-1">
+          <div id="player-roster-grid" class="flex flex-wrap justify-center gap-2 max-h-24 overflow-y-auto p-1">
             <span class="text-slate-500 italic text-xs">Waiting for players to join...</span>
           </div>
         </div>
@@ -344,19 +352,59 @@
     const roundDurationMs = 15000;
     let currentAudio = null;
     let selectedSourceMode = 'mix';
+    let availablePacks = [];
+    let selectedPackIds = [];
 
     function setSourceMode(mode) {
       selectedSourceMode = mode;
       ['mix', 'custom', 'api'].forEach(m => {
         const btn = document.getElementById(`mode-btn-${m}`);
         if (btn) {
-          if (m === mode) {
-            btn.className = 'py-1.5 rounded-lg bg-indigo-600 text-white transition';
-          } else {
-            btn.className = 'py-1.5 rounded-lg text-slate-400 hover:text-white transition';
-          }
+          btn.className = (m === mode) ? 'py-1.5 rounded-lg bg-indigo-600 text-white transition' : 'py-1.5 rounded-lg text-slate-400 hover:text-white transition';
         }
       });
+
+      const packContainer = document.getElementById('packs-selector-container');
+      if (packContainer) {
+        packContainer.style.display = (mode === 'api') ? 'none' : 'block';
+      }
+    }
+
+    function renderPackSelector(packs) {
+      availablePacks = packs || [];
+      const grid = document.getElementById('packs-grid');
+      if (!grid) return;
+
+      if (availablePacks.length === 0) {
+        grid.innerHTML = '<span class="text-xs text-slate-500 italic">No custom JSON packs found in data/</span>';
+        return;
+      }
+
+      // Default all packs selected
+      if (selectedPackIds.length === 0) {
+        selectedPackIds = availablePacks.map(p => p.id);
+      }
+
+      grid.innerHTML = availablePacks.map(p => {
+        const isChecked = selectedPackIds.includes(p.id);
+        const bgClass = isChecked ? 'bg-emerald-600/30 border-emerald-500/60 text-emerald-200' : 'bg-slate-800 border-slate-700 text-slate-400';
+        return `
+          <button onclick="event.stopPropagation(); togglePackSelection('${p.id}')" class="px-2.5 py-1 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition ${bgClass}">
+            <span>${isChecked ? '✓' : '+'}</span>
+            <span>${p.name}</span>
+            <span class="opacity-60 text-[10px]">(${p.count})</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function togglePackSelection(packId) {
+      if (selectedPackIds.includes(packId)) {
+        selectedPackIds = selectedPackIds.filter(id => id !== packId);
+      } else {
+        selectedPackIds.push(packId);
+      }
+      renderPackSelector(availablePacks);
     }
 
     // Unlock audio context on user click/interaction
@@ -458,6 +506,7 @@
       document.getElementById('qr-code-img').src = data.qrCodeDataUrl;
       document.getElementById('play-url-text').textContent = data.playUrl;
       updateRoster(data.players || []);
+      renderPackSelector(data.availablePacks || []);
     });
 
     socket.on('roster_update', (data) => {
@@ -488,7 +537,11 @@
       if (!roomCode) return;
       unlockAudioHost();
       sfx.playQuestionChime();
-      socket.emit('start_game', { roomCode, sourceMode: selectedSourceMode });
+      socket.emit('start_game', {
+        roomCode,
+        sourceMode: selectedSourceMode,
+        selectedPacks: selectedPackIds
+      });
     }
 
     // Game Question Phase Start

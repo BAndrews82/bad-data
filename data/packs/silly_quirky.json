@@ -1,0 +1,82 @@
+[
+  {
+    "id": "silly-1",
+    "question": "What is the official national animal of Scotland?",
+    "correct_answer": "Unicorn",
+    "incorrect_answers": ["Loch Ness Monster", "Highland Cow", "Golden Eagle"],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-2",
+    "question": "What is the official scientific term for what happens to your body if you get pulled into a black hole?",
+    "correct_answer": "Spaghettification",
+    "incorrect_answers": ["Noodlization", "Pancaking", "Atomization"],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-3",
+    "question": "In 1997, an honorary Mayor of Talkeetna, Alaska was elected and held office for 20 years. What kind of creature was Mayor Stubbs?",
+    "correct_answer": "A Cat",
+    "incorrect_answers": ["A Golden Retriever", "A Moose", "A Goat"],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-4",
+    "question": "What is the technical name for the plastic or metal tip at the end of a shoelace?",
+    "correct_answer": "Aglet",
+    "incorrect_answers": ["Grommet", "Ferrule", "Flange"],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-5",
+    "question": "In 2006, an Australian man attempted to sell what item on eBay for $0.01 before the listing was shut down?",
+    "correct_answer": "The country of New Zealand",
+    "incorrect_answers": ["His own soul", "The Eiffel Tower", "The Moon"],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-6",
+    "question": "What weird personal object was left behind on the Moon by Apollo 16 astronaut Charles Duke in 1972?",
+    "correct_answer": "A framed photo of his family",
+    "incorrect_answers": ["His car keys", "A rubber duck", "A baseball glove"],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-7",
+    "question": "According to a Swiss cheese aging experiment, cheese exposed to what type of music continuously developed a noticeably sweeter flavor?",
+    "correct_answer": "Hip-Hop Music",
+    "incorrect_answers": ["Heavy Metal", "Classical Mozart", "Techno"],
+    "category": "Silly & Quirky",
+    "difficulty": "hard"
+  },
+  {
+    "id": "silly-8",
+    "question": "In 2011, a woman paid $10,000 for a work of 'invisible art' created by James Franco's art group. What was the art piece called?",
+    "correct_answer": "Fresh Air",
+    "incorrect_answers": ["Nothingness", "The Blank Canvas", "Invisible Sculpture"],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-9",
+    "question": "What common grocery food item was used as improvised snowball weapons by Icelandic protesters in 2009?",
+    "correct_answer": "Skyr (Yogurt) & Eggs",
+    "incorrect_answers": ["Frozen Baguettes", "Bananas", "Canned Soup"],
+    "category": "Silly & Quirky",
+    "difficulty": "hard"
+  },
+  {
+    "id": "silly-10",
+    "question": "What is the fear of being watched by a duck secretly at any given moment called?",
+    "correct_answer": "Anatidaephobia",
+    "incorrect_answers": ["Quackophobia", "Ornithophobia", "Mallardophobia"],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  }
+]
