@@ -133,7 +133,6 @@ app.get('/api/tts', async (req, res) => {
       const contentType = piperRes.headers.get('content-type') || 'audio/wav';
       res.setHeader('Content-Type', contentType);
       const arrayBuffer = await piperRes.arrayBuffer();
-      console.log(`[TTS Endpoint] Served speech via Piper Neural TTS Sidecar (${piperUrl})`);
       return res.send(Buffer.from(arrayBuffer));
     }
   } catch (err) {
@@ -151,7 +150,6 @@ app.get('/api/tts', async (req, res) => {
       res.setHeader('Content-Type', 'audio/mpeg');
       ttsRes.pipe(res);
     } else {
-      console.warn(`[TTS Endpoint] Upstream returned HTTP ${ttsRes.statusCode}`);
       res.status(ttsRes.statusCode).send('TTS service unavailable');
     }
   });
@@ -191,6 +189,24 @@ io.on('connection', (socket) => {
       playUrl,
       players: room.players,
       availablePacks: TriviaService.getAvailablePacks()
+    });
+  });
+
+  // Host spawns AI/Bot players for single-screen test mode
+  socket.on('add_bot_players', ({ roomCode, count }) => {
+    const room = roomManager.getRoom(roomCode);
+    if (!room || room.hostSocketId !== socket.id) return;
+
+    const numToAdd = count || 2;
+    for (let i = 0; i < numToAdd; i++) {
+      const result = roomManager.addBotPlayer(roomCode);
+      if (result) {
+        console.log(`[Room ${roomCode}] Added bot player: '${result.player.nickname}'`);
+      }
+    }
+
+    io.to(`host_${room.code}`).emit('roster_update', {
+      players: room.players
     });
   });
 
@@ -339,6 +355,34 @@ function runQuestionRound(ioInstance, roomCode) {
     durationMs: room.roundDurationMs,
     choiceLabels: ['A', 'B', 'C', 'D'],
     choiceColors: ['#EF4444', '#3B82F6', '#F59E0B', '#10B981']
+  });
+
+  // Schedule Bot Players automated responses if any bots exist in room
+  const botPlayers = room.players.filter(p => p.isBot);
+  botPlayers.forEach(bot => {
+    // Random submission delay between 1.5s and 9.0s into the round
+    const delayMs = Math.floor(Math.random() * 7500) + 1500;
+    setTimeout(() => {
+      if (room.status === 'QUESTION' && !bot.answered) {
+        // 50% chance bot picks correct answer, 50% chance random answer
+        const isSmartChoice = Math.random() < 0.5;
+        const chosenIndex = isSmartChoice ? currentQ.correctIndex : Math.floor(Math.random() * 4);
+
+        const res = roomManager.submitAnswer(roomCode, bot.socketId, chosenIndex);
+        if (res && res.success) {
+          ioInstance.to(`host_${roomCode}`).emit('player_answered_update', {
+            socketId: bot.socketId,
+            nickname: bot.nickname,
+            totalAnswered: room.players.filter(p => p.answered).length,
+            totalPlayers: room.players.length
+          });
+
+          if (res.allAnswered) {
+            evaluateAndReveal(ioInstance, roomCode);
+          }
+        }
+      }
+    }, delayMs);
   });
 
   // Set 15s round timeout

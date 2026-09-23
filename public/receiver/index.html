@@ -121,11 +121,14 @@
 
         <div class="w-full border-t border-slate-800 my-2"></div>
 
-        <!-- Joined Players Roster -->
+        <!-- Joined Players Roster & Add Bot Trigger -->
         <div class="w-full">
           <div class="flex items-center justify-between mb-2">
             <span class="text-xs font-bold text-slate-300">Joined Players (<span id="player-count">0</span>)</span>
-            <span class="text-[10px] text-slate-500">Need >= 1 player</span>
+            <!-- Add AI Bot Player Button for Solo Test Mode -->
+            <button onclick="event.stopPropagation(); addBotPlayers();" class="px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-bold text-[11px] transition shadow cursor-pointer">
+              🤖 Add AI Bots (+2)
+            </button>
           </div>
           <div id="player-roster-grid" class="flex flex-wrap justify-center gap-2 max-h-24 overflow-y-auto p-1">
             <span class="text-slate-500 italic text-xs">Waiting for players to join...</span>
@@ -355,6 +358,12 @@
     let availablePacks = [];
     let selectedPackIds = [];
 
+    function addBotPlayers() {
+      if (!roomCode) return;
+      unlockAudioHost();
+      socket.emit('add_bot_players', { roomCode, count: 2 });
+    }
+
     function setSourceMode(mode) {
       selectedSourceMode = mode;
       ['mix', 'custom', 'api'].forEach(m => {
@@ -380,7 +389,6 @@
         return;
       }
 
-      // Default all packs selected
       if (selectedPackIds.length === 0) {
         selectedPackIds = availablePacks.map(p => p.id);
       }
@@ -389,7 +397,7 @@
         const isChecked = selectedPackIds.includes(p.id);
         const bgClass = isChecked ? 'bg-emerald-600/30 border-emerald-500/60 text-emerald-200' : 'bg-slate-800 border-slate-700 text-slate-400';
         return `
-          <button onclick="event.stopPropagation(); togglePackSelection('${p.id}')" class="px-2.5 py-1 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition ${bgClass}">
+          <button onclick="event.stopPropagation(); togglePackSelection('${p.id}')" class="px-2.5 py-1 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition ${bgClass} cursor-pointer">
             <span>${isChecked ? '✓' : '+'}</span>
             <span>${p.name}</span>
             <span class="opacity-60 text-[10px]">(${p.count})</span>
