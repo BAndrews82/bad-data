@@ -1,5 +1,6 @@
 const express = require('express');
 const http = require('http');
+const https = require('https');
 const { Server } = require('socket.io');
 const path = require('path');
 const os = require('os');
@@ -49,6 +50,35 @@ app.get('/api/config', (req, res) => {
     hostIp,
     baseUrl,
     port: PORT
+  });
+});
+
+// Server-Side Text-To-Speech Endpoint (Reliable HTML5 Audio Stream)
+app.get('/api/tts', (req, res) => {
+  const text = (req.query.text || '').substring(0, 200).trim();
+  if (!text) {
+    return res.status(400).send('No text specified.');
+  }
+
+  const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text)}`;
+
+  const ttsReq = https.get(ttsUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+  }, (ttsRes) => {
+    if (ttsRes.statusCode === 200) {
+      res.setHeader('Content-Type', 'audio/mpeg');
+      ttsRes.pipe(res);
+    } else {
+      console.warn(`[TTS Endpoint] Upstream returned HTTP ${ttsRes.statusCode}`);
+      res.status(ttsRes.statusCode).send('TTS service unavailable');
+    }
+  });
+
+  ttsReq.on('error', (err) => {
+    console.error('[TTS Endpoint Error]', err.message);
+    res.status(500).send('TTS server error');
   });
 });
 

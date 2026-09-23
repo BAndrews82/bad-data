@@ -332,23 +332,7 @@
     let currentBaseValue = 1000;
     let roundStartTime = 0;
     const roundDurationMs = 15000;
-    let selectedVoice = null;
-
-    // Load Web Speech Voices
-    function loadVoices() {
-      if (!('speechSynthesis' in window)) return;
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length > 0) {
-        selectedVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural'))) ||
-                        voices.find(v => v.lang.startsWith('en')) ||
-                        voices[0];
-      }
-    }
-
-    if ('speechSynthesis' in window) {
-      loadVoices();
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
+    let currentAudio = null;
 
     // Unlock audio context on user click/interaction
     function unlockAudioHost() {
@@ -375,51 +359,41 @@
       speakText("Audio host activated. Welcome to Bad Data!");
     }
 
-    // Web Speech API Voice Host + Fallback
+    // Voice Host (HTML5 MP3 Audio Server Stream + Browser Fallback)
     function speakText(text) {
       sfx.init();
       if (!ttsEnabled) return;
 
-      const cleanText = text.substring(0, 180);
+      const cleanText = text.substring(0, 180).trim();
+      if (!cleanText) return;
 
-      if ('speechSynthesis' in window) {
+      // Pause active speech audio if playing
+      if (currentAudio) {
         try {
-          window.speechSynthesis.resume();
-
-          const utterance = new SpeechSynthesisUtterance(cleanText);
-          utterance.rate = 1.0;
-          utterance.pitch = 1.0;
-          utterance.volume = 1.0;
-          if (selectedVoice) utterance.voice = selectedVoice;
-
-          let started = false;
-          utterance.onstart = () => { started = true; };
-
-          window.speechSynthesis.speak(utterance);
-
-          // Fallback if SpeechSynthesis stays silent for 600ms
-          setTimeout(() => {
-            if (!started && !window.speechSynthesis.speaking) {
-              playAudioTTSFallback(cleanText);
-            }
-          }, 600);
-          return;
-        } catch (err) {
-          console.warn('[TTS] SpeechSynthesis error:', err);
-        }
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        } catch(e) {}
       }
 
-      playAudioTTSFallback(cleanText);
-    }
+      // 1. Try Server-Side TTS Audio Stream
+      const ttsApiUrl = `/api/tts?text=${encodeURIComponent(cleanText)}`;
+      currentAudio = new Audio(ttsApiUrl);
+      currentAudio.volume = 1.0;
 
-    function playAudioTTSFallback(text) {
-      try {
-        const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text)}`;
-        const audio = new Audio(audioUrl);
-        audio.volume = 1.0;
-        audio.play().catch(e => console.warn('[TTS Fallback] Audio play blocked:', e));
-      } catch(e) {
-        console.warn('[TTS Fallback] Error:', e);
+      const playPromise = currentAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('[TTS API Playback Failed, trying Web Speech API]', err);
+          // 2. Fallback to Browser SpeechSynthesis
+          if ('speechSynthesis' in window) {
+            try {
+              window.speechSynthesis.resume();
+              const u = new SpeechSynthesisUtterance(cleanText);
+              u.volume = 1.0;
+              window.speechSynthesis.speak(u);
+            } catch(e) {}
+          }
+        });
       }
     }
 
@@ -428,6 +402,9 @@
       document.getElementById('tts-icon-on').classList.toggle('hidden', !ttsEnabled);
       document.getElementById('tts-icon-off').classList.toggle('hidden', ttsEnabled);
       document.getElementById('tts-status-text').textContent = ttsEnabled ? 'Voice Host: ON' : 'Voice Host: OFF';
+      if (!ttsEnabled && currentAudio) {
+        try { currentAudio.pause(); } catch(e) {}
+      }
       if (!ttsEnabled && ('speechSynthesis' in window)) {
         window.speechSynthesis.cancel();
       }
