@@ -10,4 +10,6 @@ services:
       - PORT=3000
       - HOST_IP=${HOST_IP:-}
       - BASE_URL=${BASE_URL:-}
+    volumes:
+      - ./data:/app/data
     restart: unless-stopped

@@ -1,0 +1,82 @@
+[
+  {
+    "id": "custom-101",
+    "question": "What is the default port used by Express.js and many Node.js web applications?",
+    "correct_answer": "3000",
+    "incorrect_answers": ["8080", "5000", "80"],
+    "category": "Homelab & Tech",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-102",
+    "question": "Which open-source tool is widely used in homelabs to manage Docker containers with a web GUI?",
+    "correct_answer": "Portainer",
+    "incorrect_answers": ["Kubernetes", "Nginx", "Proxmox"],
+    "category": "Homelab & Tech",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-103",
+    "question": "In the Jackbox Party Pack series, which game features players drawing ungodly inventions and pitching them?",
+    "correct_answer": "Patently Stupid",
+    "incorrect_answers": ["Fibbage", "Tee K.O.", "Quiplash"],
+    "category": "Party Games",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-104",
+    "question": "What year was the original Doom video game released by id Software?",
+    "correct_answer": "1993",
+    "incorrect_answers": ["1991", "1995", "1997"],
+    "category": "Gaming",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-105",
+    "question": "What protocol does Socket.io use to establish full-duplex real-time communication between client and server?",
+    "correct_answer": "WebSockets",
+    "incorrect_answers": ["FTP", "SMTP", "DNS"],
+    "category": "Science: Computers",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-106",
+    "question": "What is the name of the fictional town in Indiana where 'Stranger Things' takes place?",
+    "correct_answer": "Hawkins",
+    "incorrect_answers": ["Springfield", "Riverdale", "Pawnee"],
+    "category": "Pop Culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-107",
+    "question": "Which Linux hypervisor OS is extremely popular in homelabs for running virtual machines and LXC containers?",
+    "correct_answer": "Proxmox VE",
+    "incorrect_answers": ["Ubuntu Desktop", "Fedora Workstation", "Arch Linux"],
+    "category": "Homelab & Tech",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-108",
+    "question": "In video games, what does the acronym 'NPC' stand for?",
+    "correct_answer": "Non-Player Character",
+    "incorrect_answers": ["New Player Class", "Non-Playable Command", "National Gaming Center"],
+    "category": "Gaming",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-109",
+    "question": "Which sci-fi movie features the AI computer known as HAL 9000?",
+    "correct_answer": "2001: A Space Odyssey",
+    "incorrect_answers": ["Blade Runner", "Alien", "The Matrix"],
+    "category": "Movies",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-110",
+    "question": "What is the highest possible hand in standard Texas Hold'em Poker?",
+    "correct_answer": "Royal Flush",
+    "incorrect_answers": ["Four of a Kind", "Straight Flush", "Full House"],
+    "category": "General Knowledge",
+    "difficulty": "easy"
+  }
+]

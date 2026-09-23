@@ -4,6 +4,7 @@ const https = require('https');
 const { Server } = require('socket.io');
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 const QRCode = require('qrcode');
 
 const TriviaService = require('./lib/TriviaService');
@@ -14,6 +15,8 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*' }
 });
+
+app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
@@ -51,6 +54,47 @@ app.get('/api/config', (req, res) => {
     baseUrl,
     port: PORT
   });
+});
+
+// REST API: Get all loaded custom JSON questions
+app.get('/api/questions', (req, res) => {
+  const customQuestions = TriviaService.loadCustomQuestions();
+  res.json({
+    count: customQuestions.length,
+    questions: customQuestions
+  });
+});
+
+// REST API: Add a new custom question to data/questions.json
+app.post('/api/questions', (req, res) => {
+  const { question, correct_answer, incorrect_answers, category, difficulty } = req.body;
+
+  if (!question || !correct_answer || !Array.isArray(incorrect_answers) || incorrect_answers.length < 3) {
+    return res.status(400).json({ error: 'Required fields: question, correct_answer, incorrect_answers (array of 3+ strings)' });
+  }
+
+  const mainPath = path.join(__dirname, 'data/questions.json');
+  let existing = [];
+  if (fs.existsSync(mainPath)) {
+    try {
+      existing = JSON.parse(fs.readFileSync(mainPath, 'utf8'));
+    } catch(e) {}
+  }
+
+  const newQuestion = {
+    id: `custom-${Date.now()}`,
+    question: question.trim(),
+    correct_answer: correct_answer.trim(),
+    incorrect_answers: incorrect_answers.map(a => String(a).trim()),
+    category: category ? String(category).trim() : 'Custom Trivia',
+    difficulty: difficulty || 'medium'
+  };
+
+  existing.push(newQuestion);
+  fs.writeFileSync(mainPath, JSON.stringify(existing, null, 2), 'utf8');
+
+  console.log(`[Question API] Added new custom question: "${newQuestion.question}"`);
+  res.status(201).json({ success: true, question: newQuestion });
 });
 
 // Server-Side Text-To-Speech Endpoint (Reliable HTML5 Audio Stream)
@@ -138,8 +182,8 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Host starts the game
-  socket.on('start_game', async ({ roomCode }) => {
+  // Host starts the game (Accepts sourceMode: 'mix' | 'custom' | 'api')
+  socket.on('start_game', async ({ roomCode, sourceMode }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || room.hostSocketId !== socket.id) {
       return socket.emit('error_message', { message: 'Only room host can start game.' });
@@ -149,10 +193,11 @@ io.on('connection', (socket) => {
       return socket.emit('error_message', { message: 'Need at least 1 player to start!' });
     }
 
-    console.log(`[Room ${roomCode}] Starting game... Fetching 10 questions...`);
+    const mode = sourceMode || 'mix';
+    console.log(`[Room ${roomCode}] Starting game (Source Mode: ${mode})... Fetching 10 questions...`);
     io.to(`room_${roomCode}`).emit('game_starting_notice');
 
-    const questions = await TriviaService.fetchQuestions(10);
+    const questions = await TriviaService.fetchQuestions(10, mode);
     roomManager.setupGame(roomCode, questions);
 
     runQuestionRound(io, roomCode);
