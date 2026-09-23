@@ -1,0 +1,24 @@
+{
+  "name": "bad-data",
+  "version": "1.0.0",
+  "description": "A self-hosted Jackbox-style party trivia game prototype",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test/simulate_game.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "he": "^1.2.0",
+    "qrcode": "^1.5.3",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.7.5"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

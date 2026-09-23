@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100 select-none">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, initial-scale=1.0">
+  <title>BAD DATA — TV Receiver View</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- Google Cast CAF Receiver SDK -->
+  <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden;
+    }
+    .font-mono-code {
+      font-family: 'Space Grotesk', monospace;
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .card-choice {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glow-gold {
+      text-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+    }
+    .pulse-timer {
+      animation: timerPulse 1s infinite alternate;
+    }
+    @keyframes timerPulse {
+      0% { opacity: 0.9; }
+      100% { opacity: 1; transform: scale(1.02); }
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between p-8 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black relative">
+
+  <!-- Voice Control & Audio Host Toggle (Top Right) -->
+  <div class="absolute top-6 right-8 z-50 flex items-center gap-3">
+    <button id="tts-toggle-btn" onclick="toggleTTS()" class="flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-sm font-semibold text-slate-300 hover:text-white transition border border-slate-700">
+      <svg id="tts-icon-on" class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.707 12 4.414 12 5.414v13.172c0 1.000-1.077 1.707-1.707 1.077L5.586 15z"></path>
+      </svg>
+      <svg id="tts-icon-off" class="w-5 h-5 text-slate-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.707 12 4.414 12 5.414v13.172c0 1.000-1.077 1.707-1.707 1.077L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path>
+      </svg>
+      <span id="tts-status-text">Voice Host: ON</span>
+    </button>
+  </div>
+
+  <!-- Header Banner -->
+  <header class="w-full flex items-center justify-between z-10">
+    <div class="flex items-center gap-4">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-red-600 via-purple-600 to-emerald-500 flex items-center justify-center font-black text-2xl shadow-xl shadow-red-500/20">
+        BD
+      </div>
+      <div>
+        <h1 class="text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-pink-400 to-emerald-400">BAD DATA</h1>
+        <p class="text-xs text-slate-400 font-semibold tracking-widest uppercase">Self-Hosted Party Trivia</p>
+      </div>
+    </div>
+
+    <!-- Active Room Code Badge (Shown during gameplay) -->
+    <div id="mini-room-badge" class="hidden glass-panel px-6 py-2 rounded-2xl border border-slate-700 flex items-center gap-3">
+      <span class="text-xs text-slate-400 uppercase tracking-wider">Room Code</span>
+      <span id="mini-code-text" class="font-mono-code font-black text-2xl text-emerald-400">----</span>
+    </div>
+  </header>
+
+  <!-- ==================== SCREEN 1: LOBBY SCREEN ==================== -->
+  <section id="screen-lobby" class="flex-1 flex flex-col items-center justify-center gap-8 z-10 py-6">
+    <div class="text-center max-w-3xl">
+      <span class="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold uppercase tracking-widest">
+        Join Game On Mobile
+      </span>
+      <h2 class="text-6xl font-black text-white mt-4 mb-2">Scan QR or Visit Play URL</h2>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center max-w-5xl w-full">
+      <!-- QR Code & Play URL Card -->
+      <div class="glass-panel p-8 rounded-3xl flex flex-col items-center text-center shadow-2xl border border-slate-700">
+        <div class="bg-white p-4 rounded-2xl shadow-inner mb-4">
+          <img id="qr-code-img" src="" alt="Scan QR Code to Join" class="w-64 h-64 object-contain">
+        </div>
+        <p class="text-slate-400 text-sm mb-1">Target URL:</p>
+        <span id="play-url-text" class="font-mono-code font-bold text-lg text-emerald-400 break-all px-4 py-1 rounded-xl bg-slate-900 border border-slate-800">
+          Loading...
+        </span>
+      </div>
+
+      <!-- Room Code Display & Player Count -->
+      <div class="glass-panel p-8 rounded-3xl flex flex-col items-center text-center shadow-2xl border border-slate-700">
+        <span class="text-slate-400 font-bold uppercase tracking-widest text-sm mb-2">Room Code</span>
+        <div id="room-code-display" class="font-mono-code font-black text-7xl sm:text-8xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-amber-300 to-emerald-400 my-2">
+          ----
+        </div>
+
+        <div class="w-full border-t border-slate-800 my-6"></div>
+
+        <!-- Joined Players Roster -->
+        <div class="w-full">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-bold text-slate-300">Joined Players (<span id="player-count">0</span>)</span>
+            <span class="text-xs text-slate-500">Need >= 1 player</span>
+          </div>
+          <div id="player-roster-grid" class="flex flex-wrap justify-center gap-3 max-h-48 overflow-y-auto p-2">
+            <span class="text-slate-500 italic text-sm">Waiting for players to join...</span>
+          </div>
+        </div>
+
+        <!-- Start Game Button -->
+        <button id="start-game-btn" onclick="triggerStartGame()" disabled class="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-xl tracking-wider shadow-lg shadow-emerald-500/20 transition transform hover:-translate-y-0.5 active:translate-y-0">
+          START GAME
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SCREEN 2: QUESTION SCREEN ==================== -->
+  <section id="screen-question" class="hidden flex-1 flex flex-col justify-between z-10 py-4">
+    <!-- Question Header Metadata -->
+    <div class="flex items-center justify-between glass-panel px-8 py-4 rounded-2xl border border-slate-800">
+      <div class="flex items-center gap-4">
+        <span id="question-num-badge" class="px-4 py-1.5 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-bold text-lg">
+          Question 1/10
+        </span>
+        <span id="category-badge" class="text-slate-300 font-semibold text-base">
+          General Knowledge
+        </span>
+      </div>
+
+      <!-- Real-Time Cash Ticker -->
+      <div class="flex items-center gap-6">
+        <div class="text-right">
+          <span class="text-xs text-slate-400 uppercase tracking-widest block">Current Max Value</span>
+          <span id="cash-ticker-text" class="font-mono-code font-black text-3xl text-emerald-400 glow-gold">
+            $1,000
+          </span>
+        </div>
+        <div class="text-right border-l border-slate-700 pl-6">
+          <span class="text-xs text-slate-400 uppercase tracking-widest block">Answered</span>
+          <span id="answered-count-text" class="font-bold text-2xl text-slate-200">
+            0 / 0
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Prompt Card -->
+    <div class="glass-panel p-8 sm:p-12 rounded-3xl text-center shadow-2xl my-6 border border-slate-700/80">
+      <h2 id="question-prompt-text" class="text-3xl sm:text-5xl font-black leading-tight text-white tracking-wide">
+        Loading Question Prompt...
+      </h2>
+    </div>
+
+    <!-- Countdown Progress Bar -->
+    <div class="w-full bg-slate-900 h-4 rounded-full overflow-hidden border border-slate-800 mb-6 relative">
+      <div id="question-timer-bar" class="bg-gradient-to-r from-emerald-400 via-amber-400 to-red-500 h-full w-full transition-all duration-100 ease-linear"></div>
+    </div>
+
+    <!-- 4 Choice Cards Grid -->
+    <div class="grid grid-cols-2 gap-6 w-full max-w-6xl mx-auto">
+      <!-- Card A -->
+      <div id="choice-card-0" class="card-choice glass-panel p-6 rounded-2xl flex items-center gap-6 border-2 border-red-500/40 bg-red-950/20">
+        <div class="w-16 h-16 rounded-xl bg-red-600 flex items-center justify-center font-black text-3xl text-white shadow-lg shrink-0">
+          A
+        </div>
+        <span id="choice-text-0" class="text-2xl font-extrabold text-slate-100 leading-snug">Choice A</span>
+      </div>
+
+      <!-- Card B -->
+      <div id="choice-card-1" class="card-choice glass-panel p-6 rounded-2xl flex items-center gap-6 border-2 border-blue-500/40 bg-blue-950/20">
+        <div class="w-16 h-16 rounded-xl bg-blue-600 flex items-center justify-center font-black text-3xl text-white shadow-lg shrink-0">
+          B
+        </div>
+        <span id="choice-text-1" class="text-2xl font-extrabold text-slate-100 leading-snug">Choice B</span>
+      </div>
+
+      <!-- Card C -->
+      <div id="choice-card-2" class="card-choice glass-panel p-6 rounded-2xl flex items-center gap-6 border-2 border-amber-500/40 bg-amber-950/20">
+        <div class="w-16 h-16 rounded-xl bg-amber-600 flex items-center justify-center font-black text-3xl text-white shadow-lg shrink-0">
+          C
+        </div>
+        <span id="choice-text-2" class="text-2xl font-extrabold text-slate-100 leading-snug">Choice C</span>
+      </div>
+
+      <!-- Card D -->
+      <div id="choice-card-3" class="card-choice glass-panel p-6 rounded-2xl flex items-center gap-6 border-2 border-emerald-500/40 bg-emerald-950/20">
+        <div class="w-16 h-16 rounded-xl bg-emerald-600 flex items-center justify-center font-black text-3xl text-white shadow-lg shrink-0">
+          D
+        </div>
+        <span id="choice-text-3" class="text-2xl font-extrabold text-slate-100 leading-snug">Choice D</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SCREEN 3: REVEAL SCREEN ==================== -->
+  <section id="screen-reveal" class="hidden flex-1 flex flex-col justify-between z-10 py-4">
+    <!-- Reveal Title Header -->
+    <div class="text-center mb-4">
+      <span class="px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold uppercase tracking-widest text-sm">
+        Round Reveal
+      </span>
+      <h2 id="reveal-correct-headline" class="text-4xl sm:text-5xl font-black text-white mt-2">
+        The Correct Answer was...
+      </h2>
+    </div>
+
+    <!-- Highlighted Correct Choice Card -->
+    <div id="reveal-correct-card" class="glass-panel p-8 rounded-3xl border-4 border-emerald-500 bg-emerald-950/40 text-center max-w-4xl mx-auto w-full shadow-2xl shadow-emerald-500/20">
+      <span id="reveal-correct-letter" class="inline-block px-4 py-1 rounded-xl bg-emerald-500 text-slate-950 font-black text-2xl mb-2">A</span>
+      <h3 id="reveal-correct-text" class="text-4xl font-black text-emerald-300">Correct Answer Text</h3>
+    </div>
+
+    <!-- Leaderboard Standings Table -->
+    <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-4xl mx-auto w-full my-4 border border-slate-700">
+      <h3 class="text-xl font-extrabold text-slate-300 mb-4 flex items-center justify-between">
+        <span>Leaderboard & Round Bank Changes</span>
+        <span class="text-xs text-slate-500 font-normal">Fast Answers = Max Cash</span>
+      </h3>
+
+      <div id="reveal-leaderboard-list" class="space-y-3 max-h-72 overflow-y-auto pr-2">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SCREEN 4: GAME OVER SCREEN ==================== -->
+  <section id="screen-gameover" class="hidden flex-1 flex flex-col items-center justify-center text-center z-10 py-6">
+    <span class="px-6 py-2 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-black text-lg uppercase tracking-widest mb-4">
+      GAME OVER
+    </span>
+    <h2 class="text-6xl font-black text-white mb-2">Final Cash Earnings</h2>
+
+    <!-- Winner Champion Card -->
+    <div id="winner-champion-card" class="glass-panel p-10 rounded-3xl border-4 border-amber-400 bg-gradient-to-b from-amber-950/40 to-slate-900 max-w-2xl w-full shadow-2xl shadow-amber-500/20 my-6">
+      <div class="text-6xl mb-2">👑</div>
+      <span class="text-sm font-bold text-amber-400 uppercase tracking-widest block">GRAND CHAMPION</span>
+      <h3 id="winner-name-text" class="text-5xl font-black text-white my-2">Player 1</h3>
+      <div id="winner-cash-text" class="font-mono-code font-black text-6xl text-emerald-400 glow-gold">
+        +$8,500
+      </div>
+    </div>
+
+    <!-- Full Leaderboard -->
+    <div class="glass-panel p-6 rounded-3xl max-w-2xl w-full border border-slate-700 my-2">
+      <div id="final-leaderboard-list" class="space-y-2">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <button onclick="window.location.reload()" class="mt-6 px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xl shadow-xl transition">
+      PLAY AGAIN
+    </button>
+  </section>
+
+  <!-- Footer -->
+  <footer class="w-full flex items-center justify-between text-xs text-slate-500 z-10 border-t border-slate-800/80 pt-4">
+    <span>Bad Data TV Receiver</span>
+    <span>Google Cast CAF Receiver Enabled</span>
+  </footer>
+
+  <!-- Socket Logic & Receiver Script -->
+  <script>
+    let socket;
+    let roomCode = '';
+    let ttsEnabled = true;
+    let roundTimerInterval = null;
+    let currentBaseValue = 1000;
+    let roundStartTime = 0;
+    const roundDurationMs = 15000;
+
+    // Web Speech API Voice Host
+    function speakText(text) {
+      if (!ttsEnabled || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel(); // Stop prior audio
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function toggleTTS() {
+      ttsEnabled = !ttsEnabled;
+      document.getElementById('tts-icon-on').classList.toggle('hidden', !ttsEnabled);
+      document.getElementById('tts-icon-off').classList.toggle('hidden', ttsEnabled);
+      document.getElementById('tts-status-text').textContent = ttsEnabled ? 'Voice Host: ON' : 'Voice Host: OFF';
+      if (!ttsEnabled && ('speechSynthesis' in window)) {
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    // Initialize Cast Receiver Context
+    try {
+      if (window.cast && cast.framework) {
+        const castContext = cast.framework.CastReceiverContext.getInstance();
+        castContext.start();
+        console.log('[CastReceiver] CAF Receiver Started successfully.');
+      }
+    } catch (e) {
+      console.log('[CastReceiver] Standalone browser mode (Not Google Cast hardware).');
+    }
+
+    // Socket.io Connection
+    socket = io();
+
+    socket.on('connect', () => {
+      console.log('[Socket] TV Host connected:', socket.id);
+      socket.emit('create_room');
+    });
+
+    socket.on('room_created', (data) => {
+      roomCode = data.roomCode;
+      document.getElementById('room-code-display').textContent = roomCode;
+      document.getElementById('mini-code-text').textContent = roomCode;
+      document.getElementById('qr-code-img').src = data.qrCodeDataUrl;
+      document.getElementById('play-url-text').textContent = data.playUrl;
+      updateRoster(data.players || []);
+    });
+
+    socket.on('roster_update', (data) => {
+      updateRoster(data.players || []);
+    });
+
+    function updateRoster(players) {
+      const rosterContainer = document.getElementById('player-roster-grid');
+      const startBtn = document.getElementById('start-game-btn');
+      document.getElementById('player-count').textContent = players.length;
+
+      if (players.length === 0) {
+        rosterContainer.innerHTML = '<span class="text-slate-500 italic text-sm">Waiting for players to join...</span>';
+        startBtn.disabled = true;
+        return;
+      }
+
+      startBtn.disabled = false;
+      rosterContainer.innerHTML = players.map(p => `
+        <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 font-bold text-base shadow">
+          <span class="w-3 h-3 rounded-full" style="background-color: ${p.color}"></span>
+          <span>${p.nickname}</span>
+        </div>
+      `).join('');
+    }
+
+    function triggerStartGame() {
+      if (!roomCode) return;
+      socket.emit('start_game', { roomCode });
+    }
+
+    // Game Question Phase Start
+    socket.on('question_start', (data) => {
+      showScreen('screen-question');
+      document.getElementById('mini-room-badge').classList.remove('hidden');
+
+      document.getElementById('question-num-badge').textContent = `Question ${data.questionNum}/${data.totalQuestions}`;
+      document.getElementById('category-badge').textContent = `${data.category} • ${data.difficulty.toUpperCase()}`;
+      document.getElementById('question-prompt-text').textContent = data.question;
+
+      document.getElementById('answered-count-text').textContent = `0 / ${document.getElementById('player-count').textContent}`;
+
+      currentBaseValue = data.baseValue;
+      roundStartTime = Date.now();
+
+      // Render 4 Choice Cards
+      const labels = ['A', 'B', 'C', 'D'];
+      for (let i = 0; i < 4; i++) {
+        const textEl = document.getElementById(`choice-text-${i}`);
+        if (textEl) {
+          textEl.textContent = data.choices[i] || '';
+        }
+      }
+
+      // Voice Narration
+      speakText(`Question ${data.questionNum}. ${data.question}`);
+
+      // Start dynamic timer ticker
+      startTimerTicker(data.durationMs, data.baseValue);
+    });
+
+    socket.on('player_answered_update', (data) => {
+      document.getElementById('answered-count-text').textContent = `${data.totalAnswered} / ${data.totalPlayers}`;
+    });
+
+    function startTimerTicker(durationMs, baseValue) {
+      if (roundTimerInterval) clearInterval(roundTimerInterval);
+
+      const timerBar = document.getElementById('question-timer-bar');
+      const cashTicker = document.getElementById('cash-ticker-text');
+
+      const start = Date.now();
+      roundTimerInterval = setInterval(() => {
+        const elapsed = Date.now() - start;
+        const progress = Math.min(1, elapsed / durationMs);
+        const remainingPct = (1 - progress) * 100;
+
+        timerBar.style.width = `${remainingPct}%`;
+
+        // Decrease cash ticker linearly from baseValue to 10%
+        const minFactor = 0.1;
+        const factor = 1 - progress * (1 - minFactor);
+        const currentCash = Math.round(baseValue * factor);
+
+        cashTicker.textContent = `$${currentCash.toLocaleString()}`;
+
+        if (progress >= 1) {
+          clearInterval(roundTimerInterval);
+        }
+      }, 50);
+    }
+
+    // Round Reveal Phase
+    socket.on('round_reveal', (data) => {
+      if (roundTimerInterval) clearInterval(roundTimerInterval);
+      showScreen('screen-reveal');
+
+      const labels = ['A', 'B', 'C', 'D'];
+      document.getElementById('reveal-correct-letter').textContent = labels[data.correctIndex];
+      document.getElementById('reveal-correct-text').textContent = data.correctAnswerText;
+
+      speakText(`The correct answer was option ${labels[data.correctIndex]}. ${data.correctAnswerText}`);
+
+      // Render Leaderboard & Cash Changes
+      const listContainer = document.getElementById('reveal-leaderboard-list');
+      listContainer.innerHTML = data.leaderboard.map((p, rank) => {
+        const isGain = p.lastRoundGain >= 0;
+        const gainFormatted = isGain ? `+$${p.lastRoundGain.toLocaleString()}` : `-$${Math.abs(p.lastRoundGain).toLocaleString()}`;
+        const gainClass = isGain ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' : 'text-red-400 bg-red-500/10 border-red-500/30';
+
+        return `
+          <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-900 border border-slate-800">
+            <div class="flex items-center gap-4">
+              <span class="font-black text-slate-500 text-lg w-6">#${rank + 1}</span>
+              <span class="w-4 h-4 rounded-full" style="background-color: ${p.color}"></span>
+              <span class="font-extrabold text-xl text-white">${p.nickname}</span>
+              ${p.answered ? (p.answerIndex === data.correctIndex ? '<span class="text-xs font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded">CORRECT</span>' : '<span class="text-xs font-bold text-red-400 bg-red-500/20 px-2 py-0.5 rounded">BAD DATA</span>') : '<span class="text-xs font-bold text-slate-500 bg-slate-800 px-2 py-0.5 rounded">NO ANSWER</span>'}
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="font-mono-code font-bold text-sm px-3 py-1 rounded-xl border ${gainClass}">${gainFormatted}</span>
+              <span class="font-mono-code font-black text-2xl text-slate-100">$${p.score.toLocaleString()}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    });
+
+    // Game Over Phase
+    socket.on('game_over', (data) => {
+      showScreen('screen-gameover');
+      const winner = data.leaderboard[0];
+      if (winner) {
+        document.getElementById('winner-name-text').textContent = winner.nickname;
+        document.getElementById('winner-cash-text').textContent = `$${winner.score.toLocaleString()}`;
+        speakText(`Game Over! Congratulations to ${winner.nickname} for winning with ${winner.score} dollars!`);
+      }
+
+      const listContainer = document.getElementById('final-leaderboard-list');
+      listContainer.innerHTML = data.leaderboard.map((p, rank) => `
+        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+          <div class="flex items-center gap-3">
+            <span class="font-bold text-slate-400 text-base">#${rank + 1}</span>
+            <span class="font-bold text-lg text-white">${p.nickname}</span>
+          </div>
+          <span class="font-mono-code font-bold text-xl text-emerald-400">$${p.score.toLocaleString()}</span>
+        </div>
+      `).join('');
+    });
+
+    function showScreen(screenId) {
+      ['screen-lobby', 'screen-question', 'screen-reveal', 'screen-gameover'].forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== screenId);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100 select-none">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BAD DATA — Mobile Controller</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-mono-code {
+      font-family: 'Space Grotesk', monospace;
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .btn-tactile:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between p-4 sm:p-6 bg-slate-950 overflow-hidden relative">
+
+  <!-- Mobile Header Banner (Shown after join) -->
+  <header id="mobile-header" class="hidden w-full flex items-center justify-between pb-3 border-b border-slate-800">
+    <div class="flex items-center gap-2">
+      <span id="player-avatar-badge" class="w-4 h-4 rounded-full bg-emerald-500"></span>
+      <span id="player-nickname-text" class="font-extrabold text-lg text-white">Player</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="text-xs text-slate-400">Room</span>
+      <span id="player-room-text" class="font-mono-code font-black text-emerald-400 text-lg">----</span>
+    </div>
+  </header>
+
+  <!-- ==================== SCREEN 1: JOIN FORM ==================== -->
+  <main id="screen-join" class="flex-1 flex flex-col items-center justify-center w-full max-w-sm mx-auto">
+    <div class="w-full text-center mb-8">
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-red-600 via-purple-600 to-emerald-500 flex items-center justify-center font-black text-3xl mx-auto shadow-xl shadow-red-500/20 mb-3">
+        BD
+      </div>
+      <h1 class="text-3xl font-black tracking-wider text-white">BAD DATA</h1>
+      <p class="text-xs text-slate-400 font-semibold tracking-widest uppercase mt-1">Enter Room Code & Nickname</p>
+    </div>
+
+    <form onsubmit="handleJoinSubmit(event)" class="w-full glass-panel p-6 rounded-3xl space-y-4 border border-slate-700 shadow-2xl">
+      <div id="join-error-msg" class="hidden text-xs font-bold text-red-400 bg-red-500/10 border border-red-500/30 p-3 rounded-xl text-center">
+        Error message
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest mb-1">Room Code</label>
+        <input type="text" id="input-room-code" maxlength="4" placeholder="XXXX" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center font-mono-code font-black text-3xl uppercase tracking-widest text-emerald-400 focus:outline-none focus:border-emerald-500 transition">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest mb-1">Nickname</label>
+        <input type="text" id="input-nickname" maxlength="12" placeholder="Your Name" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center font-bold text-xl text-white focus:outline-none focus:border-emerald-500 transition">
+      </div>
+
+      <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xl tracking-wider shadow-lg shadow-emerald-500/20 btn-tactile transition">
+        JOIN GAME
+      </button>
+    </form>
+  </main>
+
+  <!-- ==================== SCREEN 2: LOBBY SCREEN ==================== -->
+  <main id="screen-lobby" class="hidden flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto">
+    <div class="glass-panel p-8 rounded-3xl border border-slate-700 shadow-2xl w-full">
+      <div class="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-3xl mx-auto mb-4 animate-pulse">
+        ✓
+      </div>
+      <h2 class="text-3xl font-black text-white mb-2">YOU'RE IN!</h2>
+      <p class="text-slate-400 text-sm leading-relaxed mb-6">
+        Look up at the TV display. The game will start shortly!
+      </p>
+      <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
+        Tip: Fast answers score maximum cash. Wrong answers subtract cash!
+      </div>
+    </div>
+  </main>
+
+  <!-- ==================== SCREEN 3: ANSWER SCREEN ==================== -->
+  <main id="screen-answer" class="hidden flex-1 flex flex-col justify-between w-full max-w-md mx-auto py-2">
+    <!-- Active Ticker Bar -->
+    <div class="flex items-center justify-between glass-panel px-4 py-2 rounded-xl border border-slate-800">
+      <span id="question-num-mobile" class="text-xs font-bold text-indigo-300 bg-indigo-600/30 px-3 py-1 rounded-lg">
+        Q 1/10
+      </span>
+      <div class="text-right">
+        <span class="text-[10px] text-slate-400 uppercase tracking-widest block">Potential Cash</span>
+        <span id="cash-ticker-mobile" class="font-mono-code font-black text-2xl text-emerald-400">
+          $1,000
+        </span>
+      </div>
+    </div>
+
+    <!-- Confirmation Lock Banner (Shown after click) -->
+    <div id="locked-banner" class="hidden my-auto glass-panel p-8 rounded-3xl text-center border-2 border-emerald-500 bg-emerald-950/40 shadow-2xl">
+      <div class="w-16 h-16 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-3xl mx-auto mb-3">
+        ✓
+      </div>
+      <h3 class="text-3xl font-black text-white">ANSWER LOCKED IN</h3>
+      <p class="text-emerald-300 text-sm mt-1">Look at the TV for results!</p>
+    </div>
+
+    <!-- 4 Tactile Answer Buttons -->
+    <div id="buttons-grid" class="grid grid-cols-2 gap-4 w-full my-auto">
+      <!-- Button A -->
+      <button onclick="submitAnswer(0)" class="btn-tactile h-36 rounded-2xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-5xl flex items-center justify-center shadow-lg shadow-red-600/30 border-2 border-red-400/30">
+        A
+      </button>
+      <!-- Button B -->
+      <button onclick="submitAnswer(1)" class="btn-tactile h-36 rounded-2xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-black text-5xl flex items-center justify-center shadow-lg shadow-blue-600/30 border-2 border-blue-400/30">
+        B
+      </button>
+      <!-- Button C -->
+      <button onclick="submitAnswer(2)" class="btn-tactile h-36 rounded-2xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white font-black text-5xl flex items-center justify-center shadow-lg shadow-amber-600/30 border-2 border-amber-400/30">
+        C
+      </button>
+      <!-- Button D -->
+      <button onclick="submitAnswer(3)" class="btn-tactile h-36 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-black text-5xl flex items-center justify-center shadow-lg shadow-emerald-600/30 border-2 border-emerald-400/30">
+        D
+      </button>
+    </div>
+  </main>
+
+  <!-- ==================== SCREEN 4: RESULT SCREEN ==================== -->
+  <main id="screen-result" class="hidden flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto">
+    <div id="result-card" class="glass-panel p-8 rounded-3xl border border-slate-700 shadow-2xl w-full">
+      <div id="result-badge" class="w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3">
+        +
+      </div>
+      <h2 id="result-headline" class="text-3xl font-black text-white mb-1">CORRECT!</h2>
+      <div id="result-gain-text" class="font-mono-code font-black text-4xl my-2">
+        +$850
+      </div>
+      <div class="border-t border-slate-800 my-4"></div>
+      <span class="text-xs text-slate-400 uppercase tracking-widest block">Total Bank Balance</span>
+      <span id="result-total-score" class="font-mono-code font-black text-3xl text-white">
+        $1,250
+      </span>
+    </div>
+  </main>
+
+  <!-- Socket Script -->
+  <script>
+    let socket;
+    let currentRoomCode = '';
+    let playerNickname = '';
+    let playerColor = '';
+    let timerInterval = null;
+
+    // Check URL parameters for pre-filled room code (e.g. ?code=ABCD)
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeParam = urlParams.get('code');
+    if (codeParam) {
+      document.getElementById('input-room-code').value = codeParam.toUpperCase().trim();
+    }
+
+    socket = io();
+
+    function handleJoinSubmit(e) {
+      e.preventDefault();
+      const code = document.getElementById('input-room-code').value.toUpperCase().trim();
+      const nickname = document.getElementById('input-nickname').value.trim();
+
+      if (!code || !nickname) return;
+
+      currentRoomCode = code;
+      playerNickname = nickname;
+
+      socket.emit('join_room', { roomCode: code, nickname });
+    }
+
+    socket.on('join_error', (data) => {
+      const errEl = document.getElementById('join-error-msg');
+      errEl.textContent = data.message || 'Failed to join room.';
+      errEl.classList.remove('hidden');
+    });
+
+    socket.on('joined_successfully', (data) => {
+      playerColor = data.color;
+      document.getElementById('mobile-header').classList.remove('hidden');
+      document.getElementById('player-avatar-badge').style.backgroundColor = playerColor;
+      document.getElementById('player-nickname-text').textContent = data.nickname;
+      document.getElementById('player-room-text').textContent = data.roomCode;
+
+      showScreen('screen-lobby');
+    });
+
+    // Question Active Trigger on Controller
+    socket.on('controller_question_active', (data) => {
+      showScreen('screen-answer');
+      document.getElementById('buttons-grid').classList.remove('hidden');
+      document.getElementById('locked-banner').classList.add('hidden');
+      document.getElementById('question-num-mobile').textContent = `Q ${data.questionNum}/${data.totalQuestions}`;
+
+      startMobileTicker(data.durationMs, data.baseValue);
+    });
+
+    function startMobileTicker(durationMs, baseValue) {
+      if (timerInterval) clearInterval(timerInterval);
+      const start = Date.now();
+      const ticker = document.getElementById('cash-ticker-mobile');
+
+      timerInterval = setInterval(() => {
+        const elapsed = Date.now() - start;
+        const progress = Math.min(1, elapsed / durationMs);
+        const minFactor = 0.1;
+        const factor = 1 - progress * (1 - minFactor);
+        const currentCash = Math.round(baseValue * factor);
+
+        ticker.textContent = `$${currentCash.toLocaleString()}`;
+        if (progress >= 1) clearInterval(timerInterval);
+      }, 100);
+    }
+
+    function submitAnswer(answerIndex) {
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+      socket.emit('submit_answer', { roomCode: currentRoomCode, answerIndex });
+    }
+
+    socket.on('answer_received', (data) => {
+      document.getElementById('buttons-grid').classList.add('hidden');
+      document.getElementById('locked-banner').classList.remove('hidden');
+      if (timerInterval) clearInterval(timerInterval);
+    });
+
+    // Round Results for Controller
+    socket.on('round_result_controller', (data) => {
+      showScreen('screen-result');
+      if (timerInterval) clearInterval(timerInterval);
+
+      const card = document.getElementById('result-card');
+      const badge = document.getElementById('result-badge');
+      const headline = document.getElementById('result-headline');
+      const gainText = document.getElementById('result-gain-text');
+      const totalScore = document.getElementById('result-total-score');
+
+      totalScore.textContent = `$${data.totalScore.toLocaleString()}`;
+
+      if (!data.answered) {
+        badge.className = 'w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3 bg-slate-800 text-slate-400 border border-slate-700';
+        badge.textContent = '-';
+        headline.textContent = 'NO ANSWER';
+        gainText.textContent = '$0';
+        gainText.className = 'font-mono-code font-black text-4xl my-2 text-slate-400';
+      } else if (data.isCorrect) {
+        badge.className = 'w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3 bg-emerald-500 text-slate-950';
+        badge.textContent = '✓';
+        headline.textContent = 'CORRECT!';
+        gainText.textContent = `+$${data.cashChange.toLocaleString()}`;
+        gainText.className = 'font-mono-code font-black text-4xl my-2 text-emerald-400';
+      } else {
+        badge.className = 'w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3 bg-red-600 text-white';
+        badge.textContent = '✕';
+        headline.textContent = 'BAD DATA!';
+        gainText.textContent = `-$${Math.abs(data.cashChange).toLocaleString()}`;
+        gainText.className = 'font-mono-code font-black text-4xl my-2 text-red-400';
+      }
+    });
+
+    socket.on('host_disconnected', (data) => {
+      alert(data.message || 'TV Host disconnected');
+      window.location.reload();
+    });
+
+    function showScreen(screenId) {
+      ['screen-join', 'screen-lobby', 'screen-answer', 'screen-result'].forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== screenId);
+      });
+    }
+  </script>
+</body>
+</html>

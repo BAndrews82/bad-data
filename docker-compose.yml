@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  bad-data:
+    build: .
+    container_name: bad-data-party-game
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - HOST_IP=${HOST_IP:-}
+      - BASE_URL=${BASE_URL:-}
+    restart: unless-stopped
