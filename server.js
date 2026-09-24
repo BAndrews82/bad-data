@@ -143,19 +143,25 @@ function preprocessTtsText(rawText) {
   return clean;
 }
 
-// Server-Side Text-To-Speech Endpoint (Multi-Provider: Kokoro-82M -> Piper Neural -> Cloud Fallback)
-app.get('/api/tts', async (req, res) => {
-  const rawText = (req.query.text || '').substring(0, 250).trim();
-  if (!rawText) {
-    return res.status(400).send('No text specified.');
+// In-Memory TTS Audio RAM Cache (Key: cleanText, Value: { contentType, buffer })
+const ttsAudioCache = new Map();
+
+/**
+ * Pre-fetches and caches TTS audio for a given raw text string.
+ */
+async function getOrSynthesizeTts(rawText) {
+  const text = preprocessTtsText(rawText);
+  if (!text) return null;
+
+  if (ttsAudioCache.has(text)) {
+    return ttsAudioCache.get(text);
   }
 
-  const text = preprocessTtsText(rawText);
   const providerPreference = (process.env.TTS_PROVIDER || 'kokoro').toLowerCase();
 
   // 1. Attempt Kokoro-82M Ultra-Realistic Neural TTS Container
   const kokoroUrl = process.env.KOKORO_TTS_URL || 'http://localhost:8880';
-  const kokoroVoice = process.env.KOKORO_VOICE || 'am_michael'; // am_michael, af_heart, am_adam, bm_george
+  const kokoroVoice = process.env.KOKORO_VOICE || 'am_michael';
 
   if (providerPreference === 'kokoro' || providerPreference === 'auto') {
     try {
@@ -178,13 +184,13 @@ app.get('/api/tts', async (req, res) => {
       clearTimeout(timeoutId);
 
       if (kokoroRes && kokoroRes.ok) {
-        res.setHeader('Content-Type', 'audio/mpeg');
+        const contentType = 'audio/mpeg';
         const arrayBuffer = await kokoroRes.arrayBuffer();
-        return res.send(Buffer.from(arrayBuffer));
+        const entry = { contentType, buffer: Buffer.from(arrayBuffer) };
+        ttsAudioCache.set(text, entry);
+        return entry;
       }
-    } catch (err) {
-      // Kokoro container offline/unreachable - proceed to Piper fallback
-    }
+    } catch (err) {}
   }
 
   // 2. Attempt Piper Neural TTS Sidecar Container
@@ -205,15 +211,47 @@ app.get('/api/tts', async (req, res) => {
 
     if (piperRes && piperRes.ok) {
       const contentType = piperRes.headers.get('content-type') || 'audio/wav';
-      res.setHeader('Content-Type', contentType);
       const arrayBuffer = await piperRes.arrayBuffer();
-      return res.send(Buffer.from(arrayBuffer));
+      const entry = { contentType, buffer: Buffer.from(arrayBuffer) };
+      ttsAudioCache.set(text, entry);
+      return entry;
     }
-  } catch (err) {
-    // Piper container offline/unreachable - fallback to online stream
+  } catch (err) {}
+
+  return null;
+}
+
+/**
+ * Background pre-synthesizes all round questions & reveals into RAM cache when game starts.
+ */
+function preSynthesizeQuestions(questions) {
+  if (!Array.isArray(questions)) return;
+  const labels = ['A', 'B', 'C', 'D'];
+  questions.forEach((q, idx) => {
+    const qText = `Question ${idx + 1}! ... ${q.question}`;
+    getOrSynthesizeTts(qText);
+
+    const correctText = q.choices ? q.choices[q.correctIndex] : '';
+    const rText = `The correct answer was... option ${labels[q.correctIndex]}! ... ${correctText}`;
+    getOrSynthesizeTts(rText);
+  });
+}
+
+// Server-Side Text-To-Speech Endpoint (Multi-Provider + Instant RAM Cache)
+app.get('/api/tts', async (req, res) => {
+  const rawText = (req.query.text || '').substring(0, 250).trim();
+  if (!rawText) {
+    return res.status(400).send('No text specified.');
+  }
+
+  const cachedResult = await getOrSynthesizeTts(rawText);
+  if (cachedResult) {
+    res.setHeader('Content-Type', cachedResult.contentType);
+    return res.send(cachedResult.buffer);
   }
 
   // 3. Fallback to Cloud/Online TTS Stream
+  const text = preprocessTtsText(rawText);
   const fallbackUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text)}`;
   const ttsReq = https.get(fallbackUrl, {
     headers: {
@@ -328,7 +366,15 @@ io.on('connection', (socket) => {
     const questions = await TriviaService.fetchQuestions(10, mode, packIds);
     roomManager.setupGame(roomCode, questions);
 
-    runQuestionRound(io, roomCode);
+    // Pre-synthesize all questions and reveals into RAM cache for 0ms voice latency
+    preSynthesizeQuestions(questions);
+
+    // Pre-fetch Question 1 audio before launching Round 1
+    if (questions.length > 0) {
+      await getOrSynthesizeTts(`Question 1! ... ${questions[0].question}`);
+    }
+
+    await runQuestionRound(io, roomCode);
   });
 
   // Player submits an answer
@@ -362,7 +408,7 @@ io.on('connection', (socket) => {
   });
 
   // Host manual next question trigger
-  socket.on('next_question_request', ({ roomCode }) => {
+  socket.on('next_question_request', async ({ roomCode }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || room.hostSocketId !== socket.id) return;
 
@@ -370,7 +416,7 @@ io.on('connection', (socket) => {
       roomManager.clearRoomTimer(room);
       const adv = roomManager.advanceNextQuestion(roomCode);
       if (adv && !adv.isGameOver) {
-        runQuestionRound(io, roomCode);
+        await runQuestionRound(io, roomCode);
       }
     }
   });
@@ -399,7 +445,7 @@ io.on('connection', (socket) => {
 /**
  * Runs a single 15-second question round.
  */
-function runQuestionRound(ioInstance, roomCode) {
+async function runQuestionRound(ioInstance, roomCode) {
   const room = roomManager.startQuestionRound(roomCode);
   if (!room) return;
 
@@ -408,6 +454,10 @@ function runQuestionRound(ioInstance, roomCode) {
   const totalQuestions = room.questions.length;
 
   console.log(`[Room ${roomCode}] Round ${questionNum}/${totalQuestions}: "${currentQ.question}"`);
+
+  // Ensure audio is cached in RAM before emitting question to TV for zero-delay speech
+  const qText = `Question ${questionNum}! ... ${currentQ.question}`;
+  await getOrSynthesizeTts(qText);
 
   // Send TV question payload (includes full choice text & correct answer masked)
   ioInstance.to(`host_${roomCode}`).emit('question_start', {
@@ -470,9 +520,13 @@ function runQuestionRound(ioInstance, roomCode) {
 /**
  * Evaluates results, broadcasts reveals, and schedules next round or game over.
  */
-function evaluateAndReveal(ioInstance, roomCode) {
+async function evaluateAndReveal(ioInstance, roomCode) {
   const results = roomManager.evaluateRoundResults(roomCode);
   if (!results) return;
+
+  const labels = ['A', 'B', 'C', 'D'];
+  const revealText = `The correct answer was... option ${labels[results.correctIndex]}! ... ${results.correctAnswerText}`;
+  await getOrSynthesizeTts(revealText);
 
   console.log(`[Room ${roomCode}] Question reveal. Correct answer: (${results.correctIndex}) ${results.correctAnswerText}`);
 
@@ -501,10 +555,10 @@ function evaluateAndReveal(ioInstance, roomCode) {
 
   // If not last question, set 7-second reveal screen timer before advancing automatically
   if (!results.isLastQuestion) {
-    const autoAdvanceHandle = setTimeout(() => {
+    const autoAdvanceHandle = setTimeout(async () => {
       const adv = roomManager.advanceNextQuestion(roomCode);
       if (adv && !adv.isGameOver) {
-        runQuestionRound(ioInstance, roomCode);
+        await runQuestionRound(ioInstance, roomCode);
       }
     }, 7000);
     roomManager.setRoomTimer(results.room, autoAdvanceHandle);
