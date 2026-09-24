@@ -143,98 +143,118 @@ function preprocessTtsText(rawText) {
   return clean;
 }
 
-// In-Memory TTS Audio RAM Cache (Key: cleanText, Value: { contentType, buffer })
+// In-Memory TTS Audio RAM Cache & In-Flight Promise Map
 const ttsAudioCache = new Map();
+const ttsInFlightPromises = new Map();
 
 /**
- * Pre-fetches and caches TTS audio for a given raw text string.
+ * Pre-fetches and caches TTS audio for a given raw text string with deduplication and RAM caching.
  */
-async function getOrSynthesizeTts(rawText) {
+async function getOrSynthesizeTts(rawText, isBackground = false) {
   const text = preprocessTtsText(rawText);
   if (!text) return null;
 
+  // 1. Return immediately if already cached in RAM
   if (ttsAudioCache.has(text)) {
     return ttsAudioCache.get(text);
   }
 
-  const providerPreference = (process.env.TTS_PROVIDER || 'kokoro').toLowerCase();
+  // 2. Return active promise if synthesis is currently in-flight
+  if (ttsInFlightPromises.has(text)) {
+    return await ttsInFlightPromises.get(text);
+  }
 
-  // 1. Attempt Kokoro-82M Ultra-Realistic Neural TTS Container
-  const kokoroUrl = process.env.KOKORO_TTS_URL || 'http://localhost:8880';
-  const kokoroVoice = process.env.KOKORO_VOICE || 'am_michael';
+  // 3. Create synthesis promise
+  const synthesisPromise = (async () => {
+    const providerPreference = (process.env.TTS_PROVIDER || 'kokoro').toLowerCase();
 
-  if (providerPreference === 'kokoro' || providerPreference === 'auto') {
+    // 1. Attempt Kokoro-82M Ultra-Realistic Neural TTS Container
+    const kokoroUrl = process.env.KOKORO_TTS_URL || 'http://localhost:8880';
+    const kokoroVoice = process.env.KOKORO_VOICE || 'am_michael';
+
+    if (providerPreference === 'kokoro' || providerPreference === 'auto') {
+      try {
+        const controller = new AbortController();
+        const timeoutMs = isBackground ? 12000 : 6000;
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+        const kokoroRes = await fetch(`${kokoroUrl}/v1/audio/speech`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'kokoro',
+            input: text,
+            voice: kokoroVoice,
+            response_format: 'mp3',
+            speed: 1.0
+          }),
+          signal: controller.signal
+        }).catch(() => null);
+
+        clearTimeout(timeoutId);
+
+        if (kokoroRes && kokoroRes.ok) {
+          const contentType = 'audio/mpeg';
+          const arrayBuffer = await kokoroRes.arrayBuffer();
+          const entry = { contentType, buffer: Buffer.from(arrayBuffer) };
+          ttsAudioCache.set(text, entry);
+          return entry;
+        }
+      } catch (err) {}
+    }
+
+    // 2. Attempt Piper Neural TTS Sidecar Container
+    const piperUrl = process.env.PIPER_TTS_URL || 'http://localhost:5000';
+    const piperQueryParams = `text=${encodeURIComponent(text)}&length_scale=1.02&noise_scale=0.75&noise_w=0.85`;
+
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const kokoroRes = await fetch(`${kokoroUrl}/v1/audio/speech`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'kokoro',
-          input: text,
-          voice: kokoroVoice,
-          response_format: 'mp3',
-          speed: 1.0
-        }),
+      const piperRes = await fetch(`${piperUrl}/api/tts?${piperQueryParams}`, {
         signal: controller.signal
-      }).catch(() => null);
+      }).catch(() =>
+        fetch(`${piperUrl}/?${piperQueryParams}`, { signal: controller.signal })
+      );
 
       clearTimeout(timeoutId);
 
-      if (kokoroRes && kokoroRes.ok) {
-        const contentType = 'audio/mpeg';
-        const arrayBuffer = await kokoroRes.arrayBuffer();
+      if (piperRes && piperRes.ok) {
+        const contentType = piperRes.headers.get('content-type') || 'audio/wav';
+        const arrayBuffer = await piperRes.arrayBuffer();
         const entry = { contentType, buffer: Buffer.from(arrayBuffer) };
         ttsAudioCache.set(text, entry);
         return entry;
       }
     } catch (err) {}
-  }
 
-  // 2. Attempt Piper Neural TTS Sidecar Container
-  const piperUrl = process.env.PIPER_TTS_URL || 'http://localhost:5000';
-  const piperQueryParams = `text=${encodeURIComponent(text)}&length_scale=1.02&noise_scale=0.75&noise_w=0.85`;
+    return null;
+  })();
 
+  ttsInFlightPromises.set(text, synthesisPromise);
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
-
-    const piperRes = await fetch(`${piperUrl}/api/tts?${piperQueryParams}`, {
-      signal: controller.signal
-    }).catch(() =>
-      fetch(`${piperUrl}/?${piperQueryParams}`, { signal: controller.signal })
-    );
-
-    clearTimeout(timeoutId);
-
-    if (piperRes && piperRes.ok) {
-      const contentType = piperRes.headers.get('content-type') || 'audio/wav';
-      const arrayBuffer = await piperRes.arrayBuffer();
-      const entry = { contentType, buffer: Buffer.from(arrayBuffer) };
-      ttsAudioCache.set(text, entry);
-      return entry;
-    }
-  } catch (err) {}
-
-  return null;
+    const result = await synthesisPromise;
+    return result;
+  } finally {
+    ttsInFlightPromises.delete(text);
+  }
 }
 
 /**
- * Background pre-synthesizes all round questions & reveals into RAM cache when game starts.
+ * Sequential background pre-synthesis for all round questions & reveals.
  */
-function preSynthesizeQuestions(questions) {
+async function preSynthesizeQuestions(questions) {
   if (!Array.isArray(questions)) return;
   const labels = ['A', 'B', 'C', 'D'];
-  questions.forEach((q, idx) => {
+  for (let idx = 0; idx < questions.length; idx++) {
+    const q = questions[idx];
     const qText = `Question ${idx + 1}! ... ${q.question}`;
-    getOrSynthesizeTts(qText);
+    await getOrSynthesizeTts(qText, true);
 
     const correctText = q.choices ? q.choices[q.correctIndex] : '';
     const rText = `The correct answer was... option ${labels[q.correctIndex]}! ... ${correctText}`;
-    getOrSynthesizeTts(rText);
-  });
+    await getOrSynthesizeTts(rText, true);
+  }
 }
 
 // Server-Side Text-To-Speech Endpoint (Multi-Provider + Instant RAM Cache)
