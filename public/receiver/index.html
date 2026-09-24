@@ -2,7 +2,7 @@
 <html lang="en" class="h-full bg-slate-950 text-slate-100 select-none">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1920, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>BAD DATA — TV Receiver View</title>
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/jpeg" href="/icon.jpg">
@@ -15,9 +15,18 @@
   <!-- Google Cast CAF Receiver SDK -->
   <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
   <style>
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      max-height: 100vh;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
     body {
       font-family: 'Outfit', sans-serif;
-      overflow: hidden;
+      padding: 2.5vh 3vw !important;
     }
     .font-mono-code {
       font-family: 'Space Grotesk', monospace;
@@ -36,7 +45,7 @@
     }
   </style>
 </head>
-<body onclick="unlockAudioHost()" class="h-screen w-screen flex flex-col justify-between p-4 sm:p-6 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black relative">
+<body onclick="unlockAudioHost()" class="h-full w-full flex flex-col justify-between bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black relative">
 
   <!-- Voice Control & Sound Test (Top Right) -->
   <div class="absolute top-4 right-6 z-50 flex items-center gap-3">
