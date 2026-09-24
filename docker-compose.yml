@@ -21,7 +21,7 @@ services:
 
   # Kokoro-82M Ultra-Realistic Neural Text-To-Speech (Human-Quality Voice Engine)
   kokoro-tts:
-    image: ghcr.io/repasscloud/kokoro-tts-api:latest
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:latest
     container_name: bad-data-kokoro-tts
     ports:
       - "8880:8880"
@@ -31,9 +31,8 @@ services:
 
   # Piper Neural Text-To-Speech (Lightweight CPU Fallback Voice Host)
   piper-tts:
-    image: rhasspy/piper-http:latest
+    image: artibex/piper-http:latest
     container_name: bad-data-piper-tts
     ports:
       - "5000:5000"
-    command: --voice ${PIPER_VOICE:-en_US-ryan-high}
     restart: unless-stopped
