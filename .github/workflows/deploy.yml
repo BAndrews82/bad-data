@@ -16,8 +16,6 @@ jobs:
       - name: Deploy & Restart Docker Stack
         run: |
           echo "🚀 Deploying latest Bad Data changes to Proxmox LXC..."
-          cd /root/bad-data
           [ -f .env.example ] && [ ! -f .env ] && cp .env.example .env || true
-          git pull origin main
-          (docker compose up -d --build bad-data || docker-compose up -d --build bad-data)
+          (docker compose up -d --build || docker-compose up -d --build)
           echo "✅ Bad Data game server successfully rebuilt and restarted!"
