@@ -9,6 +9,7 @@ const QRCode = require('qrcode');
 
 const TriviaService = require('./lib/TriviaService');
 const roomManager = require('./lib/RoomManager');
+const AiRoaster = require('./lib/AiRoaster');
 
 const app = express();
 const server = http.createServer(app);
@@ -550,10 +551,21 @@ async function evaluateAndReveal(ioInstance, roomCode) {
   if (!results) return;
 
   const labels = ['A', 'B', 'C', 'D'];
-  const revealText = `The correct answer was... option ${labels[results.correctIndex]}! ... ${results.correctAnswerText}`;
+  const currentQ = results.room.questions[results.room.currentQuestionIndex];
+
+  // Generate Gen AI Host Roast / Commentary
+  const hostRoast = await AiRoaster.generateRoast({
+    question: currentQ ? currentQ.question : '',
+    correctAnswerText: results.correctAnswerText,
+    leaderboard: results.leaderboard,
+    players: results.players
+  });
+
+  const roastClause = hostRoast ? ` ... ${hostRoast}` : '';
+  const revealText = `The correct answer was... option ${labels[results.correctIndex]}! ... ${results.correctAnswerText}${roastClause}`;
   await getOrSynthesizeTts(revealText);
 
-  console.log(`[Room ${roomCode}] Question reveal. Correct answer: (${results.correctIndex}) ${results.correctAnswerText}`);
+  console.log(`[Room ${roomCode}] Question reveal. Correct answer: (${results.correctIndex}) ${results.correctAnswerText}. Roast: "${hostRoast}"`);
 
   // Broadcast reveal to TV
   ioInstance.to(`host_${roomCode}`).emit('round_reveal', {
@@ -561,6 +573,7 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     totalQuestions: results.room.questions.length,
     correctIndex: results.correctIndex,
     correctAnswerText: results.correctAnswerText,
+    hostRoast: hostRoast,
     players: results.players,
     leaderboard: results.leaderboard,
     isLastQuestion: results.isLastQuestion

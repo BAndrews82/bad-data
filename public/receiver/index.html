@@ -252,9 +252,17 @@
     </div>
 
     <!-- Highlighted Correct Choice Card -->
-    <div id="reveal-correct-card" class="glass-panel p-6 rounded-2xl border-4 border-emerald-500 bg-emerald-950/40 text-center max-w-3xl mx-auto w-full shadow-2xl shrink-0 my-2">
+    <div id="reveal-correct-card" class="glass-panel p-5 rounded-2xl border-4 border-emerald-500 bg-emerald-950/40 text-center max-w-3xl mx-auto w-full shadow-2xl shrink-0 my-1">
       <span id="reveal-correct-letter" class="inline-block px-3 py-0.5 rounded-lg bg-emerald-500 text-slate-950 font-black text-xl mb-1">A</span>
       <h3 id="reveal-correct-text" class="text-2xl sm:text-3xl font-black text-emerald-300">Correct Answer Text</h3>
+    </div>
+
+    <!-- AI Host Roast / Commentary Banner -->
+    <div id="reveal-roast-banner" class="glass-panel p-3 rounded-xl border border-amber-500/40 bg-amber-950/30 text-center max-w-3xl mx-auto w-full my-1 flex items-center justify-center gap-3">
+      <span class="text-lg shrink-0">🤖</span>
+      <p id="reveal-roast-text" class="text-sm sm:text-base font-bold text-amber-200 italic leading-snug">
+        "Host roast loading..."
+      </p>
     </div>
 
     <!-- Leaderboard Standings Table -->
@@ -686,9 +694,19 @@
       document.getElementById('reveal-correct-letter').textContent = labels[data.correctIndex];
       document.getElementById('reveal-correct-text').textContent = data.correctAnswerText;
 
-      // Play Reveal Sound + Expressive Host Announcer Phrasing
+      const roastBanner = document.getElementById('reveal-roast-banner');
+      const roastTextEl = document.getElementById('reveal-roast-text');
+      if (data.hostRoast && roastBanner && roastTextEl) {
+        roastTextEl.textContent = `"${data.hostRoast}"`;
+        roastBanner.classList.remove('hidden');
+      } else if (roastBanner) {
+        roastBanner.classList.add('hidden');
+      }
+
+      // Play Reveal Sound + Expressive Host Announcer Phrasing with AI Host Roast
       sfx.playRevealChime();
-      speakText(`The correct answer was... option ${labels[data.correctIndex]}! ... ${data.correctAnswerText}`);
+      const roastClause = data.hostRoast ? ` ... ${data.hostRoast}` : '';
+      speakText(`The correct answer was... option ${labels[data.correctIndex]}! ... ${data.correctAnswerText}${roastClause}`);
 
       // Render Leaderboard & Cash Changes
       const listContainer = document.getElementById('reveal-leaderboard-list');
