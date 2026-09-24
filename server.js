@@ -381,6 +381,8 @@ io.on('connection', (socket) => {
     const mode = sourceMode || 'mix';
     const packIds = Array.isArray(selectedPacks) ? selectedPacks : [];
     console.log(`[Room ${roomCode}] Starting game (Mode: ${mode}, Packs: [${packIds.join(', ')}])...`);
+
+    // Broadcast intro splash notice to TV & Controllers
     io.to(`room_${roomCode}`).emit('game_starting_notice');
 
     const questions = await TriviaService.fetchQuestions(10, mode, packIds);
@@ -393,6 +395,9 @@ io.on('connection', (socket) => {
     if (questions.length > 0) {
       await getOrSynthesizeTts(`Question 1! ... ${questions[0].question}`);
     }
+
+    // 2.5s intro splash delay for player sync and voice pre-buffering
+    await new Promise(resolve => setTimeout(resolve, 2500));
 
     await runQuestionRound(io, roomCode);
   });

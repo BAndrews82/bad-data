@@ -598,7 +598,11 @@
     function triggerStartGame() {
       if (!roomCode) return;
       unlockAudioHost();
+      showScreen('screen-getready');
+      document.getElementById('mini-room-badge').classList.remove('hidden');
       sfx.playQuestionChime();
+      speakText("Get ready! Round 1 is starting!");
+
       socket.emit('start_game', {
         roomCode,
         sourceMode: selectedSourceMode,
@@ -610,8 +614,6 @@
     socket.on('game_starting_notice', () => {
       showScreen('screen-getready');
       document.getElementById('mini-room-badge').classList.remove('hidden');
-      sfx.playQuestionChime();
-      speakText("Get ready! Round 1 is starting!");
     });
 
     // Game Question Phase Start
