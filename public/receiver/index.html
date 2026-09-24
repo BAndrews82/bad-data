@@ -836,8 +836,12 @@
     });
 
     function showScreen(screenId) {
-      ['screen-lobby', 'screen-question', 'screen-reveal', 'screen-gameover'].forEach(id => {
-        document.getElementById(id).classList.toggle('hidden', id !== screenId);
+      const screens = ['screen-lobby', 'screen-getready', 'screen-question-splash', 'screen-question', 'screen-reveal', 'screen-gameover'];
+      screens.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.toggle('hidden', id !== screenId);
+        }
       });
     }
   </script>
