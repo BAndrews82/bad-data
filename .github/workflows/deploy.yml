@@ -1,0 +1,22 @@
+name: CI/CD Homelab Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Proxmox LXC 104
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy & Restart Docker Stack
+        run: |
+          echo "🚀 Deploying latest Bad Data changes to Proxmox LXC..."
+          cd /root/bad-data
+          git pull origin main
+          HOST_IP=192.168.86.36 BASE_URL=http://192.168.86.36:3000 docker-compose up -d --build bad-data
+          echo "✅ Bad Data game server successfully rebuilt and restarted!"
