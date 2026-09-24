@@ -76,7 +76,7 @@ All services run inside LXC 104 via Docker Compose (`docker-compose.yml`):
 
 * **Primary Model**: Google Gemini API (`gemini-3.6-flash`).
 * **Sub-300ms Optimization**: Configured `thinkingConfig: { thinkingBudget: 0 }` to eliminate thinking model delays, returning roasts in **under 300ms**.
-* **Prompting**: Generates 1-sentence Jackbox-style host commentary under 20 words tailored to round standings (leading player vs biggest cash loser).
+* **Prompting**: Generates 1-sentence Jackbox-style sarcastic commentary (<20 words) with multi-angle variety: mocking score leaders/losers, insulting player intelligence, making snarky remarks on question difficulty, or roasting the answer itself.
 * **100% Free Quota**: Uses under 1% of Google's 15 RPM / 1M TPM free limits.
 * **Zero-Crash Protection**: Automatically falls back to built-in host quips if network is offline or API fails.
 
