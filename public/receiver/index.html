@@ -141,7 +141,14 @@
 
           <!-- Active JSON Question Packs Selection -->
           <div id="packs-selector-container" class="w-full text-left bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-            <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Select Custom Packs to Include</span>
+            <div class="flex items-center justify-between mb-1">
+              <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Select Custom Packs to Include</span>
+              <div class="flex items-center gap-1.5">
+                <button onclick="event.stopPropagation(); selectAllPacks();" class="text-[9px] font-bold text-emerald-400 hover:text-emerald-300 underline cursor-pointer">Select All</button>
+                <span class="text-slate-600 text-[9px]">•</span>
+                <button onclick="event.stopPropagation(); clearAllPacks();" class="text-[9px] font-bold text-rose-400 hover:text-rose-300 underline cursor-pointer">Clear All</button>
+              </div>
+            </div>
             <div id="packs-grid" class="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto">
               <!-- Rendered via JS -->
             </div>
@@ -501,15 +508,11 @@
         return;
       }
 
-      if (selectedPackIds.length === 0) {
-        selectedPackIds = availablePacks.map(p => p.id);
-      }
-
       grid.innerHTML = availablePacks.map(p => {
         const isChecked = selectedPackIds.includes(p.id);
-        const bgClass = isChecked ? 'bg-emerald-600/30 border-emerald-500/60 text-emerald-200' : 'bg-slate-800 border-slate-700 text-slate-400';
+        const bgClass = isChecked ? 'bg-emerald-600/40 border-emerald-500/80 text-emerald-200 shadow-md' : 'bg-slate-800/80 border-slate-700 text-slate-400 opacity-60';
         return `
-          <button onclick="event.stopPropagation(); togglePackSelection('${p.id}')" class="px-2.5 py-1 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition ${bgClass} cursor-pointer">
+          <button onclick="event.stopPropagation(); togglePackSelection('${p.id}')" class="px-2.5 py-1 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition ${bgClass} cursor-pointer hover:scale-105 active:scale-95">
             <span>${isChecked ? '✓' : '+'}</span>
             <span>${p.name}</span>
             <span class="opacity-60 text-[10px]">(${p.count})</span>
@@ -524,6 +527,16 @@
       } else {
         selectedPackIds.push(packId);
       }
+      renderPackSelector(availablePacks);
+    }
+
+    function selectAllPacks() {
+      selectedPackIds = availablePacks.map(p => p.id);
+      renderPackSelector(availablePacks);
+    }
+
+    function clearAllPacks() {
+      selectedPackIds = [];
       renderPackSelector(availablePacks);
     }
 
