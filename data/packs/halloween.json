@@ -1,0 +1,98 @@
+[
+  {
+    "id": "halloween-1",
+    "question": "Which country is credited with inventing Halloween over 2,000 years ago from the ancient festival of Samhain?",
+    "correct_answer": "Ireland",
+    "incorrect_answers": ["Scotland", "Transylvania", "England"],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-2",
+    "question": "Before pumpkins became popular, what root vegetable was originally carved into Jack-o'-lanterns in Ireland?",
+    "correct_answer": "Turnips",
+    "incorrect_answers": ["Potatoes", "Radishes", "Beets"],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-3",
+    "question": "What is the official scientific term for the intense fear of Halloween or Halloween-related objects?",
+    "correct_answer": "Samhainophobia",
+    "incorrect_answers": ["Spookophobia", "Phasmophobia", "Pumpkinophobia"],
+    "category": "Halloween Trivia",
+    "difficulty": "hard"
+  },
+  {
+    "id": "halloween-4",
+    "question": "In Bram Stoker's original 1897 novel Dracula, what famous real-world castle in Romania inspired Count Dracula's lair?",
+    "correct_answer": "Bran Castle",
+    "incorrect_answers": ["Corvin Castle", "Peles Castle", "Wawel Castle"],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-5",
+    "question": "In the original classic 1978 movie Halloween, what famous Star Trek actor's face mask was painted white for Michael Myers?",
+    "correct_answer": "William Shatner (Captain Kirk)",
+    "incorrect_answers": ["Leonard Nimoy (Spock)", "DeForest Kelley (McCoy)", "George Takei (Sulu)"],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-6",
+    "question": "According to classic monster lore, what precious metal element is famously capable of harming a Werewolf?",
+    "correct_answer": "Silver",
+    "incorrect_answers": ["Gold", "Platinum", "Iron"],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-7",
+    "question": "What classic Halloween candy was invented in the 1880s and originally marketed under the name Chicken Feed?",
+    "correct_answer": "Candy Corn",
+    "incorrect_answers": ["Candy Pumpkins", "M&Ms", "Tootsie Rolls"],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-8",
+    "question": "In the iconic 1993 Disney movie Hocus Pocus, what are the names of the three resurrected Sanderson Sisters?",
+    "correct_answer": "Winifred, Sarah, and Mary",
+    "incorrect_answers": ["Elphaba, Glinda, and Nessarose", "Samantha, Endora, and Tabitha", "Morticia, Wednesday, and Thing"],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-9",
+    "question": "What infamous 1692 historical event led to 19 people being executed for witchcraft in colonial Massachusetts?",
+    "correct_answer": "The Salem Witch Trials",
+    "incorrect_answers": ["The Boston Tea Party", "The Plymouth Inquisition", "The Concord Trials"],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-10",
+    "question": "In Mary Shelley's 1818 novel, what is the official given first name of Doctor Frankenstein who created the monster?",
+    "correct_answer": "Victor",
+    "incorrect_answers": ["Igor", "Henry", "Arthur"],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-11",
+    "question": "What classic horror film features a possessed child named Regan and the iconic line 'The power of Christ compels you!'?",
+    "correct_answer": "The Exorcist",
+    "incorrect_answers": ["Poltergeist", "The Omen", "Rosemary's Baby"],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-12",
+    "question": "According to ancient superstition, seeing what creature on Halloween night means a spirit is watching over you?",
+    "correct_answer": "A Spider",
+    "incorrect_answers": ["A Black Cat", "A Raven", "A Fruit Bat"],
+    "category": "Halloween Trivia",
+    "difficulty": "hard"
+  }
+]
