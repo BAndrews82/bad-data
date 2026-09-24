@@ -87,68 +87,68 @@
 
   <!-- ==================== SCREEN 1: LOBBY SCREEN ==================== -->
   <section id="screen-lobby" class="flex-1 flex flex-col items-center justify-center gap-4 z-10 py-2 min-h-0">
-    <div class="text-center max-w-2xl">
-      <button onclick="event.stopPropagation(); testSoundAndVoice();" id="audio-prompt-badge" class="px-4 py-1.5 rounded-full bg-indigo-500/30 border border-indigo-400/50 text-indigo-200 text-xs font-bold uppercase tracking-widest hover:bg-indigo-500/50 transition cursor-pointer shadow-lg animate-pulse">
+    <div class="text-center max-w-2xl shrink-0">
+      <button onclick="event.stopPropagation(); testSoundAndVoice();" id="audio-prompt-badge" class="px-3.5 py-1 rounded-full bg-indigo-500/30 border border-indigo-400/50 text-indigo-200 text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-500/50 transition cursor-pointer shadow-lg animate-pulse">
         🔊 Click Here to Enable & Test Sound/Voice
       </button>
-      <h2 class="text-4xl sm:text-5xl font-black text-white mt-2 mb-1">Scan QR or Visit Play URL</h2>
+      <h2 class="text-2xl sm:text-3xl font-black text-white mt-1 mb-0.5">Scan QR or Visit Play URL</h2>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center max-w-4xl w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch max-w-4xl w-full shrink min-h-0">
       <!-- QR Code & Play URL Card -->
-      <div class="glass-panel p-6 rounded-2xl flex flex-col items-center text-center shadow-xl border border-slate-700">
-        <div class="bg-white p-3 rounded-xl shadow-inner mb-3">
-          <img id="qr-code-img" src="" alt="Scan QR Code to Join" class="w-48 h-48 sm:w-56 sm:h-56 object-contain">
+      <div class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center shadow-xl border border-slate-700">
+        <div class="bg-white p-2.5 rounded-xl shadow-inner mb-2">
+          <img id="qr-code-img" src="" alt="Scan QR Code to Join" class="w-32 h-32 sm:w-40 sm:h-40 object-contain">
         </div>
-        <p class="text-slate-400 text-xs mb-1">Target URL:</p>
-        <span id="play-url-text" class="font-mono-code font-bold text-sm text-emerald-400 break-all px-3 py-1 rounded-lg bg-slate-900 border border-slate-800">
+        <p class="text-slate-400 text-[11px] mb-1">Target URL:</p>
+        <span id="play-url-text" class="font-mono-code font-bold text-xs sm:text-sm text-emerald-400 break-all px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800">
           Loading...
         </span>
       </div>
 
       <!-- Room Code Display & Player Count -->
-      <div class="glass-panel p-6 rounded-2xl flex flex-col items-center text-center shadow-xl border border-slate-700">
-        <span class="text-slate-400 font-bold uppercase tracking-widest text-xs mb-1">Room Code</span>
-        <div id="room-code-display" class="font-mono-code font-black text-6xl sm:text-7xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-amber-300 to-emerald-400 my-1">
-          ----
+      <div class="glass-panel p-4 rounded-2xl flex flex-col items-center text-center shadow-xl border border-slate-700 justify-between">
+        <div class="w-full">
+          <span class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Room Code</span>
+          <div id="room-code-display" class="font-mono-code font-black text-4xl sm:text-5xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-amber-300 to-emerald-400 my-0.5">
+            ----
+          </div>
         </div>
 
         <!-- Trivia Source Mode Selector -->
-        <div class="w-full my-2">
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-left">Question Mode</label>
-          <div class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs font-bold mb-2">
-            <button id="mode-btn-mix" onclick="event.stopPropagation(); setSourceMode('mix')" class="py-1.5 rounded-lg bg-indigo-600 text-white transition">🔀 Mix</button>
-            <button id="mode-btn-custom" onclick="event.stopPropagation(); setSourceMode('custom')" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">📁 JSON Only</button>
-            <button id="mode-btn-api" onclick="event.stopPropagation(); setSourceMode('api')" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">🌐 API Only</button>
+        <div class="w-full my-1">
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 text-left">Question Mode</label>
+          <div class="grid grid-cols-3 gap-1 bg-slate-900 p-0.5 rounded-xl border border-slate-800 text-[11px] font-bold mb-1">
+            <button id="mode-btn-mix" onclick="event.stopPropagation(); setSourceMode('mix')" class="py-1 rounded-lg bg-indigo-600 text-white transition">🔀 Mix</button>
+            <button id="mode-btn-custom" onclick="event.stopPropagation(); setSourceMode('custom')" class="py-1 rounded-lg text-slate-400 hover:text-white transition">📁 JSON Only</button>
+            <button id="mode-btn-api" onclick="event.stopPropagation(); setSourceMode('api')" class="py-1 rounded-lg text-slate-400 hover:text-white transition">🌐 API Only</button>
           </div>
 
           <!-- Active JSON Question Packs Selection -->
-          <div id="packs-selector-container" class="w-full text-left bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Select Custom Packs to Include</span>
-            <div id="packs-grid" class="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
+          <div id="packs-selector-container" class="w-full text-left bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+            <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Select Custom Packs to Include</span>
+            <div id="packs-grid" class="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto">
               <!-- Rendered via JS -->
             </div>
           </div>
         </div>
 
-        <div class="w-full border-t border-slate-800 my-2"></div>
-
         <!-- Joined Players Roster & Add Bot Trigger -->
-        <div class="w-full">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-bold text-slate-300">Joined Players (<span id="player-count">0</span>)</span>
+        <div class="w-full my-1">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-bold text-slate-300">Joined Players (<span id="player-count">0</span>)</span>
             <!-- Add AI Bot Player Button for Solo Test Mode -->
-            <button onclick="event.stopPropagation(); addBotPlayers();" class="px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-bold text-[11px] transition shadow cursor-pointer">
+            <button onclick="event.stopPropagation(); addBotPlayers();" class="px-2 py-0.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-bold text-[10px] transition shadow cursor-pointer">
               🤖 Add AI Bots (+2)
             </button>
           </div>
-          <div id="player-roster-grid" class="flex flex-wrap justify-center gap-2 max-h-24 overflow-y-auto p-1">
-            <span class="text-slate-500 italic text-xs">Waiting for players to join...</span>
+          <div id="player-roster-grid" class="flex flex-wrap justify-center gap-1.5 max-h-16 overflow-y-auto p-0.5">
+            <span class="text-slate-500 italic text-[11px]">Waiting for players to join...</span>
           </div>
         </div>
 
         <!-- Start Game Button -->
-        <button id="start-game-btn" onclick="event.stopPropagation(); triggerStartGame();" disabled class="w-full mt-3 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-lg tracking-wider shadow-lg transition transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
+        <button id="start-game-btn" onclick="event.stopPropagation(); triggerStartGame();" disabled class="w-full mt-1.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-base tracking-wider shadow-lg transition transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
           START GAME
         </button>
       </div>
