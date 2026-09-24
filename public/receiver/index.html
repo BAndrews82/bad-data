@@ -143,6 +143,24 @@
     </div>
   </section>
 
+  <!-- ==================== SCREEN 1.5: GET READY INTRO SCREEN ==================== -->
+  <section id="screen-getready" class="hidden flex-1 flex flex-col items-center justify-center text-center z-10 py-6">
+    <div class="glass-panel p-8 sm:p-12 rounded-3xl border border-indigo-500/40 shadow-2xl max-w-xl w-full">
+      <span class="px-4 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-black uppercase tracking-widest text-xs">
+        Round 1 Incoming
+      </span>
+      <h2 class="text-4xl sm:text-5xl font-black text-white my-4 tracking-wide">
+        GET READY!
+      </h2>
+      <p class="text-slate-300 font-semibold text-base mb-2">
+        Look up at the TV screen!
+      </p>
+      <p class="text-xs text-slate-400">
+        Host voice & questions are buffering...
+      </p>
+    </div>
+  </section>
+
   <!-- ==================== SCREEN 2: QUESTION SCREEN ==================== -->
   <section id="screen-question" class="hidden flex-1 flex flex-col justify-between z-10 py-1 min-h-0 overflow-hidden">
     <!-- Question Header Metadata -->
@@ -587,6 +605,14 @@
         selectedPacks: selectedPackIds
       });
     }
+
+    // Game Starting Notice (Get Ready Screen)
+    socket.on('game_starting_notice', () => {
+      showScreen('screen-getready');
+      document.getElementById('mini-room-badge').classList.remove('hidden');
+      sfx.playQuestionChime();
+      speakText("Get ready! Round 1 is starting!");
+    });
 
     // Game Question Phase Start
     socket.on('question_start', (data) => {
