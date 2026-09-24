@@ -17,6 +17,7 @@ jobs:
         run: |
           echo "🚀 Deploying latest Bad Data changes to Proxmox LXC..."
           cd /root/bad-data
+          [ -f .env.example ] && [ ! -f .env ] && cp .env.example .env || true
           git pull origin main
-          HOST_IP=192.168.86.36 BASE_URL=http://192.168.86.36:3000 GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} docker-compose up -d --build bad-data
+          (docker compose up -d --build bad-data || docker-compose up -d --build bad-data)
           echo "✅ Bad Data game server successfully rebuilt and restarted!"
