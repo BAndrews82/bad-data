@@ -150,19 +150,23 @@ const ttsInFlightPromises = new Map();
 
 /**
  * Pre-fetches and caches TTS audio for a given raw text string with deduplication and RAM caching.
+ * Supports distinct voice selection (e.g. Announcer vs Roaster).
  */
-async function getOrSynthesizeTts(rawText, isBackground = false) {
+async function getOrSynthesizeTts(rawText, isBackground = false, voiceOverride = null) {
   const text = preprocessTtsText(rawText);
   if (!text) return null;
 
+  const targetVoice = voiceOverride || process.env.KOKORO_VOICE || 'am_michael';
+  const cacheKey = `${targetVoice}:${text}`;
+
   // 1. Return immediately if already cached in RAM
-  if (ttsAudioCache.has(text)) {
-    return ttsAudioCache.get(text);
+  if (ttsAudioCache.has(cacheKey)) {
+    return ttsAudioCache.get(cacheKey);
   }
 
   // 2. Return active promise if synthesis is currently in-flight
-  if (ttsInFlightPromises.has(text)) {
-    return await ttsInFlightPromises.get(text);
+  if (ttsInFlightPromises.has(cacheKey)) {
+    return await ttsInFlightPromises.get(cacheKey);
   }
 
   // 3. Create synthesis promise
@@ -171,7 +175,6 @@ async function getOrSynthesizeTts(rawText, isBackground = false) {
 
     // 1. Attempt Kokoro-82M Ultra-Realistic Neural TTS Container
     const kokoroUrl = process.env.KOKORO_TTS_URL || 'http://localhost:8880';
-    const kokoroVoice = process.env.KOKORO_VOICE || 'am_michael';
 
     if (providerPreference === 'kokoro' || providerPreference === 'auto') {
       try {
@@ -185,7 +188,7 @@ async function getOrSynthesizeTts(rawText, isBackground = false) {
           body: JSON.stringify({
             model: 'kokoro',
             input: text,
-            voice: kokoroVoice,
+            voice: targetVoice,
             response_format: 'mp3',
             speed: 1.0
           }),
@@ -198,7 +201,7 @@ async function getOrSynthesizeTts(rawText, isBackground = false) {
           const contentType = 'audio/mpeg';
           const arrayBuffer = await kokoroRes.arrayBuffer();
           const entry = { contentType, buffer: Buffer.from(arrayBuffer) };
-          ttsAudioCache.set(text, entry);
+          ttsAudioCache.set(cacheKey, entry);
           return entry;
         }
       } catch (err) {}
@@ -224,7 +227,7 @@ async function getOrSynthesizeTts(rawText, isBackground = false) {
         const contentType = piperRes.headers.get('content-type') || 'audio/wav';
         const arrayBuffer = await piperRes.arrayBuffer();
         const entry = { contentType, buffer: Buffer.from(arrayBuffer) };
-        ttsAudioCache.set(text, entry);
+        ttsAudioCache.set(cacheKey, entry);
         return entry;
       }
     } catch (err) {}
@@ -232,12 +235,12 @@ async function getOrSynthesizeTts(rawText, isBackground = false) {
     return null;
   })();
 
-  ttsInFlightPromises.set(text, synthesisPromise);
+  ttsInFlightPromises.set(cacheKey, synthesisPromise);
   try {
     const result = await synthesisPromise;
     return result;
   } finally {
-    ttsInFlightPromises.delete(text);
+    ttsInFlightPromises.delete(cacheKey);
   }
 }
 
@@ -247,14 +250,15 @@ async function getOrSynthesizeTts(rawText, isBackground = false) {
 async function preSynthesizeQuestions(questions) {
   if (!Array.isArray(questions)) return;
   const labels = ['A', 'B', 'C', 'D'];
+  const announcerVoice = process.env.KOKORO_VOICE || 'am_michael';
   for (let idx = 0; idx < questions.length; idx++) {
     const q = questions[idx];
     const qText = `Question ${idx + 1}! ... ${q.question}`;
-    await getOrSynthesizeTts(qText, true);
+    await getOrSynthesizeTts(qText, true, announcerVoice);
 
     const correctText = q.choices ? q.choices[q.correctIndex] : '';
     const rText = `The correct answer was... option ${labels[q.correctIndex]}! ... ${correctText}`;
-    await getOrSynthesizeTts(rText, true);
+    await getOrSynthesizeTts(rText, true, announcerVoice);
   }
 }
 
@@ -265,7 +269,8 @@ app.get('/api/tts', async (req, res) => {
     return res.status(400).send('No text specified.');
   }
 
-  const cachedResult = await getOrSynthesizeTts(rawText);
+  const requestedVoice = req.query.voice || null;
+  const cachedResult = await getOrSynthesizeTts(rawText, false, requestedVoice);
   if (cachedResult) {
     res.setHeader('Content-Type', cachedResult.contentType);
     return res.send(cachedResult.buffer);
@@ -562,10 +567,32 @@ async function evaluateAndReveal(ioInstance, roomCode) {
   });
 
   const roastClause = hostRoast ? ` ... ${hostRoast}` : '';
-  const revealText = `The correct answer was... option ${labels[results.correctIndex]}! ... ${results.correctAnswerText}${roastClause}`;
-  await getOrSynthesizeTts(revealText);
+  const announcerRevealText = `The correct answer was... option ${labels[results.correctIndex]}! ... ${results.correctAnswerText}`;
+  const revealText = `${announcerRevealText}${roastClause}`;
 
-  console.log(`[Room ${roomCode}] Question reveal. Correct answer: (${results.correctIndex}) ${results.correctAnswerText}. Roast: "${hostRoast}"`);
+  const announcerVoice = process.env.KOKORO_VOICE || 'am_michael';
+  const roasterVoice = process.env.ROASTER_VOICE || 'am_puck';
+
+  // Synthesize Announcer audio (fetched from RAM pre-synthesis cache)
+  const announcerAudio = await getOrSynthesizeTts(announcerRevealText, false, announcerVoice);
+  let finalRevealAudio = announcerAudio;
+
+  // Synthesize Sarcastic Roaster audio and concatenate MP3 audio streams
+  if (hostRoast) {
+    const roasterAudio = await getOrSynthesizeTts(hostRoast, false, roasterVoice);
+    if (announcerAudio && roasterAudio && announcerAudio.contentType === 'audio/mpeg' && roasterAudio.contentType === 'audio/mpeg') {
+      const combinedBuffer = Buffer.concat([announcerAudio.buffer, roasterAudio.buffer]);
+      finalRevealAudio = { contentType: 'audio/mpeg', buffer: combinedBuffer };
+    }
+  }
+
+  if (finalRevealAudio) {
+    const cleanRevealText = preprocessTtsText(revealText);
+    ttsAudioCache.set(`${announcerVoice}:${cleanRevealText}`, finalRevealAudio);
+    ttsAudioCache.set(`${roasterVoice}:${cleanRevealText}`, finalRevealAudio);
+  }
+
+  console.log(`[Room ${roomCode}] Question reveal. Answer: (${results.correctIndex}) ${results.correctAnswerText}. Roaster (${roasterVoice}): "${hostRoast}"`);
 
   // Broadcast reveal to TV
   ioInstance.to(`host_${roomCode}`).emit('round_reveal', {

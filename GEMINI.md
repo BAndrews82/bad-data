@@ -57,11 +57,16 @@ All services run inside LXC 104 via Docker Compose (`docker-compose.yml`):
 
 ---
 
-## 🎙️ Neural TTS & Audio Pipeline Optimization
+## 🎙️ Neural TTS & Dual-Voice Audio Pipeline
 
+* **Dual-Voice Host Personalities**:
+  * **Announcer Voice (`am_michael`)**: Clear, professional game show host voice for reading trivia questions and correct options.
+  * **Sarcastic Roaster Voice (`am_puck`)**: Snarky, sarcastic, witty co-host voice specifically for AI roasts targeting money losers and greedy leaders.
+* **Dynamic Audio Concatenation (`evaluateAndReveal()`)**:
+  Synthesizes the Announcer answer reveal and Sarcastic Roast independently, then concatenates their raw MP3 audio streams (`Buffer.concat`) for seamless single-file playback on the TV screen.
 * **RAM Pre-Synthesis (`preSynthesizeQuestions()`)**:
   When a game starts, `server.js` renders all 10 questions and reveal answers sequentially into RAM (`ttsAudioCache`).
-* **0ms Latency**: Question audio streams directly out of RAM memory when hitting the TV screen, eliminating multi-second synthesis delays.
+* **0ms Latency**: Question and reveal audio streams directly out of RAM memory when hitting the TV screen, eliminating multi-second synthesis delays.
 * **Audio Processing (`public/receiver/index.html`)**:
   Includes Web Audio API Broadcast Dynamics Compressor + 3.2kHz presence EQ filter for crisp TV speaker playback.
 

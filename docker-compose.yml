@@ -13,6 +13,7 @@ services:
       - TTS_PROVIDER=${TTS_PROVIDER:-kokoro}
       - KOKORO_TTS_URL=http://kokoro-tts:8880
       - KOKORO_VOICE=${KOKORO_VOICE:-am_michael}
+      - ROASTER_VOICE=${ROASTER_VOICE:-am_puck}
       - PIPER_TTS_URL=http://piper-tts:5000
       - PIPER_VOICE=${PIPER_VOICE:-en_US-ryan-high}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
