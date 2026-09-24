@@ -264,7 +264,7 @@ async function preSynthesizeQuestions(questions) {
 
 // Server-Side Text-To-Speech Endpoint (Multi-Provider + Instant RAM Cache)
 app.get('/api/tts', async (req, res) => {
-  const rawText = (req.query.text || '').substring(0, 250).trim();
+  const rawText = (req.query.text || '').substring(0, 500).trim();
   if (!rawText) {
     return res.status(400).send('No text specified.');
   }
@@ -592,7 +592,14 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     ttsAudioCache.set(`${roasterVoice}:${cleanRevealText}`, finalRevealAudio);
   }
 
-  console.log(`[Room ${roomCode}] Question reveal. Answer: (${results.correctIndex}) ${results.correctAnswerText}. Roaster (${roasterVoice}): "${hostRoast}"`);
+  // Calculate dynamic reveal screen duration based on concatenated audio length + padding
+  let revealDurationMs = 10500; // Minimum 10.5 seconds for Announcer + Roaster audio
+  if (finalRevealAudio && finalRevealAudio.buffer) {
+    const audioSecs = finalRevealAudio.buffer.length / 16000;
+    revealDurationMs = Math.max(10500, Math.min(15000, Math.ceil((audioSecs + 2.5) * 1000)));
+  }
+
+  console.log(`[Room ${roomCode}] Question reveal. Answer: (${results.correctIndex}) ${results.correctAnswerText}. Roaster (${roasterVoice}): "${hostRoast}". Reveal timer: ${revealDurationMs}ms.`);
 
   // Broadcast reveal to TV
   ioInstance.to(`host_${roomCode}`).emit('round_reveal', {
@@ -603,7 +610,8 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     hostRoast: hostRoast,
     players: results.players,
     leaderboard: results.leaderboard,
-    isLastQuestion: results.isLastQuestion
+    isLastQuestion: results.isLastQuestion,
+    revealDurationMs: revealDurationMs
   });
 
   // Broadcast result to individual player controllers
@@ -618,14 +626,14 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     });
   });
 
-  // If not last question, set 7-second reveal screen timer before advancing automatically
+  // If not last question, set dynamic reveal screen timer before advancing automatically
   if (!results.isLastQuestion) {
     const autoAdvanceHandle = setTimeout(async () => {
       const adv = roomManager.advanceNextQuestion(roomCode);
       if (adv && !adv.isGameOver) {
         await runQuestionRound(ioInstance, roomCode);
       }
-    }, 7000);
+    }, revealDurationMs);
     roomManager.setRoomTimer(results.room, autoAdvanceHandle);
   } else {
     // Game Over! Broadcast final leaderboard
