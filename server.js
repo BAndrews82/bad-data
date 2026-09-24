@@ -143,7 +143,7 @@ function preprocessTtsText(rawText) {
   return clean;
 }
 
-// Server-Side Text-To-Speech Endpoint (Piper Neural TTS Sidecar + Online Fallback)
+// Server-Side Text-To-Speech Endpoint (Multi-Provider: Kokoro-82M -> Piper Neural -> Cloud Fallback)
 app.get('/api/tts', async (req, res) => {
   const rawText = (req.query.text || '').substring(0, 250).trim();
   if (!rawText) {
@@ -151,15 +151,46 @@ app.get('/api/tts', async (req, res) => {
   }
 
   const text = preprocessTtsText(rawText);
-  const piperUrl = process.env.PIPER_TTS_URL || 'http://localhost:5000';
+  const providerPreference = (process.env.TTS_PROVIDER || 'kokoro').toLowerCase();
 
-  // Tuned parameters for fluid & expressive speech cadence:
-  // - length_scale=1.02: slight pace relaxation for clarity
-  // - noise_scale=0.75: higher phoneme pitch variance (reduces monotone robot sound)
-  // - noise_w=0.85: phoneme width/rhythm variance
+  // 1. Attempt Kokoro-82M Ultra-Realistic Neural TTS Container
+  const kokoroUrl = process.env.KOKORO_TTS_URL || 'http://localhost:8880';
+  const kokoroVoice = process.env.KOKORO_VOICE || 'am_michael'; // am_michael, af_heart, am_adam, bm_george
+
+  if (providerPreference === 'kokoro' || providerPreference === 'auto') {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+      const kokoroRes = await fetch(`${kokoroUrl}/v1/audio/speech`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'kokoro',
+          input: text,
+          voice: kokoroVoice,
+          response_format: 'mp3',
+          speed: 1.0
+        }),
+        signal: controller.signal
+      }).catch(() => null);
+
+      clearTimeout(timeoutId);
+
+      if (kokoroRes && kokoroRes.ok) {
+        res.setHeader('Content-Type', 'audio/mpeg');
+        const arrayBuffer = await kokoroRes.arrayBuffer();
+        return res.send(Buffer.from(arrayBuffer));
+      }
+    } catch (err) {
+      // Kokoro container offline/unreachable - proceed to Piper fallback
+    }
+  }
+
+  // 2. Attempt Piper Neural TTS Sidecar Container
+  const piperUrl = process.env.PIPER_TTS_URL || 'http://localhost:5000';
   const piperQueryParams = `text=${encodeURIComponent(text)}&length_scale=1.02&noise_scale=0.75&noise_w=0.85`;
 
-  // 1. Attempt Piper Neural TTS Sidecar Container
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2000);
@@ -182,7 +213,7 @@ app.get('/api/tts', async (req, res) => {
     // Piper container offline/unreachable - fallback to online stream
   }
 
-  // 2. Fallback to Cloud/Online TTS Stream
+  // 3. Fallback to Cloud/Online TTS Stream
   const fallbackUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text)}`;
   const ttsReq = https.get(fallbackUrl, {
     headers: {

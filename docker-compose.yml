@@ -10,14 +10,26 @@ services:
       - PORT=3000
       - HOST_IP=${HOST_IP:-}
       - BASE_URL=${BASE_URL:-}
+      - TTS_PROVIDER=${TTS_PROVIDER:-kokoro}
+      - KOKORO_TTS_URL=http://kokoro-tts:8880
+      - KOKORO_VOICE=${KOKORO_VOICE:-am_michael}
       - PIPER_TTS_URL=http://piper-tts:5000
+      - PIPER_VOICE=${PIPER_VOICE:-en_US-ryan-high}
     volumes:
       - ./data:/app/data
-    depends_on:
-      - piper-tts
     restart: unless-stopped
 
-  # Piper Neural Text-To-Speech (Expressive Game Host Voice)
+  # Kokoro-82M Ultra-Realistic Neural Text-To-Speech (Human-Quality Voice Engine)
+  kokoro-tts:
+    image: ghcr.io/repasscloud/kokoro-tts-api:latest
+    container_name: bad-data-kokoro-tts
+    ports:
+      - "8880:8880"
+    environment:
+      - DEFAULT_VOICE=am_michael
+    restart: unless-stopped
+
+  # Piper Neural Text-To-Speech (Lightweight CPU Fallback Voice Host)
   piper-tts:
     image: rhasspy/piper-http:latest
     container_name: bad-data-piper-tts
