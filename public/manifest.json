@@ -1,0 +1,17 @@
+{
+  "name": "Bad Data - High Stakes Trivia",
+  "short_name": "Bad Data",
+  "start_url": "/play/",
+  "display": "standalone",
+  "background_color": "#0d0e15",
+  "theme_color": "#00f2fe",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
