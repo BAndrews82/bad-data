@@ -253,7 +253,7 @@ async function preSynthesizeQuestions(questions) {
   const announcerVoice = process.env.KOKORO_VOICE || 'am_michael';
   for (let idx = 0; idx < questions.length; idx++) {
     const q = questions[idx];
-    const qText = `Question ${idx + 1}! ... ${q.question}`;
+    const qText = q.question;
     await getOrSynthesizeTts(qText, true, announcerVoice);
 
     const correctText = q.choices ? q.choices[q.correctIndex] : '';
@@ -399,7 +399,7 @@ io.on('connection', (socket) => {
 
     // Pre-fetch Question 1 audio before launching Round 1
     if (questions.length > 0) {
-      await getOrSynthesizeTts(`Question 1! ... ${questions[0].question}`);
+      await getOrSynthesizeTts(questions[0].question);
     }
 
     // 2.5s intro splash delay for player sync and voice pre-buffering
@@ -487,7 +487,7 @@ async function runQuestionRound(ioInstance, roomCode) {
   console.log(`[Room ${roomCode}] Round ${questionNum}/${totalQuestions}: "${currentQ.question}"`);
 
   // Ensure audio is cached in RAM before emitting question to TV for zero-delay speech
-  const qText = `Question ${questionNum}! ... ${currentQ.question}`;
+  const qText = currentQ.question;
   await getOrSynthesizeTts(qText);
 
   // Send TV question payload (includes full choice text & correct answer masked)
