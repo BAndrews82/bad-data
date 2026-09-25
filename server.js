@@ -45,8 +45,16 @@ const baseUrl = process.env.BASE_URL || `http://${hostIp}:${PORT}`;
 
 console.log(`[Bad Data] Server configuration: Host IP=${hostIp}, Base URL=${baseUrl}`);
 
+// Disable static asset caching so Google TV and mobile controllers always load latest assets
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+
 // Serve static frontend assets
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { etag: false, lastModified: false }));
 
 // Server Config Endpoint
 app.get('/api/config', (req, res) => {
