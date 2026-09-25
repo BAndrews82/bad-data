@@ -62,8 +62,13 @@
 </head>
 <body onclick="unlockAudioHost()" class="h-full w-full flex flex-col justify-between bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black relative">
 
-  <!-- Voice Control (Top Right) -->
+  <!-- Voice Control & Game Control (Top Right) -->
   <div class="absolute top-4 right-6 z-50 flex items-center gap-3">
+    <!-- End Game Early Button (Shown during active game rounds) -->
+    <button id="end-game-btn" onclick="event.stopPropagation(); triggerEndGameEarly();" class="hidden flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white transition border border-rose-400/40 shadow-lg cursor-pointer hover:scale-105 active:scale-95">
+      <span>🛑 END GAME</span>
+    </button>
+
     <!-- TTS Toggle Button -->
     <button id="tts-toggle-btn" onclick="event.stopPropagation(); toggleTTS();" class="flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-semibold text-slate-300 hover:text-white transition border border-slate-700 shadow-lg cursor-pointer">
       <svg id="tts-icon-on" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -908,6 +913,13 @@
       `).join('');
     });
 
+    function triggerEndGameEarly() {
+      if (!roomCode) return;
+      if (confirm("Are you sure you want to end the game early and view final scores?")) {
+        socket.emit('end_game_early', { roomCode });
+      }
+    }
+
     function showScreen(screenId) {
       const screens = ['screen-lobby', 'screen-getready', 'screen-question-splash', 'screen-question', 'screen-reveal', 'screen-gameover'];
       screens.forEach(id => {
@@ -916,6 +928,13 @@
           el.classList.toggle('hidden', id !== screenId);
         }
       });
+
+      // Toggle End Game Button visibility (Only show during active game rounds/reveals)
+      const endBtn = document.getElementById('end-game-btn');
+      if (endBtn) {
+        const isActiveGameScreen = ['screen-getready', 'screen-question-splash', 'screen-question', 'screen-reveal'].includes(screenId);
+        endBtn.classList.toggle('hidden', !isActiveGameScreen);
+      }
     }
   </script>
 </body>

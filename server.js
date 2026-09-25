@@ -452,6 +452,22 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Host manual early game end trigger
+  socket.on('end_game_early', ({ roomCode }) => {
+    const room = roomManager.getRoom(roomCode);
+    if (!room) return;
+
+    console.log(`[Room ${roomCode}] Game ended early by user request.`);
+    roomManager.clearRoomTimer(room);
+    room.status = 'GAME_OVER';
+
+    const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
+
+    io.to(`room_${roomCode}`).emit('game_over', {
+      leaderboard
+    });
+  });
+
   // Handle disconnect
   socket.on('disconnect', () => {
     console.log(`[Socket] Disconnected: ${socket.id}`);

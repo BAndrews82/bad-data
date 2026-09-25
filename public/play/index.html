@@ -44,6 +44,9 @@
       <span id="player-nickname-text" class="font-extrabold text-lg text-white">Player</span>
     </div>
     <div class="flex items-center gap-3">
+      <button id="mobile-end-btn" onclick="triggerMobileEndGame()" class="hidden px-2.5 py-1 rounded-lg bg-rose-600/80 hover:bg-rose-500 text-white font-bold text-[10px] border border-rose-500/40 cursor-pointer">
+        🛑 End Game
+      </button>
       <span class="text-xs text-slate-400">Room</span>
       <span id="player-room-text" class="font-mono-code font-black text-emerald-400 text-lg">----</span>
     </div>
@@ -284,10 +287,22 @@
       window.location.reload();
     });
 
+    function triggerMobileEndGame() {
+      if (!currentRoomCode) return;
+      if (confirm("Are you sure you want to end the game early and view final scores?")) {
+        socket.emit('end_game_early', { roomCode: currentRoomCode });
+      }
+    }
+
     function showScreen(screenId) {
       ['screen-join', 'screen-lobby', 'screen-answer', 'screen-result'].forEach(id => {
         document.getElementById(id).classList.toggle('hidden', id !== screenId);
       });
+
+      const endBtn = document.getElementById('mobile-end-btn');
+      if (endBtn) {
+        endBtn.classList.toggle('hidden', screenId === 'screen-join');
+      }
     }
   </script>
 </body>
