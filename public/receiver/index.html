@@ -62,13 +62,8 @@
 </head>
 <body onclick="unlockAudioHost()" class="h-full w-full flex flex-col justify-between bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black relative">
 
-  <!-- Voice Control & Sound Test (Top Right) -->
+  <!-- Voice Control (Top Right) -->
   <div class="absolute top-4 right-6 z-50 flex items-center gap-3">
-    <!-- Test Sound Button -->
-    <button onclick="event.stopPropagation(); testSoundAndVoice();" class="flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition border border-indigo-400/40 shadow-lg cursor-pointer">
-      <span>🔊 TEST AUDIO & VOICE</span>
-    </button>
-
     <!-- TTS Toggle Button -->
     <button id="tts-toggle-btn" onclick="event.stopPropagation(); toggleTTS();" class="flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-semibold text-slate-300 hover:text-white transition border border-slate-700 shadow-lg cursor-pointer">
       <svg id="tts-icon-on" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
