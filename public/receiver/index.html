@@ -498,6 +498,185 @@
         setTimeout(() => this.playTone(1046.50, 'triangle', 0.5, 0.6), 360);
       }
 
+      // 120 BPM Ambient Synth Bass Music Bed during 15s Question Round
+      startQuestionMusic(durationMs = 15000) {
+        if (!this.ctx) this.init();
+        if (!this.ctx) return;
+        this.stopQuestionMusic();
+
+        try {
+          const now = this.ctx.currentTime;
+          this.bgOscs = [];
+          this.bgGains = [];
+
+          // Sub-bass pulsing rhythm
+          const bassOsc = this.ctx.createOscillator();
+          const bassGain = this.ctx.createGain();
+          const filter = this.ctx.createBiquadFilter();
+
+          bassOsc.type = 'sawtooth';
+          bassOsc.frequency.setValueAtTime(65.41, now); // C2 note
+
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(180, now);
+
+          bassGain.gain.setValueAtTime(0.08, now);
+          bassGain.gain.linearRampToValueAtTime(0.12, now + 1.0);
+          bassGain.gain.setValueAtTime(0.12, now + (durationMs / 1000) - 1.5);
+          bassGain.gain.linearRampToValueAtTime(0.001, now + (durationMs / 1000));
+
+          bassOsc.connect(filter);
+          filter.connect(bassGain);
+          bassGain.connect(this.ctx.destination);
+
+          bassOsc.start(now);
+          bassOsc.stop(now + (durationMs / 1000));
+
+          this.bgOscs.push(bassOsc);
+          this.bgGains.push(bassGain);
+        } catch(e) {}
+      }
+
+      stopQuestionMusic() {
+        if (this.bgOscs && this.bgOscs.length) {
+          this.bgOscs.forEach(osc => {
+            try { osc.stop(); osc.disconnect(); } catch(e) {}
+          });
+          this.bgOscs = [];
+        }
+      }
+
+      // Tense Ticking Clock Impulse in Last 5 Seconds
+      playClockTick(isUrgent = false) {
+        if (!this.ctx) this.init();
+        if (!this.ctx) return;
+        try {
+          const t = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = isUrgent ? 'sawtooth' : 'sine';
+          osc.frequency.setValueAtTime(isUrgent ? 1400 : 1000, t);
+          osc.frequency.exponentialRampToValueAtTime(600, t + 0.05);
+
+          gain.gain.setValueAtTime(isUrgent ? 0.25 : 0.15, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(t);
+          osc.stop(t + 0.05);
+        } catch(e) {}
+      }
+
+      // Shimmering 4-Note Ascending Cash Gain "Cha-Ching!"
+      playCashGainChime() {
+        if (!this.ctx) this.init();
+        if (!this.ctx) return;
+        try {
+          const notes = [1046.50, 1318.51, 1567.98, 2093.00]; // C6, E6, G6, C7
+          const t = this.ctx.currentTime;
+          notes.forEach((freq, idx) => {
+            const startTime = t + (idx * 0.06);
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, startTime);
+            gain.gain.setValueAtTime(0.3, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(startTime);
+            osc.stop(startTime + 0.25);
+          });
+        } catch(e) {}
+      }
+
+      // Low Detuned "Bad Data" Glitch Buzzer
+      playBadDataBuzzer() {
+        if (!this.ctx) this.init();
+        if (!this.ctx) return;
+        try {
+          const t = this.ctx.currentTime;
+          [130, 138].forEach(freq => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, t);
+            osc.frequency.linearRampToValueAtTime(60, t + 0.35);
+
+            gain.gain.setValueAtTime(0.3, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(t);
+            osc.stop(t + 0.35);
+          });
+        } catch(e) {}
+      }
+
+      // Victory Canvas Confetti Burst for Grand Champion
+      triggerConfetti() {
+        try {
+          let canvas = document.getElementById('confetti-canvas');
+          if (!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.id = 'confetti-canvas';
+            canvas.className = 'fixed inset-0 pointer-events-none z-50';
+            document.body.appendChild(canvas);
+          }
+          const ctx = canvas.getContext('2d');
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+
+          const colors = ['#34d399', '#fbbf24', '#f43f5e', '#60a5fa', '#a78bfa', '#f472b6'];
+          const particles = [];
+          for (let i = 0; i < 90; i++) {
+            particles.push({
+              x: Math.random() * canvas.width,
+              y: Math.random() * canvas.height - canvas.height,
+              r: Math.random() * 6 + 4,
+              d: Math.random() * 90,
+              color: colors[Math.floor(Math.random() * colors.length)],
+              tilt: Math.floor(Math.random() * 10) - 10,
+              tiltAngleIncremental: Math.random() * 0.07 + 0.05,
+              tiltAngle: 0
+            });
+          }
+
+          const draw = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p) => {
+              p.tiltAngle += p.tiltAngleIncremental;
+              p.y += (Math.cos(p.d) + 1 + p.r / 2) * 1.5;
+              p.x += Math.sin(p.d) * 1.5;
+              p.tilt = Math.sin(p.tiltAngle) * 15;
+
+              ctx.beginPath();
+              ctx.lineWidth = p.r;
+              ctx.strokeStyle = p.color;
+              ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+              ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+              ctx.stroke();
+            });
+
+            if (particles.some(p => p.y < canvas.height)) {
+              requestAnimationFrame(draw);
+            } else {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+          };
+          draw();
+        } catch(e) {}
+      }
+
       enhanceAudioElement(audioEl) {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
@@ -807,6 +986,7 @@
       // 2. After 1.8s funny animated splash, transition to main question screen & start host speech
       setTimeout(() => {
         showScreen('screen-question');
+        sfx.startQuestionMusic(data.durationMs);
 
         document.getElementById('question-num-badge').textContent = `Question ${data.questionNum}/${data.totalQuestions}`;
         document.getElementById('category-badge').textContent = `${data.category} • ${data.difficulty.toUpperCase()}`;
@@ -819,9 +999,18 @@
         currentBaseValue = data.baseValue;
         roundStartTime = Date.now();
 
-        // Render 4 Choice Cards
+        // Reset & Render 4 Choice Cards
         for (let i = 0; i < 4; i++) {
+          const cardEl = document.getElementById(`choice-card-${i}`);
           const textEl = document.getElementById(`choice-text-${i}`);
+          if (cardEl) {
+            cardEl.className = `card-choice glass-panel p-4 rounded-xl flex items-center gap-4 border-2 ${
+              i === 0 ? 'border-red-500/40 bg-red-950/20' :
+              i === 1 ? 'border-blue-500/40 bg-blue-950/20' :
+              i === 2 ? 'border-amber-500/40 bg-amber-950/20' :
+              'border-emerald-500/40 bg-emerald-950/20'
+            }`;
+          }
           if (textEl) {
             textEl.textContent = data.choices[i] || '';
           }
@@ -846,12 +1035,31 @@
       const cashTicker = document.getElementById('cash-ticker-text');
 
       const start = Date.now();
+      let lastTickSec = -1;
+
       roundTimerInterval = setInterval(() => {
         const elapsed = Date.now() - start;
         const progress = Math.min(1, elapsed / durationMs);
         const remainingPct = (1 - progress) * 100;
+        const remainingMs = Math.max(0, durationMs - elapsed);
+        const remainingSec = Math.ceil(remainingMs / 1000);
 
         timerBar.style.width = `${remainingPct}%`;
+
+        // Dynamic timer bar color shifting
+        if (remainingPct > 45) {
+          timerBar.className = 'bg-emerald-400 h-full w-full transition-all duration-100 ease-linear';
+        } else if (remainingPct > 25) {
+          timerBar.className = 'bg-amber-400 h-full w-full transition-all duration-100 ease-linear';
+        } else {
+          timerBar.className = 'bg-rose-500 animate-pulse h-full w-full transition-all duration-100 ease-linear';
+        }
+
+        // Ticking sound during last 5 seconds
+        if (remainingSec <= 5 && remainingSec > 0 && remainingSec !== lastTickSec) {
+          lastTickSec = remainingSec;
+          sfx.playClockTick(remainingSec <= 2);
+        }
 
         // Decrease cash ticker linearly from baseValue to 10%
         const minFactor = 0.1;
@@ -870,11 +1078,33 @@
     socket.on('round_reveal', (data) => {
       if (data.leaderboard) currentRoster = data.leaderboard;
       if (roundTimerInterval) clearInterval(roundTimerInterval);
+      sfx.stopQuestionMusic();
       showScreen('screen-reveal');
 
       const labels = ['A', 'B', 'C', 'D'];
       document.getElementById('reveal-correct-letter').textContent = labels[data.correctIndex];
       document.getElementById('reveal-correct-text').textContent = data.correctAnswerText;
+
+      // Highlight correct choice card & dim wrong ones on screen-question underlying view
+      for (let i = 0; i < 4; i++) {
+        const cardEl = document.getElementById(`choice-card-${i}`);
+        if (cardEl) {
+          if (i === data.correctIndex) {
+            cardEl.className = 'card-choice glass-panel p-4 rounded-xl flex items-center gap-4 border-4 border-emerald-400 bg-emerald-950/80 shadow-[0_0_35px_rgba(52,211,153,0.7)] animate-pulse scale-[1.02]';
+          } else {
+            cardEl.className = 'card-choice glass-panel p-4 rounded-xl flex items-center gap-4 border-2 border-slate-800 bg-slate-950/40 opacity-40 filter grayscale-[40%]';
+          }
+        }
+      }
+
+      // Play appropriate reveal SFX: Cash Gain chime if someone earned cash, else Bad Data buzzer
+      const anyGain = data.leaderboard && data.leaderboard.some(p => p.lastRoundGain > 0);
+      if (anyGain) {
+        sfx.playCashGainChime();
+      } else {
+        sfx.playBadDataBuzzer();
+      }
+      setTimeout(() => sfx.playRevealChime(), 300);
 
       const roastBanner = document.getElementById('reveal-roast-banner');
       const roastTextEl = document.getElementById('reveal-roast-text');
@@ -885,8 +1115,7 @@
         roastBanner.classList.add('hidden');
       }
 
-      // Play Reveal Sound + Expressive Host Announcer Phrasing with AI Host Roast
-      sfx.playRevealChime();
+      // Expressive Host Announcer Phrasing with AI Host Roast
       const roastClause = data.hostRoast ? ` ... ${data.hostRoast}` : '';
       speakText(`The correct answer was... option ${labels[data.correctIndex]}! ... ${data.correctAnswerText}${roastClause}`);
 
@@ -916,8 +1145,10 @@
 
     // Game Over Phase
     socket.on('game_over', (data) => {
+      sfx.stopQuestionMusic();
       showScreen('screen-gameover');
       sfx.playVictoryFanfare();
+      sfx.triggerConfetti();
       const winner = data.leaderboard[0];
       if (winner) {
         document.getElementById('winner-name-text').textContent = winner.nickname;
