@@ -439,6 +439,9 @@ io.on('connection', (socket) => {
     // If all players answered before timer expires, trigger immediate reveal!
     if (allAnswered) {
       console.log(`[Room ${room.code}] All players answered! Resolving round immediately.`);
+      roomManager.clearRoomTimer(room);
+      io.to(`host_${room.code}`).emit('all_players_answered');
+      io.to(`room_${room.code}`).emit('all_players_answered');
       evaluateAndReveal(io, room.code);
     }
   });
@@ -453,6 +456,9 @@ io.on('connection', (socket) => {
       const adv = roomManager.advanceNextQuestion(roomCode);
       if (adv && !adv.isGameOver) {
         await runQuestionRound(io, roomCode);
+      } else if (adv && adv.isGameOver) {
+        const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
+        io.to(`room_${roomCode}`).emit('game_over', { leaderboard });
       }
     }
   });
@@ -554,6 +560,9 @@ async function runQuestionRound(ioInstance, roomCode) {
           });
 
           if (res.allAnswered) {
+            roomManager.clearRoomTimer(room);
+            ioInstance.to(`host_${roomCode}`).emit('all_players_answered');
+            ioInstance.to(`room_${roomCode}`).emit('all_players_answered');
             evaluateAndReveal(ioInstance, roomCode);
           }
         }
@@ -575,6 +584,8 @@ async function runQuestionRound(ioInstance, roomCode) {
 async function evaluateAndReveal(ioInstance, roomCode) {
   const results = roomManager.evaluateRoundResults(roomCode);
   if (!results) return;
+
+  roomManager.clearRoomTimer(results.room);
 
   const labels = ['A', 'B', 'C', 'D'];
   const currentQ = results.room.questions[results.room.currentQuestionIndex];
@@ -613,11 +624,11 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     ttsAudioCache.set(`${roasterVoice}:${cleanRevealText}`, finalRevealAudio);
   }
 
-  // Calculate dynamic reveal screen duration based on concatenated audio length + padding
-  let revealDurationMs = 10500; // Minimum 10.5 seconds for Announcer + Roaster audio
+  // Calculate dynamic reveal screen duration based on concatenated audio length + padding (6.5s default for fast pacing)
+  let revealDurationMs = 6500;
   if (finalRevealAudio && finalRevealAudio.buffer) {
     const audioSecs = finalRevealAudio.buffer.length / 16000;
-    revealDurationMs = Math.max(10500, Math.min(15000, Math.ceil((audioSecs + 2.5) * 1000)));
+    revealDurationMs = Math.max(6500, Math.min(9500, Math.ceil((audioSecs + 1.5) * 1000)));
   }
 
   console.log(`[Room ${roomCode}] Question reveal. Answer: (${results.correctIndex}) ${results.correctAnswerText}. Roaster (${roasterVoice}): "${hostRoast}". Reveal timer: ${revealDurationMs}ms.`);
@@ -650,9 +661,15 @@ async function evaluateAndReveal(ioInstance, roomCode) {
   // If not last question, set dynamic reveal screen timer before advancing automatically
   if (!results.isLastQuestion) {
     const autoAdvanceHandle = setTimeout(async () => {
-      const adv = roomManager.advanceNextQuestion(roomCode);
-      if (adv && !adv.isGameOver) {
-        await runQuestionRound(ioInstance, roomCode);
+      const currentR = roomManager.getRoom(roomCode);
+      if (currentR && currentR.status === 'REVEAL') {
+        const adv = roomManager.advanceNextQuestion(roomCode);
+        if (adv && !adv.isGameOver) {
+          await runQuestionRound(ioInstance, roomCode);
+        } else if (adv && adv.isGameOver) {
+          const leaderboard = currentR.players ? [...currentR.players].sort((a, b) => b.score - a.score) : [];
+          ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+        }
       }
     }, revealDurationMs);
     roomManager.setRoomTimer(results.room, autoAdvanceHandle);

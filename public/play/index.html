@@ -248,6 +248,15 @@
       if (timerInterval) clearInterval(timerInterval);
     });
 
+    socket.on('all_players_answered', () => {
+      if (timerInterval) clearInterval(timerInterval);
+      const banner = document.getElementById('locked-banner');
+      if (banner) {
+        const desc = banner.querySelector('p');
+        if (desc) desc.textContent = '✓ All answers in! Revealing results...';
+      }
+    });
+
     // Round Results for Controller
     socket.on('round_result_controller', (data) => {
       showScreen('screen-result');

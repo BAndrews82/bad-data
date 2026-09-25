@@ -64,6 +64,11 @@
 
   <!-- Voice Control & Game Control (Top Right) -->
   <div class="absolute top-4 right-6 z-50 flex items-center gap-3">
+    <!-- Next Question Button (Shown during reveal screen) -->
+    <button id="next-question-btn" onclick="event.stopPropagation(); triggerNextQuestion();" class="hidden flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-xs font-black text-white transition border border-emerald-400/40 shadow-lg cursor-pointer hover:scale-105 active:scale-95 animate-pulse">
+      <span>⏩ NEXT QUESTION</span>
+    </button>
+
     <!-- End Game Early Button (Shown during active game rounds) -->
     <button id="end-game-btn" onclick="event.stopPropagation(); triggerEndGameEarly();" class="hidden flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white transition border border-rose-400/40 shadow-lg cursor-pointer hover:scale-105 active:scale-95">
       <span>🛑 END GAME</span>
@@ -308,12 +313,19 @@
   <section id="screen-reveal" class="hidden flex-1 flex flex-col justify-between z-10 py-1 min-h-0">
     <!-- Reveal Title Header -->
     <div class="text-center mb-1 shrink-0">
-      <span class="px-3 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold uppercase tracking-widest text-[11px]">
-        Round Reveal
-      </span>
+      <div class="flex items-center justify-center gap-2 mb-0.5">
+        <span class="px-3 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold uppercase tracking-widest text-[11px]">
+          Round Reveal
+        </span>
+      </div>
       <h2 id="reveal-correct-headline" class="text-2xl sm:text-3xl font-black text-white mt-0.5">
         The Correct Answer was...
       </h2>
+    </div>
+
+    <!-- Reveal Auto-Advance Countdown Bar -->
+    <div class="w-full max-w-3xl mx-auto bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800 my-0.5 shrink-0">
+      <div id="reveal-timer-bar" class="bg-emerald-400 h-full w-full transition-all duration-100 ease-linear"></div>
     </div>
 
     <!-- Highlighted Correct Choice Card -->
@@ -1028,6 +1040,21 @@
       document.getElementById('answered-count-text').textContent = `${data.totalAnswered} / ${data.totalPlayers}`;
     });
 
+    socket.on('all_players_answered', () => {
+      if (roundTimerInterval) clearInterval(roundTimerInterval);
+      sfx.stopQuestionMusic();
+
+      const timerBar = document.getElementById('question-timer-bar');
+      if (timerBar) {
+        timerBar.className = 'bg-emerald-500 h-full w-full transition-all duration-300 ease-out';
+      }
+
+      const answeredText = document.getElementById('answered-count-text');
+      if (answeredText) {
+        answeredText.innerHTML = '<span class="text-emerald-400 font-black animate-pulse">✓ ALL ANSWERS IN!</span>';
+      }
+    });
+
     function startTimerTicker(durationMs, baseValue) {
       if (roundTimerInterval) clearInterval(roundTimerInterval);
 
@@ -1074,12 +1101,34 @@
       }, 50);
     }
 
+    let revealTimerInterval = null;
+    function startRevealTimerTicker(durationMs) {
+      if (revealTimerInterval) clearInterval(revealTimerInterval);
+      const timerBar = document.getElementById('reveal-timer-bar');
+      if (!timerBar) return;
+
+      const start = Date.now();
+      revealTimerInterval = setInterval(() => {
+        const elapsed = Date.now() - start;
+        const progress = Math.min(1, elapsed / durationMs);
+        const remainingPct = (1 - progress) * 100;
+        timerBar.style.width = `${remainingPct}%`;
+
+        if (progress >= 1) {
+          clearInterval(revealTimerInterval);
+        }
+      }, 50);
+    }
+
     // Round Reveal Phase
     socket.on('round_reveal', (data) => {
       if (data.leaderboard) currentRoster = data.leaderboard;
       if (roundTimerInterval) clearInterval(roundTimerInterval);
       sfx.stopQuestionMusic();
       showScreen('screen-reveal');
+
+      // Start reveal progress countdown bar
+      startRevealTimerTicker(data.revealDurationMs || 6500);
 
       const labels = ['A', 'B', 'C', 'D'];
       document.getElementById('reveal-correct-letter').textContent = labels[data.correctIndex];
@@ -1169,6 +1218,11 @@
       `).join('');
     });
 
+    function triggerNextQuestion() {
+      if (!roomCode) return;
+      socket.emit('next_question_request', { roomCode });
+    }
+
     function triggerEndGameEarly() {
       if (!roomCode) return;
       if (confirm("Are you sure you want to end the game early and view final scores?")) {
@@ -1184,6 +1238,12 @@
           el.classList.toggle('hidden', id !== screenId);
         }
       });
+
+      // Toggle Next Question Button visibility (Only show during reveal screen)
+      const nextBtn = document.getElementById('next-question-btn');
+      if (nextBtn) {
+        nextBtn.classList.toggle('hidden', screenId !== 'screen-reveal');
+      }
 
       // Toggle End Game Button visibility (Only show during active game rounds/reveals)
       const endBtn = document.getElementById('end-game-btn');
