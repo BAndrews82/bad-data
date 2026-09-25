@@ -3,7 +3,11 @@
     "id": "silly-1",
     "question": "What is the official national animal of Scotland?",
     "correct_answer": "Unicorn",
-    "incorrect_answers": ["Loch Ness Monster", "Highland Cow", "Golden Eagle"],
+    "incorrect_answers": [
+      "Loch Ness Monster",
+      "Highland Cow",
+      "Golden Eagle"
+    ],
     "category": "Silly & Quirky",
     "difficulty": "easy"
   },
@@ -11,7 +15,11 @@
     "id": "silly-2",
     "question": "What is the official scientific term for what happens to your body if you get pulled into a black hole?",
     "correct_answer": "Spaghettification",
-    "incorrect_answers": ["Noodlization", "Pancaking", "Atomization"],
+    "incorrect_answers": [
+      "Noodlization",
+      "Pancaking",
+      "Atomization"
+    ],
     "category": "Silly & Quirky",
     "difficulty": "medium"
   },
@@ -19,7 +27,11 @@
     "id": "silly-3",
     "question": "In 1997, an honorary Mayor of Talkeetna, Alaska was elected and held office for 20 years. What kind of creature was Mayor Stubbs?",
     "correct_answer": "A Cat",
-    "incorrect_answers": ["A Golden Retriever", "A Moose", "A Goat"],
+    "incorrect_answers": [
+      "A Golden Retriever",
+      "A Moose",
+      "A Goat"
+    ],
     "category": "Silly & Quirky",
     "difficulty": "easy"
   },
@@ -27,7 +39,11 @@
     "id": "silly-4",
     "question": "What is the technical name for the plastic or metal tip at the end of a shoelace?",
     "correct_answer": "Aglet",
-    "incorrect_answers": ["Grommet", "Ferrule", "Flange"],
+    "incorrect_answers": [
+      "Grommet",
+      "Ferrule",
+      "Flange"
+    ],
     "category": "Silly & Quirky",
     "difficulty": "easy"
   },
@@ -35,7 +51,11 @@
     "id": "silly-5",
     "question": "In 2006, an Australian man attempted to sell what item on eBay for $0.01 before the listing was shut down?",
     "correct_answer": "The country of New Zealand",
-    "incorrect_answers": ["His own soul", "The Eiffel Tower", "The Moon"],
+    "incorrect_answers": [
+      "His own soul",
+      "The Eiffel Tower",
+      "The Moon"
+    ],
     "category": "Silly & Quirky",
     "difficulty": "medium"
   },
@@ -43,7 +63,11 @@
     "id": "silly-6",
     "question": "What weird personal object was left behind on the Moon by Apollo 16 astronaut Charles Duke in 1972?",
     "correct_answer": "A framed photo of his family",
-    "incorrect_answers": ["His car keys", "A rubber duck", "A baseball glove"],
+    "incorrect_answers": [
+      "His car keys",
+      "A rubber duck",
+      "A baseball glove"
+    ],
     "category": "Silly & Quirky",
     "difficulty": "medium"
   },
@@ -51,15 +75,23 @@
     "id": "silly-7",
     "question": "According to a Swiss cheese aging experiment, cheese exposed to what type of music continuously developed a noticeably sweeter flavor?",
     "correct_answer": "Hip-Hop Music",
-    "incorrect_answers": ["Heavy Metal", "Classical Mozart", "Techno"],
+    "incorrect_answers": [
+      "Heavy Metal",
+      "Classical Mozart",
+      "Techno"
+    ],
     "category": "Silly & Quirky",
     "difficulty": "hard"
   },
   {
     "id": "silly-8",
-    "question": "In 2011, a woman paid $10,000 for a work of 'invisible art' created by James Franco's art group. What was the art piece called?",
+    "question": "In 2011, a woman paid $10,000 for a work of \"invisible art\" created by James Franco's art group. What was the art piece called?",
     "correct_answer": "Fresh Air",
-    "incorrect_answers": ["Nothingness", "The Blank Canvas", "Invisible Sculpture"],
+    "incorrect_answers": [
+      "Nothingness",
+      "The Blank Canvas",
+      "Invisible Sculpture"
+    ],
     "category": "Silly & Quirky",
     "difficulty": "medium"
   },
@@ -67,7 +99,11 @@
     "id": "silly-9",
     "question": "What common grocery food item was used as improvised snowball weapons by Icelandic protesters in 2009?",
     "correct_answer": "Skyr (Yogurt) & Eggs",
-    "incorrect_answers": ["Frozen Baguettes", "Bananas", "Canned Soup"],
+    "incorrect_answers": [
+      "Frozen Baguettes",
+      "Bananas",
+      "Canned Soup"
+    ],
     "category": "Silly & Quirky",
     "difficulty": "hard"
   },
@@ -75,8 +111,492 @@
     "id": "silly-10",
     "question": "What is the fear of being watched by a duck secretly at any given moment called?",
     "correct_answer": "Anatidaephobia",
-    "incorrect_answers": ["Quackophobia", "Ornithophobia", "Mallardophobia"],
+    "incorrect_answers": [
+      "Quackophobia",
+      "Ornithophobia",
+      "Mallardophobia"
+    ],
     "category": "Silly & Quirky",
     "difficulty": "easy"
+  },
+  {
+    "id": "silly-11",
+    "question": "Which animal produces poop shaped like perfect cubes?",
+    "correct_answer": "Wombat",
+    "incorrect_answers": [
+      "Koala",
+      "Capybara",
+      "Platypus"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-12",
+    "question": "What official medical duration record is held by Charles Osborne, who hiccuped continuously from 1922 to 1990?",
+    "correct_answer": "68 Years",
+    "incorrect_answers": [
+      "12 Years",
+      "25 Years",
+      "40 Years"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-13",
+    "question": "In 1888, a baboon named Jack was hired by a South African railway line for what job position?",
+    "correct_answer": "Signalman",
+    "incorrect_answers": [
+      "Ticket Collector",
+      "Train Conductor",
+      "Station Master"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "hard"
+  },
+  {
+    "id": "silly-14",
+    "question": "What is the medical term for the rumble noise your stomach makes when you are hungry?",
+    "correct_answer": "Borborygmus",
+    "incorrect_answers": [
+      "Gurgleitis",
+      "Stomachophony",
+      "Bowelrumble"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-15",
+    "question": "In 1998, the US National Security Agency (NSA) banned what popular electronic toy from its offices out of spy fear?",
+    "correct_answer": "Furby",
+    "incorrect_answers": [
+      "Tamagotchi",
+      "Tickle Me Elmo",
+      "Game Boy"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-16",
+    "question": "What natural color is a hippopotamus's milk when mixed with its sweat secretion?",
+    "correct_answer": "Pink",
+    "incorrect_answers": [
+      "Bright Blue",
+      "Pale Yellow",
+      "Purple"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-17",
+    "question": "In 2013, Google hired what kind of desert animal to carry a Trekker camera to map Street View in Abu Dhabi?",
+    "correct_answer": "A Camel (Raffia)",
+    "incorrect_answers": [
+      "A Llama",
+      "A Donkey",
+      "An Ostrich"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-18",
+    "question": "What is the funny-sounding name for a group of ferrets?",
+    "correct_answer": "A Business",
+    "incorrect_answers": [
+      "A Giggle",
+      "A Chaos",
+      "A Mischief"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-19",
+    "question": "What unusual vegetable was used as a form of currency in ancient Egypt to pay workers building pyramids?",
+    "correct_answer": "Onions",
+    "incorrect_answers": [
+      "Carrots",
+      "Radishes",
+      "Garlic"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-20",
+    "question": "In Oregon, the town of Boring officially forged an international sister-city partnership with what Scottish town?",
+    "correct_answer": "Dull",
+    "incorrect_answers": [
+      "Bland",
+      "Sleepy",
+      "Gloomy"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-21",
+    "question": "What island nation issued legal tender $2 coins in 2001 featuring Pikachu and other Pokémon?",
+    "correct_answer": "Niue",
+    "incorrect_answers": [
+      "Tuvalu",
+      "Palau",
+      "Nauru"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "hard"
+  },
+  {
+    "id": "silly-22",
+    "question": "What fruit is banned on public transit across Singapore and Thailand due to its stench resembling rotting onions?",
+    "correct_answer": "Durian",
+    "incorrect_answers": [
+      "Jackfruit",
+      "Dragonfruit",
+      "Papaya"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-23",
+    "question": "What is the name of the traditional English sport where contestants chase a wheel of Gloucester cheese down a steep hill?",
+    "correct_answer": "Cooper's Hill Cheese-Rolling",
+    "incorrect_answers": [
+      "Cheddar Tumbling",
+      "Stilton Dash",
+      "The Great Gouda Chase"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-24",
+    "question": "In 1923, jockey Frank Hayes achieved the bizarre historic feat of winning a horse race at Belmont Park while doing what?",
+    "correct_answer": "He had died mid-race of a heart attack",
+    "incorrect_answers": [
+      "He was completely blindfolded",
+      "He was riding backwards",
+      "He fell asleep"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "hard"
+  },
+  {
+    "id": "silly-25",
+    "question": "What is the ironic tongue-twisting name for the phobia of long words?",
+    "correct_answer": "Hippopotomonstrosesquippedaliophobia",
+    "incorrect_answers": [
+      "Sesquipedalophobia",
+      "Verbophobia",
+      "Logophobia"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-26",
+    "question": "What creature has the ability to sleep continuously for up to 3 entire years if the weather is too dry?",
+    "correct_answer": "A Snail",
+    "incorrect_answers": [
+      "A Toad",
+      "A Sloth",
+      "A Bear"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-27",
+    "question": "In 2008, what European nation briefly proposed a tax on cow flatulence and belches to curb emissions?",
+    "correct_answer": "Estonia",
+    "incorrect_answers": [
+      "Denmark",
+      "Ireland",
+      "Switzerland"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "hard"
+  },
+  {
+    "id": "silly-28",
+    "question": "What common item was used by ancient Romans as mouthwash and laundry detergent due to its ammonia content?",
+    "correct_answer": "Stale Urine",
+    "incorrect_answers": [
+      "Goat Milk",
+      "Seawater",
+      "Vinegar"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-29",
+    "question": "What Japanese agricultural innovation involves growing watermelons inside tempered glass boxes?",
+    "correct_answer": "Square Watermelons",
+    "incorrect_answers": [
+      "Pyramid Watermelons",
+      "Heart Watermelons",
+      "Cube Apples"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-30",
+    "question": "What is a group of flamingos officially called?",
+    "correct_answer": "A Flamboyance",
+    "incorrect_answers": [
+      "A Glitter",
+      "A Fiesta",
+      "A Pinkness"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-31",
+    "question": "What fast food chain released a limited-edition candle line that smelled like flame-broiled meat?",
+    "correct_answer": "Burger King",
+    "incorrect_answers": [
+      "McDonald's",
+      "Wendy's",
+      "Arby's"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-32",
+    "question": "What animal's eye is officially larger than its whole brain?",
+    "correct_answer": "Ostrich",
+    "incorrect_answers": [
+      "Owl",
+      "Chihuahua",
+      "Goldfish"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-33",
+    "question": "In 1969, what company was awarded a patent for an automated donut-making machine that dropped rings of dough into boiling oil?",
+    "correct_answer": "Dunkin' Donuts",
+    "incorrect_answers": [
+      "Krispy Kreme",
+      "Entenmann's",
+      "Tim Hortons"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-34",
+    "question": "What strange object was banned from the UK House of Commons by King Edward II in 1313 and remains illegal today?",
+    "correct_answer": "Wearing a Suit of Armor",
+    "incorrect_answers": [
+      "Carrying a Bagpipe",
+      "Wearing a Top Hat",
+      "Eating Mutton"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "hard"
+  },
+  {
+    "id": "silly-35",
+    "question": "What is the official term for a group of porcupines?",
+    "correct_answer": "A Prickle",
+    "incorrect_answers": [
+      "A Needle",
+      "A Spike",
+      "A Quill"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-36",
+    "question": "What weird fact is true about bananas?",
+    "correct_answer": "They are technically berries",
+    "incorrect_answers": [
+      "They grow underground",
+      "They are naturally blue",
+      "They are vegetables"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-37",
+    "question": "What bizarre ingredient was in original 19th-century ketchup recipes before tomatoes became standard?",
+    "correct_answer": "Mushrooms and Pickled Fish",
+    "incorrect_answers": [
+      "Mashed Potatoes",
+      "Applesauce",
+      "Beet juice"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-38",
+    "question": "In 2016, a cathedral in Norwich, England installed what giant carnival ride inside its nave to attract visitors?",
+    "correct_answer": "A Helter Skelter Slide",
+    "incorrect_answers": [
+      "A Ferris Wheel",
+      "A Bumper Car Ring",
+      "A Roller Coaster"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "hard"
+  },
+  {
+    "id": "silly-39",
+    "question": "What is the official state toy of Mississippi?",
+    "correct_answer": "Teddy Bear",
+    "incorrect_answers": [
+      "Yo-Yo",
+      "Slinky",
+      "Rubik's Cube"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-40",
+    "question": "What funny creature's heart is located inside its head?",
+    "correct_answer": "Shrimp",
+    "incorrect_answers": [
+      "Jellyfish",
+      "Octopus",
+      "Starfish"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-41",
+    "question": "What country has more plastic pink flamingos in lawn displays than real wild flamingos?",
+    "correct_answer": "United States",
+    "incorrect_answers": [
+      "Canada",
+      "Mexico",
+      "Bahamas"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-42",
+    "question": "What animal cannot jump, making it the only land mammal incapable of jumping off the ground?",
+    "correct_answer": "Elephant",
+    "incorrect_answers": [
+      "Hippo",
+      "Rhino",
+      "Sloth"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-43",
+    "question": "What weird record did Swedish runner Lars-Göran Åslund set in 2015 while wearing a horse mask?",
+    "correct_answer": "Fastest half-marathon in a horse mask",
+    "incorrect_answers": [
+      "Fastest 100m sprint barefoot",
+      "Longest backwards jog",
+      "Highest hurdle jump"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "hard"
+  },
+  {
+    "id": "silly-44",
+    "question": "What is the collective noun for a group of owls?",
+    "correct_answer": "A Parliament",
+    "incorrect_answers": [
+      "A Wisdom",
+      "A Hoot",
+      "A Gaze"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-45",
+    "question": "What funny event happened in 1974 during a live weather broadcast when a fly landed on presenter Jim Bacon?",
+    "correct_answer": "He ate it live on air",
+    "incorrect_answers": [
+      "He fainted",
+      "He slapped himself silly",
+      "He ran off set"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-46",
+    "question": "What sea creature has three hearts, nine brains, and blue blood?",
+    "correct_answer": "Octopus",
+    "incorrect_answers": [
+      "Squid",
+      "Cuttlefish",
+      "Lobster"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-47",
+    "question": "What is the name of the annual festival held in Spain where thousands of people throw overripe tomatoes at each other?",
+    "correct_answer": "La Tomatina",
+    "incorrect_answers": [
+      "El Tomate Festival",
+      "La Batalla de Salsas",
+      "Fiesta de Pomodoro"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-48",
+    "question": "What unique physical feat can a cow perform that it cannot do in reverse?",
+    "correct_answer": "Walk up stairs, but not down stairs",
+    "incorrect_answers": [
+      "Swim forward, but not backward",
+      "Jump forward, but not backward",
+      "Wink with one eye"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "medium"
+  },
+  {
+    "id": "silly-49",
+    "question": "What is the official term for a group of crows?",
+    "correct_answer": "A Murder",
+    "incorrect_answers": [
+      "A Crime",
+      "A Gang",
+      "A Shadow"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "easy"
+  },
+  {
+    "id": "silly-50",
+    "question": "In 2003, what inanimate object was awarded an Ig Nobel Prize for physics for proving that sheep drag smoother on rough ground?",
+    "correct_answer": "Shearing Sheep Dynamics Study",
+    "incorrect_answers": [
+      "Velcro Pants",
+      "Bouncy Castle",
+      "Rubber Boots"
+    ],
+    "category": "Silly & Quirky",
+    "difficulty": "hard"
   }
 ]

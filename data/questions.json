@@ -78,5 +78,325 @@
     "incorrect_answers": ["Four of a Kind", "Straight Flush", "Full House"],
     "category": "General Knowledge",
     "difficulty": "easy"
+  },
+  {
+    "id": "custom-111",
+    "question": "Which lightweight Linux distribution is commonly used as the base image for minimal Docker containers?",
+    "correct_answer": "Alpine Linux",
+    "incorrect_answers": ["Ubuntu Server", "CentOS Stream", "Debian Buster"],
+    "category": "Homelab & Tech",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-112",
+    "question": "In the Portal game series, what type of delicious dessert is famously promised to Chell?",
+    "correct_answer": "Black Forest Cake",
+    "incorrect_answers": ["Apple Pie", "Strawberry Shortcake", "Chocolate Cupcake"],
+    "category": "Gaming",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-113",
+    "question": "What standard network port does HTTP use by default?",
+    "correct_answer": "80",
+    "incorrect_answers": ["443", "22", "8080"],
+    "category": "Homelab & Tech",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-114",
+    "question": "What is the main currency used in the game Minecraft?",
+    "correct_answer": "Emeralds",
+    "incorrect_answers": ["Diamonds", "Gold Nuggies", "Rubies"],
+    "category": "Gaming",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-115",
+    "question": "In The Lord of the Rings, what is the name of the volcano where the One Ring must be destroyed?",
+    "correct_answer": "Mount Doom",
+    "incorrect_answers": ["Mount Erebor", "Mount Olympus", "The Lonely Mountain"],
+    "category": "Movies",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-116",
+    "question": "Which command in Git is used to save changes locally into a commit object with a log message?",
+    "correct_answer": "git commit",
+    "incorrect_answers": ["git push", "git save", "git upload"],
+    "category": "Homelab & Tech",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-117",
+    "question": "In Star Wars, what color is Master Yoda's lightsaber?",
+    "correct_answer": "Green",
+    "incorrect_answers": ["Blue", "Purple", "Red"],
+    "category": "Pop Culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-118",
+    "question": "What is the primary function of Pi-hole in a home network?",
+    "correct_answer": "Network-wide Ad and Tracker Blocker",
+    "incorrect_answers": ["Crypto Mining", "VPN Server", "Plex Transcoder"],
+    "category": "Homelab & Tech",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-119",
+    "question": "In Skyrim, what power allows the Dragonborn to shout ancient words of dragon language?",
+    "correct_answer": "Thu'um",
+    "incorrect_answers": ["Fus-Do", "Magicka", "Kiai"],
+    "category": "Gaming",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-120",
+    "question": "Which company developed the Python programming language?",
+    "correct_answer": "Guido van Rossum",
+    "incorrect_answers": ["James Gosling", "Dennis Ritchie", "Bjarne Stroustrup"],
+    "category": "Science: Computers",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-121",
+    "question": "What speeds must the DeLorean reach to travel through time in Back to the Future?",
+    "correct_answer": "88 MPH",
+    "incorrect_answers": ["100 MPH", "65 MPH", "120 MPH"],
+    "category": "Movies",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-122",
+    "question": "In networking, what does DNS stand for?",
+    "correct_answer": "Domain Name System",
+    "incorrect_answers": ["Dynamic Network Storage", "Digital Node Service", "Direct Network Speed"],
+    "category": "Homelab & Tech",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-123",
+    "question": "What video game franchise features Master Chief fighting the Covenant?",
+    "correct_answer": "Halo",
+    "incorrect_answers": ["Gears of War", "Destiny", "Mass Effect"],
+    "category": "Gaming",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-124",
+    "question": "What is the mascot of the Linux operating system?",
+    "correct_answer": "Tux the Penguin",
+    "incorrect_answers": ["Gnu the Antelope", "Puffy the Blowfish", "Duke the Java Frog"],
+    "category": "Homelab & Tech",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-125",
+    "question": "In The Office (US), what paper company do the main characters work for?",
+    "correct_answer": "Dunder Mifflin",
+    "incorrect_answers": ["Sabre", "Wernham Hogg", "Initech"],
+    "category": "Pop Culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-126",
+    "question": "What year did the original PlayStation (PS1) launch in Japan?",
+    "correct_answer": "1994",
+    "incorrect_answers": ["1991", "1996", "1998"],
+    "category": "Gaming",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-127",
+    "question": "What containerization platform popularized using Dockerfiles to package applications?",
+    "correct_answer": "Docker",
+    "incorrect_answers": ["Podman", "LXC", "Vagrant"],
+    "category": "Homelab & Tech",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-128",
+    "question": "Which Marvel character is known as the Merc with a Mouth?",
+    "correct_answer": "Deadpool",
+    "incorrect_answers": ["Wolverine", "Spider-Man", "Iron Man"],
+    "category": "Pop Culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-129",
+    "question": "In computer networking, what IP address represents localhost?",
+    "correct_answer": "127.0.0.1",
+    "incorrect_answers": ["192.168.1.1", "10.0.0.1", "0.0.0.0"],
+    "category": "Homelab & Tech",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-130",
+    "question": "Which game won Game of the Year at The Game Awards 2022?",
+    "correct_answer": "Elden Ring",
+    "incorrect_answers": ["God of War Ragnarök", "Stray", "Horizon Forbidden West"],
+    "category": "Gaming",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-131",
+    "question": "What famous sci-fi movie features Neo taking the red pill?",
+    "correct_answer": "The Matrix",
+    "incorrect_answers": ["Minority Report", "Inception", "Total Recall"],
+    "category": "Movies",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-132",
+    "question": "What open-source reverse proxy server is widely used with Let's Encrypt for automatic SSL certificates?",
+    "correct_answer": "Nginx",
+    "incorrect_answers": ["Apache Tomcat", "IIS", "MySQL"],
+    "category": "Homelab & Tech",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-133",
+    "question": "What is the name of Mario's twin brother?",
+    "correct_answer": "Luigi",
+    "incorrect_answers": ["Wario", "Waluigi", "Toad"],
+    "category": "Gaming",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-134",
+    "question": "In Star Trek, what is the designation of Captain Kirk's flagship vessel?",
+    "correct_answer": "USS Enterprise (NCC-1701)",
+    "incorrect_answers": ["USS Voyager", "USS Defiant", "USS Discovery"],
+    "category": "Pop Culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-135",
+    "question": "What command line tool is used to query DNS resource records on Linux & Unix systems?",
+    "correct_answer": "dig",
+    "incorrect_answers": ["ping", "traceroute", "netstat"],
+    "category": "Homelab & Tech",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-136",
+    "question": "What open-world game by CD Projekt Red features Night City?",
+    "correct_answer": "Cyberpunk 2077",
+    "incorrect_answers": ["The Witcher 3", "Watch Dogs", "Deus Ex"],
+    "category": "Gaming",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-137",
+    "question": "What is the highest-grossing film of all time (unadjusted for inflation)?",
+    "correct_answer": "Avatar",
+    "incorrect_answers": ["Avengers: Endgame", "Titanic", "Star Wars: The Force Awakens"],
+    "category": "Movies",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-138",
+    "question": "Which open-source media server software is a popular free alternative to Plex?",
+    "correct_answer": "Jellyfin",
+    "incorrect_answers": ["Emby", "Kodi", "Stremio"],
+    "category": "Homelab & Tech",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-139",
+    "question": "In Grand Theft Auto V, which of the following is NOT one of the 3 playable protagonists?",
+    "correct_answer": "Niko Bellic",
+    "incorrect_answers": ["Michael De Santa", "Trevor Philips", "Franklin Clinton"],
+    "category": "Gaming",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-140",
+    "question": "What year was Google founded?",
+    "correct_answer": "1998",
+    "incorrect_answers": ["1995", "2000", "1992"],
+    "category": "Science: Computers",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-141",
+    "question": "What standard port is used for secure HTTPS web traffic?",
+    "correct_answer": "443",
+    "incorrect_answers": ["80", "22", "21"],
+    "category": "Homelab & Tech",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-142",
+    "question": "In The Legend of Zelda, what is the name of the protagonist you play as?",
+    "correct_answer": "Link",
+    "incorrect_answers": ["Zelda", "Ganon", "Epona"],
+    "category": "Gaming",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-143",
+    "question": "Which director created Inception, Interstellar, and Oppenheimer?",
+    "correct_answer": "Christopher Nolan",
+    "incorrect_answers": ["Steven Spielberg", "Denis Villeneuve", "Quentin Tarantino"],
+    "category": "Movies",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-144",
+    "question": "What open-source automation platform uses Playbooks written in YAML?",
+    "correct_answer": "Ansible",
+    "incorrect_answers": ["Puppet", "Chef", "Terraform"],
+    "category": "Homelab & Tech",
+    "difficulty": "medium"
+  },
+  {
+    "id": "custom-145",
+    "question": "In Fall Out 4 and Fallout 76, what is the name of the arm-mounted computer unit?",
+    "correct_answer": "Pip-Boy",
+    "incorrect_answers": ["Vault-Boy", "RobCo Terminal", "G.E.C.K."],
+    "category": "Gaming",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-146",
+    "question": "What does the abbreviation 'SaaS' stand for in software?",
+    "correct_answer": "Software as a Service",
+    "incorrect_answers": ["System as a Storage", "Server as an Application", "Security as a Shield"],
+    "category": "Homelab & Tech",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-147",
+    "question": "Which game features a battle royale island where players build structures and perform dance emotes?",
+    "correct_answer": "Fortnite",
+    "incorrect_answers": ["PUBG", "Apex Legends", "Call of Duty: Warzone"],
+    "category": "Gaming",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-148",
+    "question": "In Jurassic Park (1993), what dinosaur species breaks out during the storm and attacks the tour cars?",
+    "correct_answer": "Tyrannosaurus Rex",
+    "incorrect_answers": ["Velociraptor", "Dilophosaurus", "Brachiosaurus"],
+    "category": "Movies",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-149",
+    "question": "What command in Linux updates packages on Debian/Ubuntu systems?",
+    "correct_answer": "sudo apt update",
+    "incorrect_answers": ["sudo yum update", "sudo pacman -Syu", "sudo dnf update"],
+    "category": "Homelab & Tech",
+    "difficulty": "easy"
+  },
+  {
+    "id": "custom-150",
+    "question": "Which classic 1980 arcade game features eating dots while avoiding Blinky, Pinky, Inky, and Clyde?",
+    "correct_answer": "Pac-Man",
+    "incorrect_answers": ["Space Invaders", "Donkey Kong", "Frogger"],
+    "category": "Gaming",
+    "difficulty": "easy"
   }
 ]

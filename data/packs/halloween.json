@@ -3,15 +3,23 @@
     "id": "halloween-1",
     "question": "Which country is credited with inventing Halloween over 2,000 years ago from the ancient festival of Samhain?",
     "correct_answer": "Ireland",
-    "incorrect_answers": ["Scotland", "Transylvania", "England"],
+    "incorrect_answers": [
+      "Scotland",
+      "Transylvania",
+      "England"
+    ],
     "category": "Halloween Trivia",
     "difficulty": "easy"
   },
   {
     "id": "halloween-2",
-    "question": "Before pumpkins became popular, what root vegetable was originally carved into Jack-o'-lanterns in Ireland?",
+    "question": "Before pumpkins became popular, what root vegetable was originally carved into Jack-o'lanterns in Ireland?",
     "correct_answer": "Turnips",
-    "incorrect_answers": ["Potatoes", "Radishes", "Beets"],
+    "incorrect_answers": [
+      "Potatoes",
+      "Radishes",
+      "Beets"
+    ],
     "category": "Halloween Trivia",
     "difficulty": "medium"
   },
@@ -19,7 +27,11 @@
     "id": "halloween-3",
     "question": "What is the official scientific term for the intense fear of Halloween or Halloween-related objects?",
     "correct_answer": "Samhainophobia",
-    "incorrect_answers": ["Spookophobia", "Phasmophobia", "Pumpkinophobia"],
+    "incorrect_answers": [
+      "Spookophobia",
+      "Phasmophobia",
+      "Pumpkinophobia"
+    ],
     "category": "Halloween Trivia",
     "difficulty": "hard"
   },
@@ -27,7 +39,11 @@
     "id": "halloween-4",
     "question": "In Bram Stoker's original 1897 novel Dracula, what famous real-world castle in Romania inspired Count Dracula's lair?",
     "correct_answer": "Bran Castle",
-    "incorrect_answers": ["Corvin Castle", "Peles Castle", "Wawel Castle"],
+    "incorrect_answers": [
+      "Corvin Castle",
+      "Peles Castle",
+      "Wawel Castle"
+    ],
     "category": "Halloween Trivia",
     "difficulty": "medium"
   },
@@ -35,7 +51,11 @@
     "id": "halloween-5",
     "question": "In the original classic 1978 movie Halloween, what famous Star Trek actor's face mask was painted white for Michael Myers?",
     "correct_answer": "William Shatner (Captain Kirk)",
-    "incorrect_answers": ["Leonard Nimoy (Spock)", "DeForest Kelley (McCoy)", "George Takei (Sulu)"],
+    "incorrect_answers": [
+      "Leonard Nimoy (Spock)",
+      "DeForest Kelley (McCoy)",
+      "George Takei (Sulu)"
+    ],
     "category": "Halloween Trivia",
     "difficulty": "easy"
   },
@@ -43,7 +63,11 @@
     "id": "halloween-6",
     "question": "According to classic monster lore, what precious metal element is famously capable of harming a Werewolf?",
     "correct_answer": "Silver",
-    "incorrect_answers": ["Gold", "Platinum", "Iron"],
+    "incorrect_answers": [
+      "Gold",
+      "Platinum",
+      "Iron"
+    ],
     "category": "Halloween Trivia",
     "difficulty": "easy"
   },
@@ -51,7 +75,11 @@
     "id": "halloween-7",
     "question": "What classic Halloween candy was invented in the 1880s and originally marketed under the name Chicken Feed?",
     "correct_answer": "Candy Corn",
-    "incorrect_answers": ["Candy Pumpkins", "M&Ms", "Tootsie Rolls"],
+    "incorrect_answers": [
+      "Candy Pumpkins",
+      "M&Ms",
+      "Tootsie Rolls"
+    ],
     "category": "Halloween Trivia",
     "difficulty": "medium"
   },
@@ -59,7 +87,11 @@
     "id": "halloween-8",
     "question": "In the iconic 1993 Disney movie Hocus Pocus, what are the names of the three resurrected Sanderson Sisters?",
     "correct_answer": "Winifred, Sarah, and Mary",
-    "incorrect_answers": ["Elphaba, Glinda, and Nessarose", "Samantha, Endora, and Tabitha", "Morticia, Wednesday, and Thing"],
+    "incorrect_answers": [
+      "Elphaba, Glinda, and Nessarose",
+      "Samantha, Endora, and Tabitha",
+      "Morticia, Wednesday, and Thing"
+    ],
     "category": "Halloween Trivia",
     "difficulty": "easy"
   },
@@ -67,7 +99,11 @@
     "id": "halloween-9",
     "question": "What infamous 1692 historical event led to 19 people being executed for witchcraft in colonial Massachusetts?",
     "correct_answer": "The Salem Witch Trials",
-    "incorrect_answers": ["The Boston Tea Party", "The Plymouth Inquisition", "The Concord Trials"],
+    "incorrect_answers": [
+      "The Boston Tea Party",
+      "The Plymouth Inquisition",
+      "The Concord Trials"
+    ],
     "category": "Halloween Trivia",
     "difficulty": "easy"
   },
@@ -75,15 +111,23 @@
     "id": "halloween-10",
     "question": "In Mary Shelley's 1818 novel, what is the official given first name of Doctor Frankenstein who created the monster?",
     "correct_answer": "Victor",
-    "incorrect_answers": ["Igor", "Henry", "Arthur"],
+    "incorrect_answers": [
+      "Igor",
+      "Henry",
+      "Arthur"
+    ],
     "category": "Halloween Trivia",
     "difficulty": "medium"
   },
   {
     "id": "halloween-11",
-    "question": "What classic horror film features a possessed child named Regan and the iconic line 'The power of Christ compels you!'?",
+    "question": "What classic horror film features a possessed child named Regan and the iconic line \"The power of Christ compels you!\"?",
     "correct_answer": "The Exorcist",
-    "incorrect_answers": ["Poltergeist", "The Omen", "Rosemary's Baby"],
+    "incorrect_answers": [
+      "Poltergeist",
+      "The Omen",
+      "Rosemary's Baby"
+    ],
     "category": "Halloween Trivia",
     "difficulty": "easy"
   },
@@ -91,8 +135,468 @@
     "id": "halloween-12",
     "question": "According to ancient superstition, seeing what creature on Halloween night means a spirit is watching over you?",
     "correct_answer": "A Spider",
-    "incorrect_answers": ["A Black Cat", "A Raven", "A Fruit Bat"],
+    "incorrect_answers": [
+      "A Black Cat",
+      "A Raven",
+      "A Fruit Bat"
+    ],
     "category": "Halloween Trivia",
     "difficulty": "hard"
+  },
+  {
+    "id": "halloween-13",
+    "question": "What is the name of the fictional town in Indiana where the Netflix sci-fi horror series Stranger Things takes place?",
+    "correct_answer": "Hawkins",
+    "incorrect_answers": [
+      "Springfield",
+      "Riverdale",
+      "Sunnydale"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-14",
+    "question": "Which famous magician and escape artist famously died on Halloween day in 1926 from peritonitis?",
+    "correct_answer": "Harry Houdini",
+    "incorrect_answers": [
+      "David Copperfield",
+      "Penn Jillette",
+      "Uri Geller"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-15",
+    "question": "In Tim Burton's 1993 stop-motion classic The Nightmare Before Christmas, Jack Skellington is known by what spooky title?",
+    "correct_answer": "The Pumpkin King",
+    "incorrect_answers": [
+      "The Ghost Master",
+      "The Skeleton Lord",
+      "The Shadow Prince"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-16",
+    "question": "What plant derivative is famously recommended to repel vampires according to European folklore?",
+    "correct_answer": "Garlic",
+    "incorrect_answers": [
+      "Rosemary",
+      "Wolfsbane",
+      "Belladonna"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-17",
+    "question": "In the 1984 film A Nightmare on Elm Street, what blade-gloved killer haunts teenagers in their dreams?",
+    "correct_answer": "Freddy Krueger",
+    "incorrect_answers": [
+      "Jason Voorhees",
+      "Leatherface",
+      "Pinhead"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-18",
+    "question": "What horror movie villain wears an iconic hockey goalie mask and haunts Camp Crystal Lake?",
+    "correct_answer": "Jason Voorhees",
+    "incorrect_answers": [
+      "Michael Myers",
+      "Ghostface",
+      "Norman Bates"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-19",
+    "question": "What popular 1996 horror film franchise famously asks victims, \"What's your favorite scary movie?\"?",
+    "correct_answer": "Scream",
+    "incorrect_answers": [
+      "Saw",
+      "I Know What You Did Last Summer",
+      "Final Destination"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-20",
+    "question": "In the movie Beetlejuice, how many times must you say his name out loud to summon the bio-exorcist?",
+    "correct_answer": "Three times",
+    "incorrect_answers": [
+      "Five times",
+      "Seven times",
+      "Once"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-21",
+    "question": "What color is the flame of a candle superstitious folk believe turns green when a ghost or spirit is nearby?",
+    "correct_answer": "Blue",
+    "incorrect_answers": [
+      "Green",
+      "Purple",
+      "White"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "hard"
+  },
+  {
+    "id": "halloween-22",
+    "question": "What legendary creature from Mexican folklore is known as the \"Goat Sucker\" for preying on livestock?",
+    "correct_answer": "Chupacabra",
+    "incorrect_answers": [
+      "La Llorona",
+      "El Cucuy",
+      "Wendigo"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-23",
+    "question": "In Mexican culture, what vibrant annual holiday celebrated Nov 1-2 honors deceased loved ones with altars and marigolds?",
+    "correct_answer": "Día de los Muertos (Day of the Dead)",
+    "incorrect_answers": [
+      "La Noche Triste",
+      "Cinco de Mayo",
+      "Fiesta de los Santos"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-24",
+    "question": "What spectral headless rider terrorizes the village of Sleepy Hollow in Washington Irving's classic 1820 short story?",
+    "correct_answer": "The Headless Horseman",
+    "incorrect_answers": [
+      "The Black Knight",
+      "The Phantom Rider",
+      "The Ghost of Ichabod"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-25",
+    "question": "What weapon is famously held by the Grim Reaper in traditional artistic representations of death?",
+    "correct_answer": "A Scythe",
+    "incorrect_answers": [
+      "A Broadsword",
+      "A Trident",
+      "A Battleaxe"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-26",
+    "question": "In Stephen King's novel The Shining, what terrifying word is written backwards on the wall by Danny Torrance?",
+    "correct_answer": "REDRUM",
+    "incorrect_answers": [
+      "MURDER",
+      "OVERLOOK",
+      "HELPME"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-27",
+    "question": "What form does the shape-shifting demonic entity Pennywise primarily take in Stephen King's IT?",
+    "correct_answer": "A Dancing Clown",
+    "incorrect_answers": [
+      "A Giant Spider",
+      "A Werewolf",
+      "A Phantom Doll"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-28",
+    "question": "What organ does a witch's familiar traditionally share a spiritual connection with according to folklore?",
+    "correct_answer": "Heart / Soul",
+    "incorrect_answers": [
+      "Brain",
+      "Eyes",
+      "Blood"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "hard"
+  },
+  {
+    "id": "halloween-29",
+    "question": "Which monster from 1954 classic cinema emerges from the Amazon River waters wearing an amphibious suit?",
+    "correct_answer": "Creature from the Black Lagoon",
+    "incorrect_answers": [
+      "The Swamp Thing",
+      "The Blob",
+      "The Mummy"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-30",
+    "question": "In the 1979 sci-fi horror masterpiece Alien, what is the official name of the commercial starfreighter ship?",
+    "correct_answer": "USCSS Nostromo",
+    "incorrect_answers": [
+      "USCSS Sulaco",
+      "Discovery One",
+      "Event Horizon"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-31",
+    "question": "What real-world animal sound was slowed down and pitched low to create the terrifying roar of Godzilla in 1954?",
+    "correct_answer": "A resin-coated leather glove dragged across a double bass string",
+    "incorrect_answers": [
+      "A lion roaring in a cave",
+      "An elephant trumpet through a speaker",
+      "A jet engine startup sound"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "hard"
+  },
+  {
+    "id": "halloween-32",
+    "question": "In folklore, what type of wood stake is traditionally specified as most effective for piercing a vampire's heart?",
+    "correct_answer": "Ash (or Oak/Hawthorn)",
+    "incorrect_answers": [
+      "Pine",
+      "Cedar",
+      "Balsa"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-33",
+    "question": "Which famous gothic author wrote the chilling 1843 short story The Tell-Tale Heart?",
+    "correct_answer": "Edgar Allan Poe",
+    "incorrect_answers": [
+      "Nathaniel Hawthorne",
+      "H.P. Lovecraft",
+      "Bram Stoker"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-34",
+    "question": "In Edgar Allan Poe's famous poem The Raven, what single word does the gloomy bird continuously repeat?",
+    "correct_answer": "Nevermore",
+    "incorrect_answers": [
+      "Forevermore",
+      "Lenore",
+      "Beware"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-35",
+    "question": "What classic 1960 Alfred Hitchcock thriller revolves around hotel proprietor Norman Bates and the Bates Motel?",
+    "correct_answer": "Psycho",
+    "incorrect_answers": [
+      "The Birds",
+      "Vertigo",
+      "Rear Window"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-36",
+    "question": "In Buffy the Vampire Slayer, what is the nickname of Sunnydale High School's underground demonic portal?",
+    "correct_answer": "The Hellmouth",
+    "incorrect_answers": [
+      "The Nether Gate",
+      "The Abyss",
+      "The Demon Pit"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-37",
+    "question": "What iconic chocolate bar with nougat and caramel was named after a horse owned by the Mars family in 1930?",
+    "correct_answer": "Snickers",
+    "incorrect_answers": [
+      "Milky Way",
+      "3 Musketeers",
+      "Twix"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-38",
+    "question": "In the 1999 movie The Sixth Sense, what famous line is whispered by young Cole Sear to Bruce Willis?",
+    "correct_answer": "\"I see dead people.\"",
+    "incorrect_answers": [
+      "\"They're here!\"",
+      "\"Don't look behind you.\"",
+      "\"He's in the house!\""
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-39",
+    "question": "What mythical creature from Native American folklore is a malevolent cannibalistic spirit associated with winter and starvation?",
+    "correct_answer": "Wendigo",
+    "incorrect_answers": [
+      "Skinwalker",
+      "Sasquatch",
+      "Thunderbird"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-40",
+    "question": "What is the phrase chanted in front of a mirror three times in urban folklore to summon a terrifying ghost?",
+    "correct_answer": "Bloody Mary",
+    "incorrect_answers": [
+      "Candyman",
+      "Beetlejuice",
+      "La Llorona"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-41",
+    "question": "In Roman mythology, what deity of the underworld corresponds to the Greek god Hades?",
+    "correct_answer": "Pluto",
+    "incorrect_answers": [
+      "Mars",
+      "Vulcan",
+      "Neptune"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-42",
+    "question": "What 1982 Steven Spielberg film terrified audiences with television static and the quote \"They're here!\"?",
+    "correct_answer": "Poltergeist",
+    "incorrect_answers": [
+      "E.T.",
+      "Gremlins",
+      "Close Encounters"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-43",
+    "question": "What classic monster is created by wrapping a preserved corpse in linen bandages?",
+    "correct_answer": "The Mummy",
+    "incorrect_answers": [
+      "The Golem",
+      "The Zombie",
+      "The Phantom"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-44",
+    "question": "In folklore, what lunar phase triggers a lycanthrope to transform into a werewolf?",
+    "correct_answer": "Full Moon",
+    "incorrect_answers": [
+      "New Moon",
+      "Crescent Moon",
+      "Lunar Eclipse"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-45",
+    "question": "What legendary cryptid monster is said to inhabit the Pine Barrens of Southern New Jersey?",
+    "correct_answer": "The Jersey Devil",
+    "incorrect_answers": [
+      "Mothman",
+      "Bigfoot",
+      "Chupacabra"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-46",
+    "question": "In the 1988 film Child's Play, what is the full name of the serial killer whose soul possesses the Chucky doll?",
+    "correct_answer": "Charles Lee Ray",
+    "incorrect_answers": [
+      "Ed Gein",
+      "Ted Bundy",
+      "Michael Myers"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "hard"
+  },
+  {
+    "id": "halloween-47",
+    "question": "What is the fear of ghosts or apparitions officially called?",
+    "correct_answer": "Phasmophobia",
+    "incorrect_answers": [
+      "Spectrophobia",
+      "Demonophobia",
+      "Nyctophobia"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
+  },
+  {
+    "id": "halloween-48",
+    "question": "What fruit is traditionally used in the classic party game of Bobbing for apples on Halloween night?",
+    "correct_answer": "Apples",
+    "incorrect_answers": [
+      "Pears",
+      "Peaches",
+      "Plums"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-49",
+    "question": "What classic 1984 supernatural comedy features Dr. Peter Venkman, Ray Stantz, and Egon Spengler?",
+    "correct_answer": "Ghostbusters",
+    "incorrect_answers": [
+      "Monster Squad",
+      "Men in Black",
+      "Fright Night"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "easy"
+  },
+  {
+    "id": "halloween-50",
+    "question": "What is the traditional Gaelic spelling of the ancient Celtic festival that marks the end of harvest and origin of Halloween?",
+    "correct_answer": "Samhain",
+    "incorrect_answers": [
+      "Beltane",
+      "Imbolc",
+      "Lughnasadh"
+    ],
+    "category": "Halloween Trivia",
+    "difficulty": "medium"
   }
 ]
