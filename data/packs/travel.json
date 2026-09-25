@@ -1,0 +1,602 @@
+[
+  {
+    "id": "travel-1",
+    "question": "In which city can you visit the famous ancient amphitheater known as the Colosseum?",
+    "correct_answer": "Rome, Italy",
+    "incorrect_answers": [
+      "Athens, Greece",
+      "Cairo, Egypt",
+      "Istanbul, Turkey"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-2",
+    "question": "What iconic white marble mausoleum commissioned by Emperor Shah Jahan is located in Agra, India?",
+    "correct_answer": "Taj Mahal",
+    "incorrect_answers": [
+      "Hawa Mahal",
+      "Red Fort",
+      "Lotus Temple"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-3",
+    "question": "What 15th-century Inca citadel is perched high on a mountain ridge in the Cusco region of Peru?",
+    "correct_answer": "Machu Picchu",
+    "incorrect_answers": [
+      "Chichen Itza",
+      "Tikal",
+      "Teotihuacan"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-4",
+    "question": "Which country boasts the highest number of natural lakes in the world, containing over 60% of the globe's total lakes?",
+    "correct_answer": "Canada",
+    "incorrect_answers": [
+      "Finland",
+      "Russia",
+      "United States"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-5",
+    "question": "What is the tallest building in the world as of 2026, reaching a total height of 828 meters (2,717 feet)?",
+    "correct_answer": "Burj Khalifa (Dubai)",
+    "incorrect_answers": [
+      "Shanghai Tower",
+      "Abraj Al Bait",
+      "One World Trade Center"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-6",
+    "question": "What is the smallest independent country in the world by both land area and population?",
+    "correct_answer": "Vatican City",
+    "incorrect_answers": [
+      "Monaco",
+      "Nauru",
+      "San Marino"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-7",
+    "question": "What famous ancient city carved directly into red desert rock cliffs is located in southern Jordan?",
+    "correct_answer": "Petra",
+    "incorrect_answers": [
+      "Palmyra",
+      "Persepolis",
+      "Babylon"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-8",
+    "question": "Which country spans 11 different time zones across Europe and Asia?",
+    "correct_answer": "Russia",
+    "incorrect_answers": [
+      "China",
+      "Canada",
+      "United States"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-9",
+    "question": "What giant basalt column geological formation on the coast of Northern Ireland resulted from ancient volcanic activity?",
+    "correct_answer": "Giant's Causeway",
+    "incorrect_answers": [
+      "Fingal's Cave",
+      "Cliffs of Moher",
+      "Old Man of Storr"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-10",
+    "question": "What African country is home to the ancient pyramids of Giza and the Great Sphinx?",
+    "correct_answer": "Egypt",
+    "incorrect_answers": [
+      "Sudan",
+      "Morocco",
+      "Ethiopia"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-11",
+    "question": "Which city is famous for its intricate canal system, gondolas, and the Grand Canal?",
+    "correct_answer": "Venice, Italy",
+    "incorrect_answers": [
+      "Amsterdam, Netherlands",
+      "Bruges, Belgium",
+      "Hamburg, Germany"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-12",
+    "question": "What Japanese island is famous for Mount Fuji, the capital city of Tokyo, and Kyoto?",
+    "correct_answer": "Honshu",
+    "incorrect_answers": [
+      "Hokkaido",
+      "Kyushu",
+      "Shikoku"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-13",
+    "question": "What magnificent active volcano overlooks the Bay of Naples in Italy, famous for destroying Pompeii in 79 AD?",
+    "correct_answer": "Mount Vesuvius",
+    "incorrect_answers": [
+      "Mount Etna",
+      "Stromboli",
+      "Santorini"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-14",
+    "question": "Which Southeast Asian nation is famous for the ancient temple complex of Angkor Wat?",
+    "correct_answer": "Cambodia",
+    "incorrect_answers": [
+      "Thailand",
+      "Vietnam",
+      "Laos"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-15",
+    "question": "What is the longest river in South America by water discharge volume, winding through nine countries?",
+    "correct_answer": "Amazon River",
+    "incorrect_answers": [
+      "Orinoco River",
+      "Paraná River",
+      "Magdalena River"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-16",
+    "question": "Which European capital city features the iconic Eiffel Tower, Louvre Museum, and Notre-Dame Cathedral?",
+    "correct_answer": "Paris, France",
+    "incorrect_answers": [
+      "Brussels, Belgium",
+      "Madrid, Spain",
+      "Vienna, Austria"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-17",
+    "question": "What island nation in the North Atlantic features black sand beaches, geothermal blue lagoons, and geysers?",
+    "correct_answer": "Iceland",
+    "incorrect_answers": [
+      "Greenland",
+      "Faroe Islands",
+      "Norway"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-18",
+    "question": "What giant coral reef system stretching over 2,300 kilometers off the coast of Queensland, Australia is visible from space?",
+    "correct_answer": "Great Barrier Reef",
+    "incorrect_answers": [
+      "Mesoamerican Reef",
+      "Ningaloo Reef",
+      "Raja Ampat"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-19",
+    "question": "What giant Art Deco statue of Jesus Christ overlooks Rio de Janeiro, Brazil from Mount Corcovado?",
+    "correct_answer": "Christ the Redeemer",
+    "incorrect_answers": [
+      "Christ of the Abyss",
+      "Statue of Blessing",
+      "Cristo de la Concordia"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-20",
+    "question": "Which country is home to the stunning fjord landscapes of Geirangerfjord and Nærøyfjord?",
+    "correct_answer": "Norway",
+    "incorrect_answers": [
+      "Sweden",
+      "Finland",
+      "Denmark"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-21",
+    "question": "What is the capital city of Australia?",
+    "correct_answer": "Canberra",
+    "incorrect_answers": [
+      "Sydney",
+      "Melbourne",
+      "Brisbane"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-22",
+    "question": "What massive Mayan pyramid known as El Castillo stands at the center of the Chichén Itzá archaeological site in Mexico?",
+    "correct_answer": "Temple of Kukulcan",
+    "incorrect_answers": [
+      "Pyramid of the Sun",
+      "Pyramid of the Moon",
+      "Temple of the Inscriptions"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-23",
+    "question": "Which African nation is famous for the Serengeti National Park and Mount Kilimanjaro?",
+    "correct_answer": "Tanzania",
+    "incorrect_answers": [
+      "Kenya",
+      "Uganda",
+      "Rwanda"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-24",
+    "question": "What architectural masterpiece designed by Antoni Gaudí has been under construction in Barcelona since 1882?",
+    "correct_answer": "Basílica de la Sagrada Família",
+    "incorrect_answers": [
+      "Park Güell",
+      "Casa Batlló",
+      "Cathedral of Barcelona"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-25",
+    "question": "What body of water bordering Jordan and Israel is so hyper-saline that swimmers float effortlessly without sinking?",
+    "correct_answer": "The Dead Sea",
+    "incorrect_answers": [
+      "The Red Sea",
+      "The Caspian Sea",
+      "Sea of Galilee"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-26",
+    "question": "What US National Park located primarily in Wyoming features the famous Old Faithful geyser?",
+    "correct_answer": "Yellowstone National Park",
+    "incorrect_answers": [
+      "Yosemite National Park",
+      "Zion National Park",
+      "Grand Canyon National Park"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-27",
+    "question": "What island in French Polynesia is famous for its overwater bungalows and turquoise volcanic lagoon surrounded by coral reefs?",
+    "correct_answer": "Bora Bora",
+    "incorrect_answers": [
+      "Tahiti",
+      "Mooreal",
+      "Fiji"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-28",
+    "question": "Which country contains the landlocked European city of Prague, known for its historic Old Town Square and Charles Bridge?",
+    "correct_answer": "Czech Republic (Czechia)",
+    "incorrect_answers": [
+      "Hungary",
+      "Slovakia",
+      "Poland"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-29",
+    "question": "What high-altitude plateau in South America straddling Peru and Bolivia holds Lake Titicaca?",
+    "correct_answer": "Altiplano",
+    "incorrect_answers": [
+      "Pampas",
+      "Patagonia",
+      "Gran Chaco"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "hard"
+  },
+  {
+    "id": "travel-30",
+    "question": "What famous clock tower at the north end of the Palace of Westminster in London is colloquially called Big Ben?",
+    "correct_answer": "Elizabeth Tower",
+    "incorrect_answers": [
+      "Victoria Tower",
+      "St Stephen's Tower",
+      "Clock of Parliament"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-31",
+    "question": "Which island territory of South America features the mysterious giant stone statues called Moai?",
+    "correct_answer": "Easter Island (Rapa Nui)",
+    "incorrect_answers": [
+      "Galápagos Islands",
+      "Falkland Islands",
+      "San Andrés"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-32",
+    "question": "What world waterfall located on the border of Zambia and Zimbabwe is known locally as Mosi-oa-Tunya (\"The Smoke That Thunders\")?",
+    "correct_answer": "Victoria Falls",
+    "incorrect_answers": [
+      "Iguazu Falls",
+      "Niagara Falls",
+      "Angel Falls"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-33",
+    "question": "What is the highest uninterrupted waterfall in the world, cascading 979 meters (3,212 feet) in Venezuela?",
+    "correct_answer": "Angel Falls (Salto Ángel)",
+    "incorrect_answers": [
+      "Tugela Falls",
+      "Yosemite Falls",
+      "Niagara Falls"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-34",
+    "question": "Which city is split between two continents (Europe and Asia) by the Bosphorus Strait?",
+    "correct_answer": "Istanbul, Turkey",
+    "incorrect_answers": [
+      "Athens, Greece",
+      "Cairo, Egypt",
+      "Moscow, Russia"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-35",
+    "question": "What famous reddish sandstone monolith in the Northern Territory of Australia is sacred to the Pitjantjatjara Anangu indigenous people?",
+    "correct_answer": "Uluru (Ayers Rock)",
+    "incorrect_answers": [
+      "Kata Tjuta",
+      "Kings Canyon",
+      "Wave Rock"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-36",
+    "question": "What mountain peak in Nepal/China is the highest point on Earth above sea level at 8,848.86 meters?",
+    "correct_answer": "Mount Everest",
+    "incorrect_answers": [
+      "K2",
+      "Kangchenjunga",
+      "Lhotse"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-37",
+    "question": "What island cluster off Ecuador inspired Charles Darwin's theory of evolution by natural selection in 1835?",
+    "correct_answer": "Galápagos Islands",
+    "incorrect_answers": [
+      "Azores",
+      "Canary Islands",
+      "Seychelles"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-38",
+    "question": "What spectacular turquoise glacial lake in Banff National Park, Alberta, Canada is famous for its reflection of Ten Peaks?",
+    "correct_answer": "Moraine Lake",
+    "incorrect_answers": [
+      "Lake Louise",
+      "Emerald Lake",
+      "Maligne Lake"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-39",
+    "question": "What world capital city features the historic Brandenburg Gate, Reichstag Building, and remains of a famous Cold War wall?",
+    "correct_answer": "Berlin, Germany",
+    "incorrect_answers": [
+      "Munich, Germany",
+      "Warsaw, Poland",
+      "Prague, Czech Republic"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-40",
+    "question": "Which country has the longest coastline in the world, measuring over 202,080 kilometers?",
+    "correct_answer": "Canada",
+    "incorrect_answers": [
+      "Norway",
+      "Indonesia",
+      "Australia"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "hard"
+  },
+  {
+    "id": "travel-41",
+    "question": "What famous suspension bridge completed in 1937 spans the Golden Gate strait in San Francisco, California?",
+    "correct_answer": "Golden Gate Bridge",
+    "incorrect_answers": [
+      "Brooklyn Bridge",
+      "Mackinac Bridge",
+      "Sydney Harbour Bridge"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-42",
+    "question": "What salt flat in Bolivia covering 10,000 square kilometers becomes the world's largest natural mirror when covered in shallow water?",
+    "correct_answer": "Salar de Uyuni",
+    "incorrect_answers": [
+      "Atacama Salt Flat",
+      "Badwater Basin",
+      "Etosha Pan"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-43",
+    "question": "What iconic white-and-blue cliffside village in Greece overlooks the Aegean Sea in the Cyclades island group?",
+    "correct_answer": "Santorini (Oia)",
+    "incorrect_answers": [
+      "Mykonos",
+      "Rhodes",
+      "Crete"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-44",
+    "question": "Which country is home to the ancient rock-hewn churches of Lalibela, carved vertically out of living granite?",
+    "correct_answer": "Ethiopia",
+    "incorrect_answers": [
+      "Egypt",
+      "Armenia",
+      "Georgia"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "hard"
+  },
+  {
+    "id": "travel-45",
+    "question": "What famous performing arts venue situated in Sydney Harbour features a distinctive shell-like roof design by Jørn Utzon?",
+    "correct_answer": "Sydney Opera House",
+    "incorrect_answers": [
+      "Royal Albert Hall",
+      "La Scala",
+      "Metropolitan Opera"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-46",
+    "question": "Which desert is the largest hot desert in the world, covering 9 million square kilometers across North Africa?",
+    "correct_answer": "Sahara Desert",
+    "incorrect_answers": [
+      "Gobi Desert",
+      "Arabian Desert",
+      "Kalahari Desert"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-47",
+    "question": "What capital city on the River Danube was formed in 1873 by uniting two distinct towns on opposite riverbanks?",
+    "correct_answer": "Budapest, Hungary",
+    "incorrect_answers": [
+      "Bratislava, Slovakia",
+      "Vienna, Austria",
+      "Belgrade, Serbia"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-48",
+    "question": "Which Asian city-state features the futuristic Gardens by the Bay and the Marina Bay Sands resort?",
+    "correct_answer": "Singapore",
+    "incorrect_answers": [
+      "Hong Kong",
+      "Kuala Lumpur",
+      "Macau"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  },
+  {
+    "id": "travel-49",
+    "question": "What ancient defensive fortification built across northern England by the Roman Empire stretched 73 miles from sea to sea?",
+    "correct_answer": "Hadrian's Wall",
+    "incorrect_answers": [
+      "Antonine Wall",
+      "Offa's Dyke",
+      "Aurelian Wall"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "medium"
+  },
+  {
+    "id": "travel-50",
+    "question": "What tropical island nation off the southeast coast of India is famous for Ceylon tea and ancient Sigiriya rock fortress?",
+    "correct_answer": "Sri Lanka",
+    "incorrect_answers": [
+      "Maldives",
+      "Mauritius",
+      "Madagascar"
+    ],
+    "category": "World Travel & Landmarks",
+    "difficulty": "easy"
+  }
+]

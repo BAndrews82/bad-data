@@ -1,0 +1,602 @@
+[
+  {
+    "id": "cooking-1",
+    "question": "What French culinary term refers to cutting vegetables into thin, matchstick-sized strips?",
+    "correct_answer": "Julienne",
+    "incorrect_answers": [
+      "Chiffonade",
+      "Brunoise",
+      "Dice"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-2",
+    "question": "What is the world's most expensive spice by weight, harvested from the stigmas of crocus flowers?",
+    "correct_answer": "Saffron",
+    "incorrect_answers": [
+      "Vanilla Bean",
+      "Cardamom",
+      "Star Anise"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-3",
+    "question": "What classic mother sauce in French cuisine is made from a white roux and milk?",
+    "correct_answer": "Béchamel",
+    "incorrect_answers": [
+      "Velouté",
+      "Espagnole",
+      "Hollandaise"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-4",
+    "question": "What is the chemical reaction responsible for the browning and deep savory flavor of seared meat?",
+    "correct_answer": "Maillard Reaction",
+    "incorrect_answers": [
+      "Caramelization",
+      "Fermentation",
+      "Oxidation"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-5",
+    "question": "Which scale is used to measure the spicy heat level of chili peppers?",
+    "correct_answer": "Scoville Scale",
+    "incorrect_answers": [
+      "Brix Scale",
+      "Mohs Scale",
+      "Richter Scale"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-6",
+    "question": "What Italian culinary phrase translates literally to \"to the tooth\", describing pasta cooked to be firm when bitten?",
+    "correct_answer": "Al Dente",
+    "incorrect_answers": [
+      "Al Forno",
+      "Molto Bene",
+      "Crudo"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-7",
+    "question": "What key ingredient gives traditional sourdough bread its distinctive tangy rise and flavor?",
+    "correct_answer": "Wild Yeast and Lactic Acid Bacteria",
+    "incorrect_answers": [
+      "Commercial Instant Yeast",
+      "Baking Soda",
+      "Apple Cider Vinegar"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-8",
+    "question": "What Japanese cooking style literally translates to \"grilled on an iron plate\"?",
+    "correct_answer": "Teppanyaki",
+    "incorrect_answers": [
+      "Teriyaki",
+      "Yakitori",
+      "Tempura"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-9",
+    "question": "What French cooking method involves vacuum-sealing food in a plastic pouch and cooking it in a precise water bath?",
+    "correct_answer": "Sous-vide",
+    "incorrect_answers": [
+      "En Papillote",
+      "Confit",
+      "Braising"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-10",
+    "question": "What key herb is the primary flavor profile in traditional green pesto alla Genovese?",
+    "correct_answer": "Fresh Basil",
+    "incorrect_answers": [
+      "Parsley",
+      "Oregano",
+      "Coriander"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-11",
+    "question": "What classic French mixture of diced onions, carrots, and celery forms the flavor base for soups and stews?",
+    "correct_answer": "Mirepoix",
+    "incorrect_answers": [
+      "Trinity",
+      "Sofrito",
+      "Duxelles"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-12",
+    "question": "In baking, what protein network formed by combining flour and water gives dough its elasticity?",
+    "correct_answer": "Gluten",
+    "incorrect_answers": [
+      "Albumin",
+      "Casein",
+      "Starch"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-13",
+    "question": "What prized subterranean fungus requires trained dogs or pigs to hunt underground in France and Italy?",
+    "correct_answer": "Truffles",
+    "incorrect_answers": [
+      "Morels",
+      "Chanterelles",
+      "Shiitake"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-14",
+    "question": "What essential emulsified sauce is made by whisking egg yolks, clarified butter, and lemon juice over warm heat?",
+    "correct_answer": "Hollandaise",
+    "incorrect_answers": [
+      "Béarnaise",
+      "Aioli",
+      "Mayonnaise"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-15",
+    "question": "What traditional Mexican mole sauce features dark chocolate, dried chilies, and nuts?",
+    "correct_answer": "Mole Poblano",
+    "incorrect_answers": [
+      "Mole Verde",
+      "Mole Blanco",
+      "Pico de Gallo"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-16",
+    "question": "What flavor profile is known as the fifth basic taste alongside sweet, sour, salty, and bitter?",
+    "correct_answer": "Umami",
+    "incorrect_answers": [
+      "Savory",
+      "Piquant",
+      "Astringent"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-17",
+    "question": "What Spanish dish traditionally features saffron-rice cooked in a wide, flat pan with seafood or meat?",
+    "correct_answer": "Paella",
+    "incorrect_answers": [
+      "Risotto",
+      "Jambalaya",
+      "Gazpacho"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-18",
+    "question": "What is the process of heating and cooling melted chocolate to align fat crystals for a glossy snap?",
+    "correct_answer": "Tempering",
+    "incorrect_answers": [
+      "Blooming",
+      "Conching",
+      "Dutching"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "hard"
+  },
+  {
+    "id": "cooking-19",
+    "question": "What cut of beef comes from the tenderloin muscle along the spine and is renowned for extreme tenderness?",
+    "correct_answer": "Filet Mignon",
+    "incorrect_answers": [
+      "Ribeye",
+      "New York Strip",
+      "Flank Steak"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-20",
+    "question": "What Chinese cooking technique uses high heat in a seasoned wok to impart a smoky flavor known as \"breath of the wok\"?",
+    "correct_answer": "Wok Hei",
+    "incorrect_answers": [
+      "Stir Frying",
+      "Dim Sum",
+      "Braising"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-21",
+    "question": "What Greek pastry is made with paper-thin layers of phyllo dough filled with chopped nuts and sweetened with honey syrup?",
+    "correct_answer": "Baklava",
+    "incorrect_answers": [
+      "Spanakopita",
+      "Galaktoboureko",
+      "Cannoli"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-22",
+    "question": "What traditional French preservation method cooks meat slowly submerged in its own rendered fat?",
+    "correct_answer": "Confit",
+    "incorrect_answers": [
+      "Curing",
+      "Poaching",
+      "Sous-vide"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-23",
+    "question": "Which cheese is traditionally melted and scraped onto potatoes and cured meats in the Swiss Alps?",
+    "correct_answer": "Raclette",
+    "incorrect_answers": [
+      "Gruyère",
+      "Emmental",
+      "Fondue"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-24",
+    "question": "What type of dough relies on cold butter layers creating steam during baking to expand into hundreds of flaky layers?",
+    "correct_answer": "Puff Pastry (Feuilletage)",
+    "incorrect_answers": [
+      "Choux Pastry",
+      "Shortcrust Pastry",
+      "Phyllo Pastry"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-25",
+    "question": "What primary grain is used to produce Japanese sake through fermentation?",
+    "correct_answer": "Rice",
+    "incorrect_answers": [
+      "Barley",
+      "Wheat",
+      "Sorghum"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-26",
+    "question": "What classic Italian dessert consists of espresso-soaked ladyfingers layered with mascarpone cheese and cocoa?",
+    "correct_answer": "Tiramisu",
+    "incorrect_answers": [
+      "Panna Cotta",
+      "Zabaglione",
+      "Cassata"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-27",
+    "question": "What is the maximum rating of stars a restaurant can receive in the prestigious Michelin Guide?",
+    "correct_answer": "3 Stars",
+    "incorrect_answers": [
+      "5 Stars",
+      "7 Stars",
+      "4 Stars"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-28",
+    "question": "What fundamental ingredient turns regular milk into butter when churned vigorously?",
+    "correct_answer": "Milk Fat (Butterfat)",
+    "incorrect_answers": [
+      "Lactose",
+      "Whey Protein",
+      "Calcium"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-29",
+    "question": "What Vietnamese noodle soup is made with rich bone broth, rice noodles, herbs, and thinly sliced beef?",
+    "correct_answer": "Pho",
+    "incorrect_answers": [
+      "Ramen",
+      "Bun Cha",
+      "Laksa"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-30",
+    "question": "What process adds gas bubbles into wine during secondary bottle fermentation to create Champagne?",
+    "correct_answer": "Méthode Champenoise (Traditional Method)",
+    "incorrect_answers": [
+      "Carbonation Injection",
+      "Decanting",
+      "Fortification"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "hard"
+  },
+  {
+    "id": "cooking-31",
+    "question": "What Korean dish of fermented vegetables (usually napa cabbage and radishes) is seasoned with chili powder and garlic?",
+    "correct_answer": "Kimchi",
+    "incorrect_answers": [
+      "Sauerkraut",
+      "Bulgogi",
+      "Bibimbap"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-32",
+    "question": "What technique involves adding liquid like wine or stock to a hot pan to dissolve browned food bits stuck to the bottom?",
+    "correct_answer": "Deglazing",
+    "incorrect_answers": [
+      "Reduction",
+      "Searing",
+      "Blanching"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-33",
+    "question": "What Italian cured pork charcuterie is made from the pig's jowl or cheek rather than the hind leg?",
+    "correct_answer": "Guanciale",
+    "incorrect_answers": [
+      "Pancetta",
+      "Prosciutto",
+      "Sopressata"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "hard"
+  },
+  {
+    "id": "cooking-34",
+    "question": "What French dessert consists of a rich custard base topped with a layer of hardened caramelized sugar achieved with a torch?",
+    "correct_answer": "Crème Brûlée",
+    "incorrect_answers": [
+      "Flan",
+      "Crème Caramel",
+      "Soufflé"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-35",
+    "question": "What Indian cooking vessel is a thick clay oven fueled by charcoal or wood, used to bake naan bread and meats?",
+    "correct_answer": "Tandoor",
+    "incorrect_answers": [
+      "Karahi",
+      "Wok",
+      "Tajine"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-36",
+    "question": "What technique involves briefly boiling vegetables and then immediately plunging them into ice water to stop cooking?",
+    "correct_answer": "Blanching and Shocking",
+    "incorrect_answers": [
+      "Parboiling",
+      "Steaming",
+      "Sweating"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-37",
+    "question": "What North African clay earthenware cooking pot features a distinctive cone-shaped lid designed to return condensation to the food?",
+    "correct_answer": "Tajine",
+    "incorrect_answers": [
+      "Couscoussier",
+      "Dutch Oven",
+      "Casserole"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-38",
+    "question": "What light French pastry dough cooked twice (first on stove, then baked) expands into hollow shells used for eclairs and cream puffs?",
+    "correct_answer": "Choux Pastry (Pâte à Choux)",
+    "incorrect_answers": [
+      "Brioche",
+      "Shortcrust",
+      "Puff Pastry"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-39",
+    "question": "What type of salt comes from evaporated seawater and forms large, pyramid-shaped crunchy flakes favored as a finishing salt?",
+    "correct_answer": "Maldon Sea Salt",
+    "incorrect_answers": [
+      "Kosher Salt",
+      "Himalayan Pink Salt",
+      "Table Salt"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-40",
+    "question": "What key ingredient is required to make classic mayonnaise emulsify without separating?",
+    "correct_answer": "Lecithin in Egg Yolk",
+    "incorrect_answers": [
+      "Cornstarch",
+      "Gelatin",
+      "Xanthan Gum"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-41",
+    "question": "What famous Peruvian cold seafood dish cures raw fish in fresh citrus juices like lime and lemon?",
+    "correct_answer": "Ceviche",
+    "incorrect_answers": [
+      "Carpaccio",
+      "Tarta de Atún",
+      "Poké"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-42",
+    "question": "What traditional Italian cheese is protected under European law as PDO and must be aged at least 12 months in Emilia-Romagna?",
+    "correct_answer": "Parmigiano-Reggiano",
+    "incorrect_answers": [
+      "Pecorino Romano",
+      "Grana Padano",
+      "Provolone"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-43",
+    "question": "What chemical compound in onions causes human eyes to tear up when cut?",
+    "correct_answer": "Syn-propanethial-S-oxide",
+    "incorrect_answers": [
+      "Capsaicin",
+      "Citric Acid",
+      "Acetic Acid"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "hard"
+  },
+  {
+    "id": "cooking-44",
+    "question": "What spicy Japanese green paste is traditionally made from the grated rhizome of the Eutrema japonicum plant?",
+    "correct_answer": "Wasabi",
+    "incorrect_answers": [
+      "Horseradish",
+      "Matcha",
+      "Gochujang"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-45",
+    "question": "Which classic Italian sauce consists of egg yolks, hard cheese (Pecorino or Parmesan), guanciale, and black pepper with NO cream?",
+    "correct_answer": "Carbonara",
+    "incorrect_answers": [
+      "Alfredo",
+      "Bolognese",
+      "Marinara"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-46",
+    "question": "What technique involves cooking sugar until it melts into a golden-brown liquid around 320°F (160°C)?",
+    "correct_answer": "Caramelization",
+    "incorrect_answers": [
+      "Crystallization",
+      "Reduction",
+      "Temperation"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-47",
+    "question": "What Middle Eastern dip is made from cooked mashed chickpeas blended with tahini, lemon juice, and garlic?",
+    "correct_answer": "Hummus",
+    "incorrect_answers": [
+      "Baba Ganoush",
+      "Tzatziki",
+      "Tabbouleh"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cooking-48",
+    "question": "What classic cocktail ingredient is made by infusing alcohol with bitter herbs, roots, and bark?",
+    "correct_answer": "Bitters (e.g. Angostura)",
+    "incorrect_answers": [
+      "Simple Syrup",
+      "Triple Sec",
+      "Vermouth"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-49",
+    "question": "What essential acid ingredient gives sourdough bread and yogurt their signature sour flavor profile?",
+    "correct_answer": "Lactic Acid",
+    "incorrect_answers": [
+      "Citric Acid",
+      "Acetic Acid",
+      "Tartaric Acid"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cooking-50",
+    "question": "What French term translates to \"everything in its place\", referring to prepping and organizing all ingredients before cooking?",
+    "correct_answer": "Mise en place",
+    "incorrect_answers": [
+      "Chef de cuisine",
+      "Hors d'oeuvre",
+      "Table d'hôte"
+    ],
+    "category": "Culinary & Cooking",
+    "difficulty": "easy"
+  }
+]
