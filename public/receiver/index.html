@@ -960,6 +960,12 @@
         const isActiveGameScreen = ['screen-getready', 'screen-question-splash', 'screen-question', 'screen-reveal'].includes(screenId);
         endBtn.classList.toggle('hidden', !isActiveGameScreen);
       }
+
+      // Hide Voice Host ON/OFF Toggle Button once game starts (only visible in lobby)
+      const ttsBtn = document.getElementById('tts-toggle-btn');
+      if (ttsBtn) {
+        ttsBtn.classList.toggle('hidden', screenId !== 'screen-lobby');
+      }
     }
   </script>
 </body>
