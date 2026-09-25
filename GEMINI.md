@@ -61,9 +61,11 @@ All services run inside LXC 104 via Docker Compose (`docker-compose.yml`):
 
 * **Dual-Voice Host Personalities**:
   * **Announcer Voice (`am_michael`)**: Clear, professional game show host voice for reading trivia questions and correct options.
-  * **Sarcastic Roaster Voice (`am_puck`)**: Snarky, sarcastic, witty co-host voice specifically for AI roasts targeting money losers and greedy leaders.
+  * **Witty Co-Host Voice (`bm_george`)**: Articulate, sarcastic British male co-host voice specifically for smart trivia topic commentary.
+* **No-Robotic-Fallback Protection**:
+  * Neural Kokoro voices (`am_`, `bm_`, `af_`, `bf_`) are strictly synthesized via Kokoro-82M. They do NOT fall back to 22kHz Piper C++ voices to prevent robotic voice artifacts.
 * **Dynamic Audio Concatenation (`evaluateAndReveal()`)**:
-  Synthesizes the Announcer answer reveal and Sarcastic Roast independently, then concatenates their raw MP3 audio streams (`Buffer.concat`) for seamless single-file playback on the TV screen.
+  Synthesizes the Announcer answer reveal and Co-Host commentary independently, then concatenates their raw MP3 audio streams (`Buffer.concat`) for seamless single-file playback on the TV screen.
 * **RAM Pre-Synthesis (`preSynthesizeQuestions()`)**:
   When a game starts, `server.js` renders all 10 questions and reveal answers sequentially into RAM (`ttsAudioCache`).
 * **0ms Latency**: Question and reveal audio streams directly out of RAM memory when hitting the TV screen, eliminating multi-second synthesis delays.
@@ -76,18 +78,25 @@ All services run inside LXC 104 via Docker Compose (`docker-compose.yml`):
 
 * **Primary Model**: Google Gemini API (`gemini-3.6-flash`).
 * **Sub-300ms Optimization**: Configured `thinkingConfig: { thinkingBudget: 0 }` to eliminate thinking model delays, returning roasts in **under 300ms**.
-* **Prompting**: Generates 1-sentence Jackbox-style sarcastic commentary (<20 words) with multi-angle variety: mocking score leaders/losers, insulting player intelligence, making snarky remarks on question difficulty, or roasting the answer itself.
+* **Smart Topic-Focused Prompting**: Generates 1-sentence smart, witty observations (<16 words). **~80% focus strictly on the question topic, trivia subject matter, or correct answer**, with occasional (~20%) clever comments on score shifts or penalties.
 * **100% Free Quota**: Uses under 1% of Google's 15 RPM / 1M TPM free limits.
-* **Zero-Crash Protection**: Automatically falls back to built-in host quips if network is offline or API fails.
+* **Guaranteed Co-Host Speech**: Automatically falls back to built-in smart topic quips if network is offline or API key is unconfigured.
 
 ---
 
-## 📺 Google TV Integration & Native App (`BadData-TV.apk`)
+## 📦 Custom Question Packs Invariant
+
+* **50 Questions Per Pack Rule**: All custom question packs (both `data/questions.json` and all `data/packs/*.json` files) MUST contain exactly **50 formatted questions**.
+
+---
+
+## 📺 Google TV Integration & Receiver Layout (`public/receiver/index.html`)
 
 * **Native APK Path**: `public/BadData-TV.apk` (897 KB lightweight signed Android TV Webview app).
-* **Home Screen Banner**: Implements `LEANBACK_LAUNCHER` intent filter with custom 3D glowing neon logo icon, placing **Bad Data TV** directly on the main Google TV home screen grid.
+* **2-Column Responsive Scoreboards**: Leaderboards on reveal (`screen-reveal`) and game over (`screen-gameover`) screens use `grid grid-cols-2 gap-2` with compact card padding so all 2–8+ players fit on screen without vertical clipping or scrolling.
+* **Lobby-Only Settings Controls**: Setup buttons like `Voice Host: ON/OFF` (`#tts-toggle-btn`) are visible only on `screen-lobby` and automatically hide during active gameplay.
 * **Overscan & Viewport Fit**:
-  * Receiver layout uses strict 2-column grid (`grid-cols-2`) and 2.5vh / 3vw TV safe-area overscan padding.
+  * Receiver layout uses strict grid and 2.5vh / 3vw TV safe-area overscan padding.
   * Android WebView uses `setUseWideViewPort(true)` & `setLoadWithOverviewMode(true)` so all controls stay 100% visible.
 * **Auto-Retry Guard**: Built-in 2.5s connection retry loop handles server container restarts cleanly.
 
