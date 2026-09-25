@@ -386,8 +386,8 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Host starts the game (Accepts sourceMode: 'mix' | 'custom' | 'api' & selectedPacks: [])
-  socket.on('start_game', async ({ roomCode, sourceMode, selectedPacks }) => {
+  // Host starts the game (Accepts sourceMode: 'mix' | 'custom' | 'api' & selectedPacks: [] & enableRoaster: false)
+  socket.on('start_game', async ({ roomCode, sourceMode, selectedPacks, enableRoaster }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || room.hostSocketId !== socket.id) {
       return socket.emit('error_message', { message: 'Only room host can start game.' });
@@ -397,9 +397,10 @@ io.on('connection', (socket) => {
       return socket.emit('error_message', { message: 'Need at least 1 player to start!' });
     }
 
+    room.enableRoaster = Boolean(enableRoaster);
     const mode = sourceMode || 'mix';
     const packIds = Array.isArray(selectedPacks) ? selectedPacks : [];
-    console.log(`[Room ${roomCode}] Starting game (Mode: ${mode}, Packs: [${packIds.join(', ')}])...`);
+    console.log(`[Room ${roomCode}] Starting game (Mode: ${mode}, Packs: [${packIds.join(', ')}], Roaster: ${room.enableRoaster ? 'ON' : 'OFF'})...`);
 
     // Broadcast intro splash notice to TV & Controllers
     io.to(`room_${roomCode}`).emit('game_starting_notice');
@@ -598,13 +599,16 @@ async function evaluateAndReveal(ioInstance, roomCode) {
   const labels = ['A', 'B', 'C', 'D'];
   const currentQ = results.room.questions[results.room.currentQuestionIndex];
 
-  // Generate Gen AI Host Roast / Commentary
-  const hostRoast = await AiRoaster.generateRoast({
-    question: currentQ ? currentQ.question : '',
-    correctAnswerText: results.correctAnswerText,
-    leaderboard: results.leaderboard,
-    players: results.players
-  });
+  // Generate Gen AI Host Roast / Commentary ONLY if enableRoaster is true
+  let hostRoast = '';
+  if (results.room.enableRoaster) {
+    hostRoast = await AiRoaster.generateRoast({
+      question: currentQ ? currentQ.question : '',
+      correctAnswerText: results.correctAnswerText,
+      leaderboard: results.leaderboard,
+      players: results.players
+    });
+  }
 
   const roastClause = hostRoast ? ` ... ${hostRoast}` : '';
   const announcerRevealText = `The correct answer was... option ${labels[results.correctIndex]}! ... ${results.correctAnswerText}`;

@@ -144,6 +144,18 @@
             <button id="mode-btn-api" onclick="event.stopPropagation(); setSourceMode('api')" class="py-1 rounded-lg text-slate-400 hover:text-white transition">🌐 API Only</button>
           </div>
 
+          <!-- AI Co-Host Roaster Option (Default OFF) -->
+          <div class="w-full my-1 flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+            <div class="text-left">
+              <span class="block text-[11px] font-bold text-slate-200">🤖 AI Co-Host Roaster</span>
+              <span class="block text-[9px] text-slate-400">Sarcastic commentary after reveal</span>
+            </div>
+            <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
+              <button id="roaster-toggle-off" onclick="event.stopPropagation(); setRoasterEnabled(false);" class="px-3 py-1 rounded bg-rose-600 text-white transition font-black shadow">OFF</button>
+              <button id="roaster-toggle-on" onclick="event.stopPropagation(); setRoasterEnabled(true);" class="px-3 py-1 rounded text-slate-400 hover:text-white transition">ON</button>
+            </div>
+          </div>
+
           <!-- Active JSON Question Packs Selection -->
           <div id="packs-selector-container" class="w-full text-left bg-slate-900/80 p-2 rounded-xl border border-slate-800">
             <div class="flex items-center justify-between mb-1">
@@ -737,6 +749,17 @@
     let selectedSourceMode = 'mix';
     let availablePacks = [];
     let selectedPackIds = [];
+    let isRoasterEnabled = false;
+
+    function setRoasterEnabled(enabled) {
+      isRoasterEnabled = enabled;
+      const btnOff = document.getElementById('roaster-toggle-off');
+      const btnOn = document.getElementById('roaster-toggle-on');
+      if (btnOff && btnOn) {
+        btnOff.className = enabled ? 'px-3 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer' : 'px-3 py-1 rounded bg-rose-600 text-white transition cursor-pointer font-black shadow';
+        btnOn.className = enabled ? 'px-3 py-1 rounded bg-emerald-600 text-white transition cursor-pointer font-black shadow' : 'px-3 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer';
+      }
+    }
 
     function addBotPlayers() {
       if (!roomCode) return;
@@ -957,7 +980,8 @@
       socket.emit('start_game', {
         roomCode,
         sourceMode: selectedSourceMode,
-        selectedPacks: selectedPackIds
+        selectedPacks: selectedPackIds,
+        enableRoaster: isRoasterEnabled
       });
     }
 
