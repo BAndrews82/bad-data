@@ -1,0 +1,602 @@
+[
+  {
+    "id": "cruise-1",
+    "question": "In nautical terminology, what is the official term for the left-hand side of a ship when facing forward toward the bow?",
+    "correct_answer": "Port",
+    "incorrect_answers": [
+      "Starboard",
+      "Stern",
+      "Aft"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-2",
+    "question": "What is the official nautical term for the right-hand side of a cruise ship when facing forward toward the bow?",
+    "correct_answer": "Starboard",
+    "incorrect_answers": [
+      "Port",
+      "Bow",
+      "Windward"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-3",
+    "question": "What is the name of Royal Caribbean's massive ship that debuted in 2024 as the largest cruise ship in the world by gross tonnage (248,663 GT)?",
+    "correct_answer": "Icon of the Seas",
+    "incorrect_answers": [
+      "Wonder of the Seas",
+      "Symphony of the Seas",
+      "Oasis of the Seas"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-4",
+    "question": "What mandatory safety drill must all cruise passengers complete before a ship departs from port?",
+    "correct_answer": "Muster Drill (Safety Assembly)",
+    "incorrect_answers": [
+      "Lifeboat Race",
+      "Captain's Inspection",
+      "Emergency Splash Drill"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-5",
+    "question": "What is the front-most part of a ship's hull officially called?",
+    "correct_answer": "Bow",
+    "incorrect_answers": [
+      "Stern",
+      "Keel",
+      "Rudder"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-6",
+    "question": "What is the rear or back part of a cruise ship called?",
+    "correct_answer": "Stern (or Aft)",
+    "incorrect_answers": [
+      "Bow",
+      "Midship",
+      "Bridge"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-7",
+    "question": "What unit of speed equal to one nautical mile per hour (approx. 1.15 mph) is used to measure a cruise ship's speed?",
+    "correct_answer": "Knot",
+    "incorrect_answers": [
+      "Fathom",
+      "Furlong",
+      "League"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-8",
+    "question": "What is the private island in the Bahamas owned by Royal Caribbean, featuring North America's tallest waterslide Daredevil's Peak?",
+    "correct_answer": "Perfect Day at CocoCay",
+    "incorrect_answers": [
+      "Castaway Cay",
+      "Half Moon Cay",
+      "Ocean Cay"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-9",
+    "question": "What Disney Cruise Line private island in the Bahamas is reserved exclusively for Disney cruise guests?",
+    "correct_answer": "Castaway Cay",
+    "incorrect_answers": [
+      "Great Stirrup Cay",
+      "Labadee",
+      "Harvest Caye"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-10",
+    "question": "What iconic 1970s and 80s hit TV comedy series set aboard the Pacific Princess popularized modern leisure cruising for millions?",
+    "correct_answer": "The Love Boat",
+    "incorrect_answers": [
+      "Gilligan's Island",
+      "Below Deck",
+      "Fantasy Island"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-11",
+    "question": "What is the kitchen on a cruise ship called in nautical terminology?",
+    "correct_answer": "Galley",
+    "incorrect_answers": [
+      "Mess Hall",
+      "Pantry",
+      "Lido Kitchen"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-12",
+    "question": "What open top deck on a cruise ship typically features the main swimming pools, hot tubs, and casual buffet dining?",
+    "correct_answer": "Lido Deck",
+    "incorrect_answers": [
+      "Promenade Deck",
+      "Sun Deck",
+      "Bridge Deck"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-13",
+    "question": "What smaller boat is used to transport passengers from a cruise ship to the shore when the ship is anchored in deep water?",
+    "correct_answer": "Tender (or Water Shuttle)",
+    "incorrect_answers": [
+      "Dinghy",
+      "Zodiac",
+      "Catamaran"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-14",
+    "question": "What command center of a cruise ship houses the captain, officers, navigation equipment, and wheel?",
+    "correct_answer": "The Bridge",
+    "incorrect_answers": [
+      "Control Room",
+      "Crow's Nest",
+      "Quarterdeck"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-15",
+    "question": "What traditional maritime ritual involves breaking a bottle of champagne over a new ship's hull for good luck during christening?",
+    "correct_answer": "Ship Christening",
+    "incorrect_answers": [
+      "Keel Laying",
+      "Maiden Splash",
+      "Hull Blessing"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-16",
+    "question": "Who is chosen during ship christenings to officially bless the vessel and wish safe travels to all who sail her?",
+    "correct_answer": "Godmother (or Godfather)",
+    "incorrect_answers": [
+      "Chief Engineer",
+      "Commodore",
+      "Harbor Master"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-17",
+    "question": "What is the name of Carnival Cruise Line's iconic whale-tail-shaped feature located on top of their ships?",
+    "correct_answer": "Winged Funnel",
+    "incorrect_answers": [
+      "Smokestack Fin",
+      "Red Tail",
+      "Crown Stack"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-18",
+    "question": "What major canal connects the Atlantic Ocean and Pacific Ocean, allowing cruise ships to bypass sailing around South America?",
+    "correct_answer": "Panama Canal",
+    "incorrect_answers": [
+      "Suez Canal",
+      "Erie Canal",
+      "Kiel Canal"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-19",
+    "question": "What is the largest cruise line in the world by total number of annual passengers carried?",
+    "correct_answer": "Carnival Cruise Line",
+    "incorrect_answers": [
+      "Royal Caribbean International",
+      "Norwegian Cruise Line",
+      "MSC Cruises"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-20",
+    "question": "What Alaska port of call is famous for being inaccessible by road, making cruise ships and floatplanes the primary ways to arrive?",
+    "correct_answer": "Juneau",
+    "incorrect_answers": [
+      "Anchorage",
+      "Fairbanks",
+      "Skagway"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-21",
+    "question": "What high-tech feature on select Royal Caribbean ships serves drinks mixed and shaken by two robotic arms?",
+    "correct_answer": "Bionic Bar",
+    "incorrect_answers": [
+      "RoboCocktail",
+      "Cyber Lounge",
+      "Future Bar"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-22",
+    "question": "What unit of measurement measures a cruise ship's internal enclosed volume (where 1 unit = 100 cubic feet), NOT its physical weight?",
+    "correct_answer": "Gross Tonnage (GT)",
+    "incorrect_answers": [
+      "Deadweight Tonnage",
+      "Displacement",
+      "Net Weight"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "hard"
+  },
+  {
+    "id": "cruise-23",
+    "question": "What is the term for a cruise voyage that ends in a different port from where it started, such as sailing from Miami to Seattle?",
+    "correct_answer": "Repositioning Cruise",
+    "incorrect_answers": [
+      "Transatlantic Cruise",
+      "One-Way Voyage",
+      "Open-Jaw Cruise"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-24",
+    "question": "What famous luxury ocean liner operated by Cunard Line is the only purpose-built ocean liner currently in service for transatlantic crossings?",
+    "correct_answer": "Queen Mary 2",
+    "incorrect_answers": [
+      "Queen Elizabeth",
+      "SS United States",
+      "Titanic II"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-25",
+    "question": "What retractable fin-like underwater structures extend from a cruise ship's lower hull to reduce side-to-side rolling in rough seas?",
+    "correct_answer": "Stabilizers",
+    "incorrect_answers": [
+      "Thrusters",
+      "Rudders",
+      "Bilge Keels"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-26",
+    "question": "What high-power propulsion units mounted underneath a cruise ship can rotate 360 degrees, allowing ships to maneuver without tugboats?",
+    "correct_answer": "Azipods (Azimuth Thrusters)",
+    "incorrect_answers": [
+      "Bow Thrusters",
+      "Propeller Shafts",
+      "Waterjets"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "hard"
+  },
+  {
+    "id": "cruise-27",
+    "question": "What Norwegian Cruise Line innovation allows passengers to dine whenever and wherever they choose without fixed seating times or dress codes?",
+    "correct_answer": "Freestyle Cruising",
+    "incorrect_answers": [
+      "Anytime Dining",
+      "Open Seating",
+      "Flexi-Meal"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-28",
+    "question": "What is Holland America Line's private island located in the Bahamas?",
+    "correct_answer": "Half Moon Cay (Little San Salvador)",
+    "incorrect_answers": [
+      "CocoCay",
+      "Castaway Cay",
+      "Ocean Cay"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-29",
+    "question": "Which Caribbean island is home to the popular cruise port of Cozumel, world-renowned for scuba diving and Mayan ruins nearby?",
+    "correct_answer": "Mexico",
+    "incorrect_answers": [
+      "Jamaica",
+      "Belize",
+      "Honduras"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-30",
+    "question": "What document is officially required for all guests boarding a cruise ship that visits international ports of call?",
+    "correct_answer": "Passport",
+    "incorrect_answers": [
+      "Driver's License",
+      "Birth Certificate",
+      "Boarding Pass only"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-31",
+    "question": "What term refers to the daily newsletter delivered to a passenger's stateroom detailing activities, showtimes, and port arrival times?",
+    "correct_answer": "Cruise Compass / Daily Planner",
+    "incorrect_answers": [
+      "Ship Log",
+      "Captain's Gazette",
+      "Port Bulletin"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-32",
+    "question": "What is a cabin or bedroom on a cruise ship officially called?",
+    "correct_answer": "Stateroom",
+    "incorrect_answers": [
+      "Suite",
+      "Bunk Room",
+      "Berth"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-33",
+    "question": "What type of stateroom features a private outdoor veranda or patio overlooking the ocean?",
+    "correct_answer": "Balcony Stateroom",
+    "incorrect_answers": [
+      "Oceanview Stateroom",
+      "Inside Stateroom",
+      "Promenade Room"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-34",
+    "question": "What feature on Royal Caribbean Quantum-class ships elevates passengers 300 feet above sea level in a glass observation capsule?",
+    "correct_answer": "North Star",
+    "incorrect_answers": [
+      "Sky Capsule",
+      "The Pod",
+      "High Flyer"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-35",
+    "question": "What onboard activity pioneered by Royal Caribbean simulates skydiving using a vertical wind tunnel on the top deck?",
+    "correct_answer": "RipCord by iFly",
+    "incorrect_answers": [
+      "Sky Jump",
+      "Wind Tunnel Live",
+      "AirFlyer"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-36",
+    "question": "What cruise port in Florida is known as the \"Cruise Capital of the World\", handling the highest passenger volume globally?",
+    "correct_answer": "PortMiami",
+    "incorrect_answers": [
+      "Port Everglades",
+      "Port Canaveral",
+      "Tampa Port"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-37",
+    "question": "What port located near Orlando, Florida is a primary hub for Disney Cruise Line and Royal Caribbean ships?",
+    "correct_answer": "Port Canaveral",
+    "incorrect_answers": [
+      "PortMiami",
+      "Fort Lauderdale",
+      "Jacksonville"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-38",
+    "question": "What famous ship capsized in 2012 off the coast of Isola del Giglio, Italy after striking a reef?",
+    "correct_answer": "Costa Concordia",
+    "incorrect_answers": [
+      "MSC Opera",
+      "Carnival Triumph",
+      "Norwegian Dawn"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-39",
+    "question": "What is the term for a cruise ship guest who has earned elite loyalty tier status through frequent sailing?",
+    "correct_answer": "Frequent Cruiser / Loyalty Member",
+    "incorrect_answers": [
+      "Commodore Club",
+      "VIP Sailor",
+      "Mariner Gold"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-40",
+    "question": "What onboard venue usually hosts Broadway-style musicals, ice skating shows, or acrobatics?",
+    "correct_answer": "Main Theater / AquaTheater",
+    "incorrect_answers": [
+      "Lido Stage",
+      "Captain's Lounge",
+      "Showboat Ring"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-41",
+    "question": "What is the term for the circular window found on older or lower-deck staterooms?",
+    "correct_answer": "Porthole",
+    "incorrect_answers": [
+      "Scuttle",
+      "Oculus",
+      "Bay Window"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-42",
+    "question": "Which cruise line features a signature red, white, and blue funnel shaped like a sea bird wing?",
+    "correct_answer": "Carnival Cruise Line",
+    "incorrect_answers": [
+      "Celebrity Cruises",
+      "Princess Cruises",
+      "Holland America"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-43",
+    "question": "What famous Alaskan glacier bay is a bucket-list cruising destination requiring strict national park permits for ship entry?",
+    "correct_answer": "Glacier Bay National Park",
+    "incorrect_answers": [
+      "Tracy Arm Fjord",
+      "Hubbard Glacier",
+      "College Fjord"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-44",
+    "question": "What European river cruise region is famous for scenic castles along its banks between Germany, France, and Switzerland?",
+    "correct_answer": "Rhine River",
+    "incorrect_answers": [
+      "Danube River",
+      "Seine River",
+      "Douro River"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-45",
+    "question": "What is the second longest river in Europe, popular for river cruising through Budapest, Vienna, and Bratislava?",
+    "correct_answer": "Danube River",
+    "incorrect_answers": [
+      "Rhine River",
+      "Volga River",
+      "Elbe River"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-46",
+    "question": "What premium luxury cruise line uses a Sea Goddess logo and operates all-inclusive smaller ships with high staff-to-guest ratios?",
+    "correct_answer": "Seabourn (or Silversea / Regent)",
+    "incorrect_answers": [
+      "Oceania",
+      "Viking",
+      "Windstar"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "hard"
+  },
+  {
+    "id": "cruise-47",
+    "question": "What famous 1912 ocean liner famously sank on its maiden voyage after hitting an iceberg in the North Atlantic?",
+    "correct_answer": "RMS Titanic",
+    "incorrect_answers": [
+      "RMS Lusitania",
+      "RMS Britannic",
+      "SS Andrea Doria"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-48",
+    "question": "What inflatable slide or dry slide on Royal Caribbean Oasis-class ships plunges guests down 10 decks from the Sports Deck to the Boardwalk?",
+    "correct_answer": "The Ultimate Abyss",
+    "incorrect_answers": [
+      "The Plunge",
+      "Daredevil's Drop",
+      "Tornado Slide"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cruise-49",
+    "question": "What term describes the onboard spending account linked to a passenger's keycard for all drinks, souvenirs, and specialty meals?",
+    "correct_answer": "Onboard Account (Folio / SeaPass)",
+    "incorrect_answers": [
+      "Tab Credit",
+      "Ship Cash",
+      "Deck Charge"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cruise-50",
+    "question": "What traditional nautical ceremony takes place when a ship crosses the Equator, turning landlubbers into \"Shellbacks\"?",
+    "correct_answer": "Line-Crossing Ceremony (King Neptune Ceremony)",
+    "incorrect_answers": [
+      "Equator Dip",
+      "Mermaid Crossing",
+      "Pollywog Parade"
+    ],
+    "category": "Cruise Ships & Ocean Travel",
+    "difficulty": "hard"
+  }
+]
