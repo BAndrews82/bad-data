@@ -207,6 +207,11 @@ async function getOrSynthesizeTts(rawText, isBackground = false, voiceOverride =
       } catch (err) {}
     }
 
+    // Do NOT fall back to Piper for Kokoro-specific voices (prevents robotic voice fallback)
+    if (targetVoice.startsWith('am_') || targetVoice.startsWith('bm_') || targetVoice.startsWith('af_') || targetVoice.startsWith('bf_')) {
+      return null;
+    }
+
     // 2. Attempt Piper Neural TTS Sidecar Container
     const piperUrl = process.env.PIPER_TTS_URL || 'http://localhost:5000';
     const piperQueryParams = `text=${encodeURIComponent(text)}&length_scale=1.02&noise_scale=0.75&noise_w=0.85`;
@@ -587,7 +592,7 @@ async function evaluateAndReveal(ioInstance, roomCode) {
   const revealText = `${announcerRevealText}${roastClause}`;
 
   const announcerVoice = process.env.KOKORO_VOICE || 'am_michael';
-  const roasterVoice = process.env.ROASTER_VOICE || 'am_puck';
+  const roasterVoice = process.env.ROASTER_VOICE || 'bm_george';
 
   // Synthesize Announcer audio (fetched from RAM pre-synthesis cache)
   const announcerAudio = await getOrSynthesizeTts(announcerRevealText, false, announcerVoice);
