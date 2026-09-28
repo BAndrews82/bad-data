@@ -149,27 +149,28 @@
   </main>
 
   <!-- ==================== SCREEN 5: BAD CARDS PLAYER HAND ==================== -->
-  <main id="screen-cah-player" class="hidden flex-1 flex flex-col justify-between w-full max-w-md mx-auto py-1 min-h-0 overflow-hidden">
+  <main id="screen-cah-player" class="hidden flex-1 flex flex-col justify-between w-full max-w-md mx-auto py-1 min-h-0 overflow-hidden relative">
     <div class="glass-panel p-3 rounded-xl border border-purple-500/40 text-center shrink-0 mb-1 flex items-center justify-between">
       <div class="text-left pr-2">
         <span class="text-[9px] font-bold text-purple-400 uppercase tracking-widest block">Black Card Prompt</span>
         <p id="cah-player-prompt-text" class="text-xs font-bold text-white leading-tight mt-0.5 max-h-10 overflow-y-auto">Prompt text...</p>
       </div>
-      <!-- Discard & Redraw 1-per-game button -->
       <button id="cah-redraw-btn" onclick="triggerDiscardRedraw()" class="px-2.5 py-1.5 rounded-lg bg-indigo-600/80 hover:bg-indigo-500 text-white font-bold text-[10px] shrink-0 shadow transition cursor-pointer border border-indigo-400/40">
         ♻️ Redraw (1)
       </button>
     </div>
 
     <!-- Hand Cards Carousel / Grid -->
-    <div id="cah-hand-grid" class="flex-1 min-h-0 overflow-y-auto space-y-2 py-1 pr-1">
+    <div id="cah-hand-grid" class="flex-1 min-h-0 overflow-y-auto space-y-2 py-1 pr-1 pb-16">
       <!-- 7 White Cards rendered via JS -->
     </div>
 
-    <!-- Confirm Submit Button -->
-    <button id="cah-submit-btn" onclick="submitCahCard()" disabled class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-lg tracking-wider shadow-lg shrink-0 mt-1 cursor-pointer transition">
-      SUBMIT CARD
-    </button>
+    <!-- Sticky Prominent Bottom Submit Bar -->
+    <div class="sticky bottom-0 left-0 right-0 pt-2 pb-1 bg-slate-950/95 border-t border-slate-800/80 backdrop-blur-md shrink-0 z-50">
+      <button id="cah-submit-btn" onclick="submitCahCard()" disabled class="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-base tracking-wider shadow-2xl cursor-pointer transition transform active:scale-98">
+        SUBMIT CARD ➔
+      </button>
+    </div>
   </main>
 
   <!-- ==================== SCREEN 6: BAD CARDS JUDGE WAITING ==================== -->
@@ -185,17 +186,20 @@
   </main>
 
   <!-- ==================== SCREEN 7: BAD CARDS JUDGE PICK OPTIONS ==================== -->
-  <main id="screen-cah-judge-pick" class="hidden flex-1 flex flex-col justify-between w-full max-w-md mx-auto py-1 min-h-0 overflow-hidden">
+  <main id="screen-cah-judge-pick" class="hidden flex-1 flex flex-col justify-between w-full max-w-md mx-auto py-1 min-h-0 overflow-hidden relative">
     <div class="glass-panel p-3 rounded-xl border border-amber-500/40 text-center shrink-0 mb-1">
       <span class="text-[10px] font-bold text-amber-400 uppercase tracking-widest block">👑 You Are The Judge! Tap Your Favorite</span>
       <p id="cah-judge-prompt-header" class="text-xs sm:text-sm font-bold text-white leading-tight mt-0.5 max-h-12 overflow-y-auto">Prompt text...</p>
     </div>
 
-    <div id="cah-judge-options-grid" class="flex-1 min-h-0 overflow-y-auto space-y-2 py-1 pr-1"></div>
+    <div id="cah-judge-options-grid" class="flex-1 min-h-0 overflow-y-auto space-y-2 py-1 pr-1 pb-16"></div>
 
-    <button id="cah-confirm-winner-btn" onclick="confirmJudgeWinner()" disabled class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-lg tracking-wider shadow-lg shrink-0 mt-1 cursor-pointer transition">
-      PICK WINNER 👑
-    </button>
+    <!-- Sticky Prominent Bottom Winner Bar -->
+    <div class="sticky bottom-0 left-0 right-0 pt-2 pb-1 bg-slate-950/95 border-t border-slate-800/80 backdrop-blur-md shrink-0 z-50">
+      <button id="cah-confirm-winner-btn" onclick="confirmJudgeWinner()" disabled class="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-base tracking-wider shadow-2xl cursor-pointer transition transform active:scale-98">
+        PICK WINNER 👑
+      </button>
+    </div>
   </main>
 
   <!-- ==================== SCREEN 8: BAD CARDS NON-JUDGE WAITING & POPULAR VOTE ==================== -->
@@ -381,50 +385,53 @@
       }
     });
 
-    function renderHandCards(hand) {
-      const grid = document.getElementById('cah-hand-grid');
-      if (!grid) return;
-
-      grid.innerHTML = hand.map((cardText, idx) => `
-        <button onclick="selectHandCard(${idx})" id="hand-card-${idx}" class="w-full p-3.5 rounded-2xl bg-white text-slate-950 font-extrabold text-sm text-left shadow-lg border-2 border-slate-300 transition btn-tactile">
-          ${cardText}
-        </button>
-      `).join('');
-    }
-
-    function triggerDiscardRedraw() {
-      if (hasUsedRedraw || !currentRoomCode) return;
-      if (confirm("Burn up to 3 cards and draw fresh replacements? (Used once per game)")) {
-        if (navigator.vibrate) navigator.vibrate(40);
-        socket.emit('discard_redraw', { roomCode: currentRoomCode, cardIndices: [0, 1, 2] });
-      }
-    }
-
-    socket.on('redraw_confirm', (data) => {
-      hasUsedRedraw = true;
-      const redrawBtn = document.getElementById('cah-redraw-btn');
-      if (redrawBtn) {
-        redrawBtn.disabled = true;
-        redrawBtn.textContent = '♻️ Used';
-        redrawBtn.className = 'px-2.5 py-1.5 rounded-lg bg-slate-800 text-slate-500 font-bold text-[10px] shrink-0 opacity-50 cursor-not-allowed border border-slate-700';
-      }
-      renderHandCards(data.hand || []);
-    });
-
     function selectHandCard(idx) {
       if (navigator.vibrate) navigator.vibrate(30);
+
+      // Double-tap on already selected card submits immediately!
+      if (selectedHandCardIndex === idx) {
+        submitCahCard();
+        return;
+      }
+
       selectedHandCardIndex = idx;
       
       const cards = document.querySelectorAll('#cah-hand-grid button');
       cards.forEach((c, i) => {
         if (i === idx) {
           c.className = 'w-full p-3.5 rounded-2xl bg-purple-600 text-white font-extrabold text-sm text-left shadow-xl border-4 border-purple-400 scale-[1.02] transition';
+          c.innerHTML = `${handCardTextList[i] || ''} <span class="block text-[10px] text-purple-200 mt-1 uppercase font-bold tracking-wider">Tap again to play ➔</span>`;
         } else {
           c.className = 'w-full p-3.5 rounded-2xl bg-white/70 text-slate-900 font-extrabold text-sm text-left shadow-md border-2 border-slate-300 opacity-60 transition';
+          c.innerHTML = handCardTextList[i] || '';
         }
       });
 
-      document.getElementById('cah-submit-btn').disabled = false;
+      const submitBtn = document.getElementById('cah-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'PLAY THIS CARD ➔';
+      }
+    }
+
+    let handCardTextList = [];
+    function renderHandCards(hand) {
+      selectedHandCardIndex = null;
+      handCardTextList = hand || [];
+      const grid = document.getElementById('cah-hand-grid');
+      if (!grid) return;
+
+      const submitBtn = document.getElementById('cah-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'SELECT A CARD ABOVE 👆';
+      }
+
+      grid.innerHTML = handCardTextList.map((cardText, idx) => `
+        <button onclick="selectHandCard(${idx})" id="hand-card-${idx}" class="w-full p-3.5 rounded-2xl bg-white text-slate-950 font-extrabold text-sm text-left shadow-lg border-2 border-slate-300 transition btn-tactile">
+          ${cardText}
+        </button>
+      `).join('');
     }
 
     function submitCahCard() {
@@ -442,14 +449,16 @@
       if (txt) txt.textContent = `${data.submittedCount} / ${data.totalRequired} Submitted`;
     });
 
+    let judgeSubmissionsList = [];
     socket.on('cah_judge_pick_options', (data) => {
       selectedJudgeSubId = null;
+      judgeSubmissionsList = data.submissions || [];
       showScreen('screen-cah-judge-pick');
       document.getElementById('cah-judge-prompt-header').textContent = data.prompt;
       document.getElementById('cah-confirm-winner-btn').disabled = true;
 
       const grid = document.getElementById('cah-judge-options-grid');
-      grid.innerHTML = data.submissions.map(sub => `
+      grid.innerHTML = judgeSubmissionsList.map(sub => `
         <button onclick="selectJudgeOption('${sub.id}')" id="judge-opt-${sub.id}" class="w-full p-4 rounded-2xl bg-white text-slate-950 font-black text-base text-left shadow-xl border-2 border-slate-300 transition btn-tactile">
           ${sub.cardText}
         </button>
@@ -458,17 +467,35 @@
 
     function selectJudgeOption(subId) {
       if (navigator.vibrate) navigator.vibrate(40);
+
+      // Double tap on selected option confirms winner immediately!
+      if (selectedJudgeSubId === subId) {
+        confirmJudgeWinner();
+        return;
+      }
+
       selectedJudgeSubId = subId;
       const btns = document.querySelectorAll('#cah-judge-options-grid button');
       btns.forEach(b => {
+        const matchingSub = judgeSubmissionsList.find(s => `judge-opt-${s.id}` === b.id);
         if (b.id === `judge-opt-${subId}`) {
           b.className = 'w-full p-4 rounded-2xl bg-amber-500 text-slate-950 font-black text-base text-left shadow-2xl border-4 border-amber-300 scale-[1.02] transition';
+          if (matchingSub) {
+            b.innerHTML = `${matchingSub.cardText} <span class="block text-[10px] text-slate-900 font-bold uppercase tracking-wider mt-1">Tap again to confirm winner 👑</span>`;
+          }
         } else {
           b.className = 'w-full p-4 rounded-2xl bg-white/70 text-slate-900 font-extrabold text-base text-left shadow-md border-2 border-slate-300 opacity-50 transition';
+          if (matchingSub) {
+            b.innerHTML = matchingSub.cardText;
+          }
         }
       });
 
-      document.getElementById('cah-confirm-winner-btn').disabled = false;
+      const confirmBtn = document.getElementById('cah-confirm-winner-btn');
+      if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = 'CONFIRM WINNING CARD 👑';
+      }
     }
 
     function confirmJudgeWinner() {
