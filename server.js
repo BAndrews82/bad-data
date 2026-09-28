@@ -506,7 +506,7 @@ async function runCahRound(ioInstance, roomCode) {
   const { room, roundNum, totalRounds, prompt, judgeSocketId, judgeNickname } = roundData;
   console.log(`[Room ${roomCode}] CAH Round ${roundNum}/${totalRounds}. Judge: ${judgeNickname}. Prompt: "${prompt}"`);
 
-  getOrSynthesizeTts(prompt, true);
+  getOrSynthesizeTts(prompt, true, process.env.ROASTER_VOICE || 'bm_george');
 
   ioInstance.to(`host_${roomCode}`).emit('cah_round_start', {
     roundNum,
@@ -614,8 +614,9 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
     });
   }
 
-  const announcerVoice = process.env.KOKORO_VOICE || 'am_michael';
-  const roasterVoice = process.env.ROASTER_VOICE || 'bm_george';
+  const britishVoice = process.env.ROASTER_VOICE || 'bm_george';
+  const announcerVoice = britishVoice;
+  const roasterVoice = britishVoice;
 
   const revealSpeech = `Winning card... ${winningSubmission.cardText}!`;
   const announcerAudio = await getOrSynthesizeTts(revealSpeech, false, announcerVoice);

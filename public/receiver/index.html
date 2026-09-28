@@ -543,6 +543,17 @@
       if (cahOpts) cahOpts.style.display = (gameId === 'cah') ? 'flex' : 'none';
       if (packOpts) packOpts.style.display = (gameId === 'cah') ? 'block' : 'none';
 
+      // Set voice host default: OFF for Bad Cards (cah), ON for Bad Data Trivia
+      ttsEnabled = (gameId !== 'cah');
+      const iconOn = document.getElementById('tts-icon-on');
+      const iconOff = document.getElementById('tts-icon-off');
+      const statusText = document.getElementById('tts-status-text');
+      if (iconOn && iconOff && statusText) {
+        iconOn.classList.toggle('hidden', !ttsEnabled);
+        iconOff.classList.toggle('hidden', ttsEnabled);
+        statusText.textContent = ttsEnabled ? 'Voice Host: ON' : 'Voice Host: OFF';
+      }
+
       if (socket && roomCode) {
         socket.emit('select_game', { roomCode, gameId });
       }
@@ -614,7 +625,8 @@
         try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(e) {}
       }
 
-      const ttsApiUrl = `/api/tts?text=${encodeURIComponent(cleanText)}`;
+      const voice = (selectedGameId === 'cah') ? 'bm_george' : 'am_michael';
+      const ttsApiUrl = `/api/tts?text=${encodeURIComponent(cleanText)}&voice=${voice}`;
       currentAudio = new Audio(ttsApiUrl);
       currentAudio.volume = 1.0;
       sfx.enhanceAudioElement(currentAudio);
