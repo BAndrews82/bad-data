@@ -776,7 +776,7 @@
       document.getElementById('mini-room-badge').classList.remove('hidden');
       showScreen('screen-cah-prompt');
 
-      document.getElementById('cah-round-badge').textContent = `Bad Cards • Round ${data.roundNum}/${data.totalRounds}`;
+      document.getElementById('cah-round-badge').textContent = `Bad Cards • Round ${data.roundNum} (First to 5 Pts)`;
       document.getElementById('cah-judge-nickname-text').textContent = data.judgeNickname;
       document.getElementById('cah-prompt-text').textContent = data.prompt;
       document.getElementById('cah-submitted-counter').textContent = `0 / ${data.players.filter(p => !p.isJudge).length}`;

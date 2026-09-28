@@ -631,7 +631,7 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
   }
 
   const leaderboard = [...room.players].sort((a,b) => b.score - a.score);
-  const isGameOver = room.currentRound >= room.totalRounds - 1;
+  const isGameOver = room.players.some(p => p.score >= 5);
 
   console.log(`[Room ${roomCode}] CAH Winner: ${winnerPlayer ? winnerPlayer.nickname : 'Unknown'} with "${winningSubmission.cardText}". Popular Vote Winner: ${popularWinnerPlayer ? popularWinnerPlayer.nickname : 'None'}`);
 
