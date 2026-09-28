@@ -351,16 +351,27 @@
 
   <!-- ==================== SCREEN 5: BAD CARDS JUDGING SCREEN ==================== -->
   <section id="screen-cah-judging" class="hidden flex-1 flex flex-col justify-between z-10 py-2 min-h-0">
-    <div class="text-center mb-2 shrink-0">
+    <div class="text-center mb-1 shrink-0">
       <span class="px-4 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold uppercase tracking-widest text-xs">
         Judging Phase
       </span>
       <h2 class="text-2xl sm:text-3xl font-black text-white mt-1">
-        <span id="cah-judging-name" class="text-amber-400">Judge</span> is picking the winning card!
+        👑 <span id="cah-judging-name" class="text-amber-400">Judge</span> is picking the winning card!
       </h2>
     </div>
 
-    <div id="cah-cards-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-5xl mx-auto w-full my-auto shrink"></div>
+    <!-- Black Card Prompt Banner -->
+    <div class="glass-panel p-4 sm:p-5 rounded-2xl border-2 border-purple-500/50 bg-slate-950/90 text-center max-w-4xl mx-auto w-full shadow-2xl shrink-0 my-1">
+      <span class="text-[10px] font-black text-purple-400 uppercase tracking-widest block mb-1">Black Card Prompt</span>
+      <p id="cah-judging-prompt-text" class="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-snug">
+        Prompt text...
+      </p>
+    </div>
+
+    <!-- Submitted White Cards Grid -->
+    <div class="flex-1 min-h-0 overflow-y-auto my-1 px-2 flex items-center justify-center">
+      <div id="cah-cards-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto w-full"></div>
+    </div>
   </section>
 
   <!-- ==================== SCREEN 6: BAD CARDS REVEAL SCREEN ==================== -->
@@ -796,12 +807,20 @@
       showScreen('screen-cah-judging');
       document.getElementById('cah-judging-name').textContent = data.judgeNickname;
 
+      const promptEl = document.getElementById('cah-judging-prompt-text');
+      if (promptEl) promptEl.textContent = data.prompt;
+
       const grid = document.getElementById('cah-cards-grid');
       grid.innerHTML = data.submissions.map((sub, idx) => `
-        <div class="glass-panel p-5 rounded-2xl border-2 border-slate-700 bg-white text-slate-950 font-black text-lg shadow-xl text-center flex flex-col justify-between min-h-[140px]">
-          <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Option ${idx + 1}</span>
-          <p class="my-auto">${sub.cardText}</p>
-          <span class="text-[10px] text-slate-400">Bad Cards</span>
+        <div class="bg-white text-slate-950 p-5 sm:p-6 rounded-2xl border-2 border-slate-300 shadow-2xl flex flex-col justify-between min-h-[160px] sm:min-h-[180px] transform hover:scale-[1.02] transition text-left">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-2 mb-2">
+            <span class="text-xs font-black text-purple-600 uppercase tracking-wider">Option ${idx + 1}</span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase">White Card</span>
+          </div>
+          <p class="font-extrabold text-base sm:text-lg leading-snug text-slate-950 my-auto">${sub.cardText}</p>
+          <div class="text-right pt-2 border-t border-slate-100 mt-2">
+            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Bad Cards</span>
+          </div>
         </div>
       `).join('');
 
