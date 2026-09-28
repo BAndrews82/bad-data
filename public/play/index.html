@@ -85,14 +85,26 @@
 
   <!-- ==================== SCREEN 2: LOBBY SCREEN ==================== -->
   <main id="screen-lobby" class="hidden flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto">
-    <div class="glass-panel p-8 rounded-3xl border border-slate-700 shadow-2xl w-full">
-      <div class="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-3xl mx-auto mb-4 animate-pulse">
+    <div class="glass-panel p-6 rounded-3xl border border-slate-700 shadow-2xl w-full">
+      <div class="w-14 h-14 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-3xl mx-auto mb-3 animate-pulse">
         ✓
       </div>
-      <h2 class="text-3xl font-black text-white mb-2">YOU'RE IN!</h2>
-      <p class="text-slate-400 text-sm leading-relaxed mb-6">
-        Look up at the TV display. The host will start shortly!
+      <h2 class="text-2xl font-black text-white mb-1">YOU'RE IN!</h2>
+      <p class="text-slate-400 text-xs leading-relaxed mb-4">
+        Look up at the TV display. The game will start shortly!
       </p>
+
+      <!-- Solo Test Helper Button -->
+      <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-left my-2">
+        <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Testing Solo?</span>
+        <button onclick="addBotPlayersMobile()" class="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow transition flex items-center justify-center gap-2 cursor-pointer btn-tactile">
+          🤖 Add AI Bot Players (+2)
+        </button>
+      </div>
+
+      <div id="mobile-roster-list" class="flex flex-wrap justify-center gap-1.5 mt-3 pt-3 border-t border-slate-800">
+        <!-- Joined players list -->
+      </div>
     </div>
   </main>
 
@@ -254,6 +266,24 @@
       document.getElementById('player-nickname-text').textContent = data.nickname;
       document.getElementById('player-room-text').textContent = data.roomCode;
       showScreen('screen-lobby');
+    });
+
+    function addBotPlayersMobile() {
+      if (!currentRoomCode) return;
+      if (navigator.vibrate) navigator.vibrate(40);
+      socket.emit('add_bot_players', { roomCode: currentRoomCode, count: 2 });
+    }
+
+    socket.on('roster_update', (data) => {
+      const rosterList = document.getElementById('mobile-roster-list');
+      if (rosterList && data.players) {
+        rosterList.innerHTML = data.players.map(p => `
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-bold text-xs">
+            <span class="w-2 h-2 rounded-full" style="background-color: ${p.color}"></span>
+            <span>${p.nickname}</span>
+          </div>
+        `).join('');
+      }
     });
 
     // ================= TRIVIA HANDLERS =================

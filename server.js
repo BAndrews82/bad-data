@@ -312,7 +312,7 @@ io.on('connection', (socket) => {
 
   socket.on('add_bot_players', ({ roomCode, count }) => {
     const room = roomManager.getRoom(roomCode);
-    if (!room || room.hostSocketId !== socket.id) return;
+    if (!room || room.status !== 'LOBBY') return;
 
     const numToAdd = count || 2;
     for (let i = 0; i < numToAdd; i++) {
@@ -323,6 +323,7 @@ io.on('connection', (socket) => {
     }
 
     io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
+    io.to(`room_${room.code}`).emit('roster_update', { players: room.players });
   });
 
   socket.on('join_room', ({ roomCode, nickname }) => {
