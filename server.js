@@ -606,11 +606,10 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
 
   let hostRoast = '';
   if (room.enableRoaster) {
-    hostRoast = await AiRoaster.generateRoast({
-      question: `Cards Against Humanity Prompt: "${prompt}"`,
-      correctAnswerText: `Winning Card: "${winningSubmission.cardText}" (Played by ${winnerPlayer ? winnerPlayer.nickname : 'Unknown'})`,
-      leaderboard: room.players.sort((a,b) => b.score - a.score),
-      players: room.players
+    hostRoast = await AiRoaster.generateCahRoast({
+      prompt,
+      winningCardText: winningSubmission.cardText,
+      winnerNickname: winnerPlayer ? winnerPlayer.nickname : 'Player'
     });
   }
 
