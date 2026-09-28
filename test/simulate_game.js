@@ -40,7 +40,7 @@ async function runSimulation() {
       if (!room) return;
       const questions = TriviaService.getFallbackQuestions(10);
       roomManager.setupGame(roomCode, questions);
-      const activeRoom = roomManager.startQuestionRound(roomCode);
+      const activeRoom = roomManager.startRound(roomCode);
       const q = activeRoom.currentQuestion;
 
       ioServer.to(`host_${roomCode}`).emit('question_start', {
@@ -62,7 +62,7 @@ async function runSimulation() {
     });
 
     socket.on('submit_answer', ({ roomCode, answerIndex }) => {
-      const res = roomManager.submitAnswer(roomCode, socket.id, answerIndex);
+      const res = roomManager.submitPlayerInput(roomCode, socket.id, { answerIndex });
       if (res.error) return socket.emit('answer_error', res);
       socket.emit('answer_received', { cashValue: res.cashValue, answerIndex });
 

@@ -9,6 +9,7 @@ const QRCode = require('qrcode');
 
 const TriviaService = require('./lib/TriviaService');
 const roomManager = require('./lib/RoomManager');
+const cardService = require('./lib/CardService');
 const AiRoaster = require('./lib/AiRoaster');
 
 const app = express();
@@ -21,9 +22,6 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-/**
- * Detect local IPv4 address for home lab / local network QR code generation.
- */
 function getLocalIp() {
   if (process.env.HOST_IP) {
     return process.env.HOST_IP;
@@ -31,7 +29,6 @@ function getLocalIp() {
   const interfaces = os.networkInterfaces();
   for (const name of Object.keys(interfaces)) {
     for (const net of interfaces[name]) {
-      // Skip internal (i.e. 127.0.0.1) and non-ipv4 addresses
       if (net.family === 'IPv4' && !net.internal) {
         return net.address;
       }
@@ -45,7 +42,6 @@ const baseUrl = process.env.BASE_URL || `http://${hostIp}:${PORT}`;
 
 console.log(`[Bad Data] Server configuration: Host IP=${hostIp}, Base URL=${baseUrl}`);
 
-// Disable static asset caching so Google TV and mobile controllers always load latest assets
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
@@ -53,10 +49,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static frontend assets
 app.use(express.static(path.join(__dirname, 'public'), { etag: false, lastModified: false }));
 
-// Server Config Endpoint
 app.get('/api/config', (req, res) => {
   res.json({
     hostIp,
@@ -66,28 +60,26 @@ app.get('/api/config', (req, res) => {
   });
 });
 
-// REST API: Get available JSON question packs
+app.get('/api/games', (req, res) => {
+  res.json({ games: roomManager.getAvailableGames() });
+});
+
+app.get('/api/card-packs', (req, res) => {
+  res.json({ count: cardService.getAvailablePacks().length, packs: cardService.getAvailablePacks() });
+});
+
 app.get('/api/packs', (req, res) => {
   const packs = TriviaService.getAvailablePacks();
-  res.json({
-    count: packs.length,
-    packs
-  });
+  res.json({ count: packs.length, packs });
 });
 
-// REST API: Get all loaded custom JSON questions
 app.get('/api/questions', (req, res) => {
   const customQuestions = TriviaService.loadCustomQuestions();
-  res.json({
-    count: customQuestions.length,
-    questions: customQuestions
-  });
+  res.json({ count: customQuestions.length, questions: customQuestions });
 });
 
-// REST API: Add a new custom question to data/questions.json
 app.post('/api/questions', (req, res) => {
   const { question, correct_answer, incorrect_answers, category, difficulty } = req.body;
-
   if (!question || !correct_answer || !Array.isArray(incorrect_answers) || incorrect_answers.length < 3) {
     return res.status(400).json({ error: 'Required fields: question, correct_answer, incorrect_answers (array of 3+ strings)' });
   }
@@ -95,9 +87,7 @@ app.post('/api/questions', (req, res) => {
   const mainPath = path.join(__dirname, 'data/questions.json');
   let existing = [];
   if (fs.existsSync(mainPath)) {
-    try {
-      existing = JSON.parse(fs.readFileSync(mainPath, 'utf8'));
-    } catch(e) {}
+    try { existing = JSON.parse(fs.readFileSync(mainPath, 'utf8')); } catch(e) {}
   }
 
   const newQuestion = {
@@ -111,14 +101,9 @@ app.post('/api/questions', (req, res) => {
 
   existing.push(newQuestion);
   fs.writeFileSync(mainPath, JSON.stringify(existing, null, 2), 'utf8');
-
-  console.log(`[Question API] Added new custom question: "${newQuestion.question}"`);
   res.status(201).json({ success: true, question: newQuestion });
 });
 
-/**
- * Preprocesses raw text for maximum TTS expressiveness, natural pauses, and cadence.
- */
 function preprocessTtsText(rawText) {
   if (!rawText) return '';
   let clean = rawText
@@ -152,14 +137,9 @@ function preprocessTtsText(rawText) {
   return clean;
 }
 
-// In-Memory TTS Audio RAM Cache & In-Flight Promise Map
 const ttsAudioCache = new Map();
 const ttsInFlightPromises = new Map();
 
-/**
- * Pre-fetches and caches TTS audio for a given raw text string with deduplication and RAM caching.
- * Supports distinct voice selection (e.g. Announcer vs Roaster).
- */
 async function getOrSynthesizeTts(rawText, isBackground = false, voiceOverride = null) {
   const text = preprocessTtsText(rawText);
   if (!text) return null;
@@ -167,21 +147,16 @@ async function getOrSynthesizeTts(rawText, isBackground = false, voiceOverride =
   const targetVoice = voiceOverride || process.env.KOKORO_VOICE || 'am_michael';
   const cacheKey = `${targetVoice}:${text}`;
 
-  // 1. Return immediately if already cached in RAM
   if (ttsAudioCache.has(cacheKey)) {
     return ttsAudioCache.get(cacheKey);
   }
 
-  // 2. Return active promise if synthesis is currently in-flight
   if (ttsInFlightPromises.has(cacheKey)) {
     return await ttsInFlightPromises.get(cacheKey);
   }
 
-  // 3. Create synthesis promise
   const synthesisPromise = (async () => {
     const providerPreference = (process.env.TTS_PROVIDER || 'kokoro').toLowerCase();
-
-    // 1. Attempt Kokoro-82M Ultra-Realistic Neural TTS Container
     const kokoroUrl = process.env.KOKORO_TTS_URL || 'http://localhost:8880';
 
     if (providerPreference === 'kokoro' || providerPreference === 'auto') {
@@ -215,12 +190,10 @@ async function getOrSynthesizeTts(rawText, isBackground = false, voiceOverride =
       } catch (err) {}
     }
 
-    // Do NOT fall back to Piper for Kokoro-specific voices (prevents robotic voice fallback)
     if (targetVoice.startsWith('am_') || targetVoice.startsWith('bm_') || targetVoice.startsWith('af_') || targetVoice.startsWith('bf_')) {
       return null;
     }
 
-    // 2. Attempt Piper Neural TTS Sidecar Container
     const piperUrl = process.env.PIPER_TTS_URL || 'http://localhost:5000';
     const piperQueryParams = `text=${encodeURIComponent(text)}&length_scale=1.02&noise_scale=0.75&noise_w=0.85`;
 
@@ -257,30 +230,22 @@ async function getOrSynthesizeTts(rawText, isBackground = false, voiceOverride =
   }
 }
 
-/**
- * Sequential background pre-synthesis for all round questions & reveals.
- */
 async function preSynthesizeQuestions(questions) {
   if (!Array.isArray(questions)) return;
   const labels = ['A', 'B', 'C', 'D'];
   const announcerVoice = process.env.KOKORO_VOICE || 'am_michael';
   for (let idx = 0; idx < questions.length; idx++) {
     const q = questions[idx];
-    const qText = q.question;
-    await getOrSynthesizeTts(qText, true, announcerVoice);
-
+    await getOrSynthesizeTts(q.question, true, announcerVoice);
     const correctText = q.choices ? q.choices[q.correctIndex] : '';
     const rText = `The correct answer was... option ${labels[q.correctIndex]}! ... ${correctText}`;
     await getOrSynthesizeTts(rText, true, announcerVoice);
   }
 }
 
-// Server-Side Text-To-Speech Endpoint (Multi-Provider + Instant RAM Cache)
 app.get('/api/tts', async (req, res) => {
   const rawText = (req.query.text || '').substring(0, 500).trim();
-  if (!rawText) {
-    return res.status(400).send('No text specified.');
-  }
+  if (!rawText) return res.status(400).send('No text specified.');
 
   const requestedVoice = req.query.voice || null;
   const cachedResult = await getOrSynthesizeTts(rawText, false, requestedVoice);
@@ -289,13 +254,10 @@ app.get('/api/tts', async (req, res) => {
     return res.send(cachedResult.buffer);
   }
 
-  // 3. Fallback to Cloud/Online TTS Stream
   const text = preprocessTtsText(rawText);
   const fallbackUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text)}`;
   const ttsReq = https.get(fallbackUrl, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    }
+    headers: { 'User-Agent': 'Mozilla/5.0' }
   }, (ttsRes) => {
     if (ttsRes.statusCode === 200) {
       res.setHeader('Content-Type', 'audio/mpeg');
@@ -306,16 +268,14 @@ app.get('/api/tts', async (req, res) => {
   });
 
   ttsReq.on('error', (err) => {
-    console.error('[TTS Endpoint Error]', err.message);
     res.status(500).send('TTS server error');
   });
 });
 
-// Socket.io Event Handling
+// Socket.io Handlers
 io.on('connection', (socket) => {
   console.log(`[Socket] Connected: ${socket.id}`);
 
-  // TV / Host creates a room
   socket.on('create_room', async () => {
     const room = roomManager.createRoom(socket.id);
     socket.join(`room_${room.code}`);
@@ -324,13 +284,8 @@ io.on('connection', (socket) => {
     const playUrl = `${baseUrl}/play/index.html?code=${room.code}`;
     let qrCodeDataUrl = '';
     try {
-      qrCodeDataUrl = await QRCode.toDataURL(playUrl, {
-        margin: 1,
-        color: { dark: '#000000', light: '#FFFFFF' }
-      });
-    } catch (err) {
-      console.error('[QRCode] Failed to generate QR code:', err);
-    }
+      qrCodeDataUrl = await QRCode.toDataURL(playUrl, { margin: 1, color: { dark: '#000000', light: '#FFFFFF' } });
+    } catch (err) {}
 
     console.log(`[Room] Created room ${room.code} by host ${socket.id}`);
 
@@ -339,11 +294,22 @@ io.on('connection', (socket) => {
       qrCodeDataUrl,
       playUrl,
       players: room.players,
-      availablePacks: TriviaService.getAvailablePacks()
+      availablePacks: TriviaService.getAvailablePacks(),
+      availableCardPacks: cardService.getAvailablePacks(),
+      availableGames: roomManager.getAvailableGames(),
+      selectedGameId: room.selectedGameId
     });
   });
 
-  // Host spawns AI/Bot players for single-screen test mode
+  socket.on('select_game', ({ roomCode, gameId }) => {
+    const room = roomManager.selectGame(roomCode, gameId);
+    if (!room) return;
+
+    console.log(`[Room ${roomCode}] Selected Game: ${gameId}`);
+    io.to(`host_${room.code}`).emit('game_selected', { selectedGameId: room.selectedGameId });
+    io.to(`room_${room.code}`).emit('game_selected', { selectedGameId: room.selectedGameId });
+  });
+
   socket.on('add_bot_players', ({ roomCode, count }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || room.hostSocketId !== socket.id) return;
@@ -356,12 +322,9 @@ io.on('connection', (socket) => {
       }
     }
 
-    io.to(`host_${room.code}`).emit('roster_update', {
-      players: room.players
-    });
+    io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
   });
 
-  // Mobile Controller joins a room
   socket.on('join_room', ({ roomCode, nickname }) => {
     const result = roomManager.joinRoom(roomCode, nickname, socket.id);
     if (result.error) {
@@ -371,23 +334,17 @@ io.on('connection', (socket) => {
     const { room, player } = result;
     socket.join(`room_${room.code}`);
 
-    console.log(`[Room ${room.code}] Player '${player.nickname}' joined (${socket.id})`);
-
-    // Confirm join to player
     socket.emit('joined_successfully', {
       roomCode: room.code,
       nickname: player.nickname,
-      color: player.color
+      color: player.color,
+      selectedGameId: room.selectedGameId
     });
 
-    // Notify Host / TV of roster update
-    io.to(`host_${room.code}`).emit('roster_update', {
-      players: room.players
-    });
+    io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
   });
 
-  // Host starts the game (Accepts sourceMode: 'mix' | 'custom' | 'api' & selectedPacks: [] & enableRoaster: false)
-  socket.on('start_game', async ({ roomCode, sourceMode, selectedPacks, enableRoaster }) => {
+  socket.on('start_game', async ({ roomCode, sourceMode, selectedPacks, selectedCardPacks, enableRoaster, enablePopularVote }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || room.hostSocketId !== socket.id) {
       return socket.emit('error_message', { message: 'Only room host can start game.' });
@@ -398,46 +355,32 @@ io.on('connection', (socket) => {
     }
 
     room.enableRoaster = Boolean(enableRoaster);
-    const mode = sourceMode || 'mix';
-    const packIds = Array.isArray(selectedPacks) ? selectedPacks : [];
-    console.log(`[Room ${roomCode}] Starting game (Mode: ${mode}, Packs: [${packIds.join(', ')}], Roaster: ${room.enableRoaster ? 'ON' : 'OFF'})...`);
 
-    // Broadcast intro splash notice to TV & Controllers
-    io.to(`room_${roomCode}`).emit('game_starting_notice');
+    await roomManager.setupGame(roomCode, { sourceMode, selectedPacks, selectedCardPacks, enablePopularVote });
 
-    const questions = await TriviaService.fetchQuestions(10, mode, packIds);
-    roomManager.setupGame(roomCode, questions);
+    io.to(`room_${roomCode}`).emit('game_starting_notice', { selectedGameId: room.selectedGameId });
 
-    // Pre-synthesize all questions and reveals into RAM cache for 0ms voice latency
-    preSynthesizeQuestions(questions);
-
-    // Pre-fetch Question 1 audio before launching Round 1
-    if (questions.length > 0) {
-      await getOrSynthesizeTts(questions[0].question);
+    if (room.selectedGameId === 'cah') {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      await runCahRound(io, roomCode);
+    } else {
+      preSynthesizeQuestions(room.questions);
+      if (room.questions && room.questions.length > 0) {
+        await getOrSynthesizeTts(room.questions[0].question);
+      }
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      await runQuestionRound(io, roomCode);
     }
-
-    // 2.5s intro splash delay for player sync and voice pre-buffering
-    await new Promise(resolve => setTimeout(resolve, 2500));
-
-    await runQuestionRound(io, roomCode);
   });
 
-  // Player submits an answer
+  // Trivia answer submission
   socket.on('submit_answer', ({ roomCode, answerIndex }) => {
-    const result = roomManager.submitAnswer(roomCode, socket.id, answerIndex);
-    if (result.error) {
-      return socket.emit('answer_error', { message: result.error });
-    }
+    const res = roomManager.submitPlayerInput(roomCode, socket.id, { answerIndex });
+    if (res.error) return socket.emit('answer_error', { message: res.error });
 
-    const { player, cashValue, allAnswered, room } = result;
+    const { player, cashValue, allAnswered, room } = res;
 
-    // Confirm to player
-    socket.emit('answer_received', {
-      cashAtSubmission: cashValue,
-      answerIndex
-    });
-
-    // Notify host of player response
+    socket.emit('answer_received', { cashAtSubmission: cashValue, answerIndex });
     io.to(`host_${room.code}`).emit('player_answered_update', {
       socketId: player.socketId,
       nickname: player.nickname,
@@ -445,9 +388,7 @@ io.on('connection', (socket) => {
       totalPlayers: room.players.length
     });
 
-    // If all players answered before timer expires, trigger immediate reveal!
     if (allAnswered) {
-      console.log(`[Room ${room.code}] All players answered! Resolving round immediately.`);
       roomManager.clearRoomTimer(room);
       io.to(`host_${room.code}`).emit('all_players_answered');
       io.to(`room_${room.code}`).emit('all_players_answered');
@@ -455,78 +396,306 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Host manual next question trigger
+  // Bad Cards white card submission
+  socket.on('submit_card', ({ roomCode, cardIndex }) => {
+    const res = roomManager.submitPlayerInput(roomCode, socket.id, { action: 'SUBMIT_CARD', cardIndex });
+    if (res.error) return socket.emit('card_error', { message: res.error });
+
+    const { player, submittedCount, totalRequired, allSubmitted, room } = res;
+
+    socket.emit('card_submitted_confirm', { success: true });
+
+    io.to(`host_${room.code}`).emit('cah_submission_update', {
+      submittedCount,
+      totalRequired,
+      players: room.players.map(p => ({
+        nickname: p.nickname,
+        submitted: Boolean(p.submittedCard || p.socketId === room.currentJudgeSocketId),
+        isJudge: p.socketId === room.currentJudgeSocketId
+      }))
+    });
+
+    io.to(room.currentJudgeSocketId).emit('cah_judge_status_update', {
+      submittedCount,
+      totalRequired
+    });
+
+    if (allSubmitted) {
+      console.log(`[Room ${room.code}] All players submitted cards! Transitioning to judging phase.`);
+      startCahJudgingPhase(io, room.code);
+    }
+  });
+
+  // Discard & Redraw socket handler
+  socket.on('discard_redraw', ({ roomCode, cardIndices }) => {
+    const res = roomManager.submitPlayerInput(roomCode, socket.id, { action: 'DISCARD_REDRAW', cardIndices });
+    if (res.error) return socket.emit('redraw_error', { message: res.error });
+
+    socket.emit('redraw_confirm', { success: true, hand: res.hand });
+  });
+
+  // Popular vote socket handler
+  socket.on('popular_vote', ({ roomCode, submissionId }) => {
+    const res = roomManager.submitPlayerInput(roomCode, socket.id, { action: 'POPULAR_VOTE', submissionId });
+    if (res.error) return socket.emit('vote_error', { message: res.error });
+
+    socket.emit('popular_vote_confirm', { success: true, submissionId: res.submissionId });
+  });
+
+  // Bad Cards Judge winner pick
+  socket.on('pick_winner', ({ roomCode, submissionId }) => {
+    const res = roomManager.submitPlayerInput(roomCode, socket.id, { action: 'PICK_WINNER', submissionId });
+    if (res.error) return socket.emit('pick_error', { message: res.error });
+
+    evaluateAndRevealCah(io, roomCode, res);
+  });
+
   socket.on('next_question_request', async ({ roomCode }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || room.hostSocketId !== socket.id) return;
 
-    if (room.status === 'REVEAL') {
-      roomManager.clearRoomTimer(room);
-      const adv = roomManager.advanceNextQuestion(roomCode);
+    if (room.selectedGameId === 'cah') {
+      const adv = roomManager.advanceNextRound(roomCode);
       if (adv && !adv.isGameOver) {
-        await runQuestionRound(io, roomCode);
+        await runCahRound(io, roomCode);
       } else if (adv && adv.isGameOver) {
         const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
         io.to(`room_${roomCode}`).emit('game_over', { leaderboard });
       }
+    } else {
+      if (room.status === 'REVEAL') {
+        roomManager.clearRoomTimer(room);
+        const adv = roomManager.advanceNextRound(roomCode);
+        if (adv && !adv.isGameOver) {
+          await runQuestionRound(io, roomCode);
+        } else if (adv && adv.isGameOver) {
+          const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
+          io.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+        }
+      }
     }
   });
 
-  // Host manual early game end trigger
   socket.on('end_game_early', ({ roomCode }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
 
-    console.log(`[Room ${roomCode}] Game ended early by user request.`);
     roomManager.clearRoomTimer(room);
     room.status = 'GAME_OVER';
-
     const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
-
-    io.to(`room_${roomCode}`).emit('game_over', {
-      leaderboard
-    });
+    io.to(`room_${roomCode}`).emit('game_over', { leaderboard });
   });
 
-  // Handle disconnect
   socket.on('disconnect', () => {
-    console.log(`[Socket] Disconnected: ${socket.id}`);
     const { room, player, isHost } = roomManager.handleDisconnect(socket.id);
-
     if (room) {
       if (isHost) {
-        console.log(`[Room ${room.code}] Host disconnected. Closing room.`);
-        io.to(`room_${room.code}`).emit('host_disconnected', {
-          message: 'The TV host disconnected. Room closed.'
-        });
+        io.to(`room_${room.code}`).emit('host_disconnected', { message: 'The TV host disconnected. Room closed.' });
       } else if (player) {
-        console.log(`[Room ${room.code}] Player '${player.nickname}' disconnected.`);
-        io.to(`host_${room.code}`).emit('roster_update', {
-          players: room.players
-        });
+        io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
       }
     }
   });
 });
 
-/**
- * Runs a single 15-second question round.
- */
-async function runQuestionRound(ioInstance, roomCode) {
-  const room = roomManager.startQuestionRound(roomCode);
+async function runCahRound(ioInstance, roomCode) {
+  const roundData = roomManager.startRound(roomCode);
+  if (!roundData) return;
+
+  const { room, roundNum, totalRounds, prompt, judgeSocketId, judgeNickname } = roundData;
+  console.log(`[Room ${roomCode}] CAH Round ${roundNum}/${totalRounds}. Judge: ${judgeNickname}. Prompt: "${prompt}"`);
+
+  getOrSynthesizeTts(prompt, true);
+
+  ioInstance.to(`host_${roomCode}`).emit('cah_round_start', {
+    roundNum,
+    totalRounds,
+    prompt,
+    judgeNickname,
+    players: room.players.map(p => ({
+      nickname: p.nickname,
+      score: p.score,
+      isJudge: p.socketId === judgeSocketId
+    }))
+  });
+
+  const nonJudgePlayers = room.players.filter(p => p.socketId !== judgeSocketId);
+  room.players.forEach(p => {
+    const isJudge = p.socketId === judgeSocketId;
+    ioInstance.to(p.socketId).emit('cah_controller_round', {
+      roundNum,
+      totalRounds,
+      prompt,
+      isJudge,
+      judgeNickname,
+      hand: p.hand,
+      usedRedraw: p.usedRedraw,
+      totalRequired: nonJudgePlayers.length
+    });
+  });
+
+  const botPlayers = room.players.filter(p => p.isBot && p.socketId !== judgeSocketId);
+  botPlayers.forEach(bot => {
+    const delayMs = Math.floor(Math.random() * 5000) + 1500;
+    setTimeout(() => {
+      if (room.status === 'CAH_SUBMIT') {
+        const randomIndex = Math.floor(Math.random() * bot.hand.length);
+        const res = roomManager.submitPlayerInput(roomCode, bot.socketId, { action: 'SUBMIT_CARD', cardIndex: randomIndex });
+        if (res && res.success) {
+          ioInstance.to(`host_${roomCode}`).emit('cah_submission_update', {
+            submittedCount: res.submittedCount,
+            totalRequired: res.totalRequired,
+            players: room.players.map(p => ({
+              nickname: p.nickname,
+              submitted: Boolean(p.submittedCard || p.socketId === room.currentJudgeSocketId),
+              isJudge: p.socketId === room.currentJudgeSocketId
+            }))
+          });
+
+          if (res.allSubmitted) {
+            startCahJudgingPhase(ioInstance, roomCode);
+          }
+        }
+      }
+    }, delayMs);
+  });
+}
+
+function startCahJudgingPhase(ioInstance, roomCode) {
+  const room = roomManager.getRoom(roomCode);
   if (!room) return;
+
+  console.log(`[Room ${roomCode}] CAH Judging Phase. Broadcast anonymous choices.`);
+
+  ioInstance.to(`host_${roomCode}`).emit('cah_judging_phase', {
+    prompt: room.currentPrompt.text,
+    judgeNickname: room.currentJudgeNickname,
+    submissions: room.shuffledSubmissions.map(s => ({ id: s.id, cardText: s.cardText }))
+  });
+
+  ioInstance.to(room.currentJudgeSocketId).emit('cah_judge_pick_options', {
+    prompt: room.currentPrompt.text,
+    submissions: room.shuffledSubmissions.map(s => ({ id: s.id, cardText: s.cardText }))
+  });
+
+  room.players.filter(p => p.socketId !== room.currentJudgeSocketId).forEach(p => {
+    ioInstance.to(p.socketId).emit('cah_waiting_for_judge', {
+      judgeNickname: room.currentJudgeNickname,
+      enablePopularVote: room.enablePopularVote,
+      submissions: room.shuffledSubmissions.map(s => ({ id: s.id, cardText: s.cardText }))
+    });
+  });
+
+  const judgePlayer = room.players.find(p => p.socketId === room.currentJudgeSocketId);
+  if (judgePlayer && judgePlayer.isBot) {
+    setTimeout(() => {
+      if (room.status === 'CAH_JUDGE' && room.shuffledSubmissions.length > 0) {
+        const randomSub = room.shuffledSubmissions[Math.floor(Math.random() * room.shuffledSubmissions.length)];
+        const res = roomManager.submitPlayerInput(roomCode, judgePlayer.socketId, { action: 'PICK_WINNER', submissionId: randomSub.id });
+        if (res && res.success) {
+          evaluateAndRevealCah(ioInstance, roomCode, res);
+        }
+      }
+    }, 3500);
+  }
+}
+
+async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
+  const { winningSubmission, winnerPlayer, popularWinnerPlayer, popularVoteCount, prompt, room } = resultData;
+
+  let hostRoast = '';
+  if (room.enableRoaster) {
+    hostRoast = await AiRoaster.generateRoast({
+      question: `Cards Against Humanity Prompt: "${prompt}"`,
+      correctAnswerText: `Winning Card: "${winningSubmission.cardText}" (Played by ${winnerPlayer ? winnerPlayer.nickname : 'Unknown'})`,
+      leaderboard: room.players.sort((a,b) => b.score - a.score),
+      players: room.players
+    });
+  }
+
+  const announcerVoice = process.env.KOKORO_VOICE || 'am_michael';
+  const roasterVoice = process.env.ROASTER_VOICE || 'bm_george';
+
+  const revealSpeech = `Winning card... ${winningSubmission.cardText}!`;
+  const announcerAudio = await getOrSynthesizeTts(revealSpeech, false, announcerVoice);
+  let finalRevealAudio = announcerAudio;
+
+  if (hostRoast) {
+    const roasterAudio = await getOrSynthesizeTts(hostRoast, false, roasterVoice);
+    if (announcerAudio && roasterAudio && announcerAudio.contentType === 'audio/mpeg' && roasterAudio.contentType === 'audio/mpeg') {
+      const combinedBuffer = Buffer.concat([announcerAudio.buffer, roasterAudio.buffer]);
+      finalRevealAudio = { contentType: 'audio/mpeg', buffer: combinedBuffer };
+    }
+  }
+
+  const leaderboard = [...room.players].sort((a,b) => b.score - a.score);
+  const isGameOver = room.currentRound >= room.totalRounds - 1;
+
+  console.log(`[Room ${roomCode}] CAH Winner: ${winnerPlayer ? winnerPlayer.nickname : 'Unknown'} with "${winningSubmission.cardText}". Popular Vote Winner: ${popularWinnerPlayer ? popularWinnerPlayer.nickname : 'None'}`);
+
+  ioInstance.to(`host_${roomCode}`).emit('cah_round_reveal', {
+    prompt,
+    winningCardText: winningSubmission.cardText,
+    winnerNickname: winnerPlayer ? winnerPlayer.nickname : 'Unknown',
+    winnerColor: winnerPlayer ? winnerPlayer.color : '#3B82F6',
+    popularWinnerNickname: popularWinnerPlayer ? popularWinnerPlayer.nickname : null,
+    popularVoteCount: popularVoteCount || 0,
+    hostRoast,
+    leaderboard,
+    isGameOver
+  });
+
+  room.players.forEach(p => {
+    const isWinner = winnerPlayer && p.socketId === winnerPlayer.socketId;
+    const isPopularWinner = popularWinnerPlayer && p.socketId === popularWinnerPlayer.socketId;
+    ioInstance.to(p.socketId).emit('cah_controller_reveal', {
+      isWinner,
+      isPopularWinner,
+      winnerNickname: winnerPlayer ? winnerPlayer.nickname : 'Unknown',
+      winningCardText: winningSubmission.cardText,
+      totalScore: p.score
+    });
+  });
+
+  let revealDurationMs = 7000;
+  if (finalRevealAudio && finalRevealAudio.buffer) {
+    const audioSecs = finalRevealAudio.buffer.length / 16000;
+    revealDurationMs = Math.max(7000, Math.min(10000, Math.ceil((audioSecs + 1.5) * 1000)));
+  }
+
+  if (!isGameOver) {
+    const timerHandle = setTimeout(async () => {
+      const currentR = roomManager.getRoom(roomCode);
+      if (currentR && currentR.status === 'CAH_REVEAL') {
+        const adv = roomManager.advanceNextRound(roomCode);
+        if (adv && !adv.isGameOver) {
+          await runCahRound(ioInstance, roomCode);
+        } else {
+          ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+        }
+      }
+    }, revealDurationMs);
+    roomManager.setRoomTimer(room, timerHandle);
+  } else {
+    ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+  }
+}
+
+async function runQuestionRound(ioInstance, roomCode) {
+  const room = roomManager.getRoom(roomCode);
+  if (!room) return;
+
+  roomManager.startRound(roomCode);
 
   const currentQ = room.currentQuestion;
   const questionNum = room.currentQuestionIndex + 1;
   const totalQuestions = room.questions.length;
 
-  console.log(`[Room ${roomCode}] Round ${questionNum}/${totalQuestions}: "${currentQ.question}"`);
+  console.log(`[Room ${roomCode}] Trivia Round ${questionNum}/${totalQuestions}: "${currentQ.question}"`);
 
-  // Ensure audio is cached in RAM before emitting question to TV for zero-delay speech
   const qText = currentQ.question;
   await getOrSynthesizeTts(qText);
 
-  // Send TV question payload (includes full choice text & correct answer masked)
   ioInstance.to(`host_${roomCode}`).emit('question_start', {
     questionNum,
     totalQuestions,
@@ -538,7 +707,6 @@ async function runQuestionRound(ioInstance, roomCode) {
     durationMs: room.roundDurationMs
   });
 
-  // Send Mobile Controller question active notification
   ioInstance.to(`room_${roomCode}`).emit('controller_question_active', {
     questionNum,
     totalQuestions,
@@ -548,18 +716,14 @@ async function runQuestionRound(ioInstance, roomCode) {
     choiceColors: ['#EF4444', '#3B82F6', '#F59E0B', '#10B981']
   });
 
-  // Schedule Bot Players automated responses if any bots exist in room
   const botPlayers = room.players.filter(p => p.isBot);
   botPlayers.forEach(bot => {
-    // Random submission delay between 1.5s and 9.0s into the round
     const delayMs = Math.floor(Math.random() * 7500) + 1500;
     setTimeout(() => {
       if (room.status === 'QUESTION' && !bot.answered) {
-        // 50% chance bot picks correct answer, 50% chance random answer
         const isSmartChoice = Math.random() < 0.5;
         const chosenIndex = isSmartChoice ? currentQ.correctIndex : Math.floor(Math.random() * 4);
-
-        const res = roomManager.submitAnswer(roomCode, bot.socketId, chosenIndex);
+        const res = roomManager.submitPlayerInput(roomCode, bot.socketId, { answerIndex: chosenIndex });
         if (res && res.success) {
           ioInstance.to(`host_${roomCode}`).emit('player_answered_update', {
             socketId: bot.socketId,
@@ -579,7 +743,6 @@ async function runQuestionRound(ioInstance, roomCode) {
     }, delayMs);
   });
 
-  // Set 15s round timeout
   const timerHandle = setTimeout(() => {
     evaluateAndReveal(ioInstance, roomCode);
   }, room.roundDurationMs);
@@ -587,9 +750,6 @@ async function runQuestionRound(ioInstance, roomCode) {
   roomManager.setRoomTimer(room, timerHandle);
 }
 
-/**
- * Evaluates results, broadcasts reveals, and schedules next round or game over.
- */
 async function evaluateAndReveal(ioInstance, roomCode) {
   const results = roomManager.evaluateRoundResults(roomCode);
   if (!results) return;
@@ -599,7 +759,6 @@ async function evaluateAndReveal(ioInstance, roomCode) {
   const labels = ['A', 'B', 'C', 'D'];
   const currentQ = results.room.questions[results.room.currentQuestionIndex];
 
-  // Generate Gen AI Host Roast / Commentary ONLY if enableRoaster is true
   let hostRoast = '';
   if (results.room.enableRoaster) {
     hostRoast = await AiRoaster.generateRoast({
@@ -610,18 +769,13 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     });
   }
 
-  const roastClause = hostRoast ? ` ... ${hostRoast}` : '';
   const announcerRevealText = `The correct answer was... option ${labels[results.correctIndex]}! ... ${results.correctAnswerText}`;
-  const revealText = `${announcerRevealText}${roastClause}`;
-
   const announcerVoice = process.env.KOKORO_VOICE || 'am_michael';
   const roasterVoice = process.env.ROASTER_VOICE || 'bm_george';
 
-  // Synthesize Announcer audio (fetched from RAM pre-synthesis cache)
   const announcerAudio = await getOrSynthesizeTts(announcerRevealText, false, announcerVoice);
   let finalRevealAudio = announcerAudio;
 
-  // Synthesize Sarcastic Roaster audio and concatenate MP3 audio streams
   if (hostRoast) {
     const roasterAudio = await getOrSynthesizeTts(hostRoast, false, roasterVoice);
     if (announcerAudio && roasterAudio && announcerAudio.contentType === 'audio/mpeg' && roasterAudio.contentType === 'audio/mpeg') {
@@ -630,35 +784,24 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     }
   }
 
-  if (finalRevealAudio) {
-    const cleanRevealText = preprocessTtsText(revealText);
-    ttsAudioCache.set(`${announcerVoice}:${cleanRevealText}`, finalRevealAudio);
-    ttsAudioCache.set(`${roasterVoice}:${cleanRevealText}`, finalRevealAudio);
-  }
-
-  // Calculate dynamic reveal screen duration based on concatenated audio length + padding (6.5s default for fast pacing)
   let revealDurationMs = 6500;
   if (finalRevealAudio && finalRevealAudio.buffer) {
     const audioSecs = finalRevealAudio.buffer.length / 16000;
     revealDurationMs = Math.max(6500, Math.min(9500, Math.ceil((audioSecs + 1.5) * 1000)));
   }
 
-  console.log(`[Room ${roomCode}] Question reveal. Answer: (${results.correctIndex}) ${results.correctAnswerText}. Roaster (${roasterVoice}): "${hostRoast}". Reveal timer: ${revealDurationMs}ms.`);
-
-  // Broadcast reveal to TV
   ioInstance.to(`host_${roomCode}`).emit('round_reveal', {
     questionNum: results.room.currentQuestionIndex + 1,
     totalQuestions: results.room.questions.length,
     correctIndex: results.correctIndex,
     correctAnswerText: results.correctAnswerText,
-    hostRoast: hostRoast,
+    hostRoast,
     players: results.players,
     leaderboard: results.leaderboard,
     isLastQuestion: results.isLastQuestion,
-    revealDurationMs: revealDurationMs
+    revealDurationMs
   });
 
-  // Broadcast result to individual player controllers
   results.players.forEach(player => {
     const isCorrect = player.answered && player.answerIndex === results.correctIndex;
     ioInstance.to(player.socketId).emit('round_result_controller', {
@@ -670,12 +813,11 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     });
   });
 
-  // If not last question, set dynamic reveal screen timer before advancing automatically
   if (!results.isLastQuestion) {
     const autoAdvanceHandle = setTimeout(async () => {
       const currentR = roomManager.getRoom(roomCode);
       if (currentR && currentR.status === 'REVEAL') {
-        const adv = roomManager.advanceNextQuestion(roomCode);
+        const adv = roomManager.advanceNextRound(roomCode);
         if (adv && !adv.isGameOver) {
           await runQuestionRound(ioInstance, roomCode);
         } else if (adv && adv.isGameOver) {
@@ -686,17 +828,13 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     }, revealDurationMs);
     roomManager.setRoomTimer(results.room, autoAdvanceHandle);
   } else {
-    // Game Over! Broadcast final leaderboard
-    console.log(`[Room ${roomCode}] Game Over! Winner: ${results.leaderboard[0]?.nickname || 'None'}`);
-    ioInstance.to(`room_${roomCode}`).emit('game_over', {
-      leaderboard: results.leaderboard
-    });
+    ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard: results.leaderboard });
   }
 }
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`===================================================`);
-  console.log(` BAD DATA Trivia Game Server Running on Port ${PORT}`);
+  console.log(` BAD DATA Multi-Game Server Running on Port ${PORT}`);
   console.log(` Local TV View:      http://localhost:${PORT}/receiver/`);
   console.log(` Mobile Controller:  http://localhost:${PORT}/play/`);
   console.log(` Server Base URL:    ${baseUrl}`);

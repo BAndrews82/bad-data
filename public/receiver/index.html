@@ -12,7 +12,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <script src="/socket.io/socket.io.js"></script>
-  <!-- Google Cast CAF Receiver SDK -->
   <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
   <style>
     html, body {
@@ -64,17 +63,14 @@
 
   <!-- Voice Control & Game Control (Top Right) -->
   <div class="absolute top-4 right-6 z-50 flex items-center gap-3">
-    <!-- Next Question Button (Shown during reveal screen) -->
     <button id="next-question-btn" onclick="event.stopPropagation(); triggerNextQuestion();" class="hidden flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-xs font-black text-white transition border border-emerald-400/40 shadow-lg cursor-pointer hover:scale-105 active:scale-95 animate-pulse">
-      <span>⏩ NEXT QUESTION</span>
+      <span>⏩ NEXT ROUND</span>
     </button>
 
-    <!-- End Game Early Button (Shown during active game rounds) -->
     <button id="end-game-btn" onclick="event.stopPropagation(); triggerEndGameEarly();" class="hidden flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white transition border border-rose-400/40 shadow-lg cursor-pointer hover:scale-105 active:scale-95">
       <span>🛑 END GAME</span>
     </button>
 
-    <!-- TTS Toggle Button -->
     <button id="tts-toggle-btn" onclick="event.stopPropagation(); toggleTTS();" class="flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-semibold text-slate-300 hover:text-white transition border border-slate-700 shadow-lg cursor-pointer">
       <svg id="tts-icon-on" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.707 12 4.414 12 5.414v13.172c0 1.000-1.077 1.707-1.707 1.077L5.586 15z"></path>
@@ -94,11 +90,10 @@
       </div>
       <div>
         <h1 class="text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-pink-400 to-emerald-400">BAD DATA</h1>
-        <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase">Self-Hosted Party Trivia</p>
+        <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase">Self-Hosted Party Engine</p>
       </div>
     </div>
 
-    <!-- Active Room Code Badge -->
     <div id="mini-room-badge" class="hidden glass-panel px-5 py-1.5 rounded-xl border border-slate-700 flex items-center gap-3">
       <span class="text-xs text-slate-400 uppercase tracking-wider">Room Code</span>
       <span id="mini-code-text" class="font-mono-code font-black text-xl text-emerald-400">----</span>
@@ -106,88 +101,101 @@
   </header>
 
   <!-- ==================== SCREEN 1: LOBBY SCREEN ==================== -->
-  <section id="screen-lobby" class="flex-1 flex flex-col items-center justify-center gap-4 z-10 py-2 min-h-0">
+  <section id="screen-lobby" class="flex-1 flex flex-col items-center justify-center gap-3 z-10 py-1 min-h-0">
     <div class="text-center max-w-2xl shrink-0">
       <button onclick="event.stopPropagation(); testSoundAndVoice();" id="audio-prompt-badge" class="px-3.5 py-1 rounded-full bg-indigo-500/30 border border-indigo-400/50 text-indigo-200 text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-500/50 transition cursor-pointer shadow-lg animate-pulse">
         🔊 Click Here to Enable & Test Sound/Voice
       </button>
-      <h2 class="text-2xl sm:text-3xl font-black text-white mt-1 mb-0.5">Scan QR or Visit Play URL</h2>
     </div>
 
     <div class="grid grid-cols-2 gap-4 items-stretch max-w-4xl w-full shrink min-h-0">
       <!-- QR Code & Play URL Card -->
       <div class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center shadow-xl border border-slate-700">
-        <div class="bg-white p-2.5 rounded-xl shadow-inner mb-2">
-          <img id="qr-code-img" src="" alt="Scan QR Code to Join" class="w-32 h-32 sm:w-40 sm:h-40 object-contain">
+        <div class="bg-white p-2 rounded-xl shadow-inner mb-2">
+          <img id="qr-code-img" src="" alt="Scan QR Code to Join" class="w-32 h-32 sm:w-36 sm:h-36 object-contain">
         </div>
-        <p class="text-slate-400 text-[11px] mb-1">Target URL:</p>
-        <span id="play-url-text" class="font-mono-code font-bold text-xs sm:text-sm text-emerald-400 break-all px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800">
+        <p class="text-slate-400 text-[10px] mb-1">Target URL:</p>
+        <span id="play-url-text" class="font-mono-code font-bold text-xs text-emerald-400 break-all px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-800">
           Loading...
         </span>
       </div>
 
-      <!-- Room Code Display & Player Count -->
+      <!-- Room Code & Game Controls -->
       <div class="glass-panel p-4 rounded-2xl flex flex-col items-center text-center shadow-xl border border-slate-700 justify-between">
         <div class="w-full">
           <span class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Room Code</span>
-          <div id="room-code-display" class="font-mono-code font-black text-4xl sm:text-5xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-amber-300 to-emerald-400 my-0.5">
+          <div id="room-code-display" class="font-mono-code font-black text-3xl sm:text-4xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-amber-300 to-emerald-400 my-0.5">
             ----
           </div>
         </div>
 
-        <!-- Trivia Source Mode Selector -->
+        <!-- Game Selector Cards -->
         <div class="w-full my-1">
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 text-left">Question Mode</label>
-          <div class="grid grid-cols-3 gap-1 bg-slate-900 p-0.5 rounded-xl border border-slate-800 text-[11px] font-bold mb-1">
-            <button id="mode-btn-mix" onclick="event.stopPropagation(); setSourceMode('mix')" class="py-1 rounded-lg bg-indigo-600 text-white transition">🔀 Mix</button>
-            <button id="mode-btn-custom" onclick="event.stopPropagation(); setSourceMode('custom')" class="py-1 rounded-lg text-slate-400 hover:text-white transition">📁 JSON Only</button>
-            <button id="mode-btn-api" onclick="event.stopPropagation(); setSourceMode('api')" class="py-1 rounded-lg text-slate-400 hover:text-white transition">🌐 API Only</button>
-          </div>
-
-          <!-- AI Co-Host Roaster Option (Default OFF) -->
-          <div class="w-full my-1 flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-            <div class="text-left">
-              <span class="block text-[11px] font-bold text-slate-200">🤖 AI Co-Host Roaster</span>
-              <span class="block text-[9px] text-slate-400">Sarcastic commentary after reveal</span>
-            </div>
-            <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
-              <button id="roaster-toggle-off" onclick="event.stopPropagation(); setRoasterEnabled(false);" class="px-3 py-1 rounded bg-rose-600 text-white transition font-black shadow">OFF</button>
-              <button id="roaster-toggle-on" onclick="event.stopPropagation(); setRoasterEnabled(true);" class="px-3 py-1 rounded text-slate-400 hover:text-white transition">ON</button>
-            </div>
-          </div>
-
-          <!-- Active JSON Question Packs Selection -->
-          <div id="packs-selector-container" class="w-full text-left bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-            <div class="flex items-center justify-between mb-1">
-              <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Select Custom Packs to Include</span>
-              <div class="flex items-center gap-1.5">
-                <button onclick="event.stopPropagation(); selectAllPacks();" class="text-[9px] font-bold text-emerald-400 hover:text-emerald-300 underline cursor-pointer">Select All</button>
-                <span class="text-slate-600 text-[9px]">•</span>
-                <button onclick="event.stopPropagation(); clearAllPacks();" class="text-[9px] font-bold text-rose-400 hover:text-rose-300 underline cursor-pointer">Clear All</button>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-left">Select Game Mode</label>
+          <div class="grid grid-cols-2 gap-2 text-left">
+            <button id="game-card-trivia" onclick="event.stopPropagation(); selectGame('trivia');" class="p-2 rounded-xl bg-slate-900 border-2 border-emerald-500 text-white font-extrabold transition shadow flex items-center gap-2 cursor-pointer">
+              <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-base">❓</div>
+              <div>
+                <div class="text-xs font-black text-emerald-400">Trivia</div>
+                <div class="text-[8px] text-slate-400 font-normal">Cash countdown</div>
               </div>
-            </div>
-            <div id="packs-grid" class="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto">
-              <!-- Rendered via JS -->
-            </div>
+            </button>
+            <button id="game-card-cah" onclick="event.stopPropagation(); selectGame('cah');" class="p-2 rounded-xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold transition shadow flex items-center gap-2 cursor-pointer">
+              <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center font-black text-base">🃏</div>
+              <div>
+                <div class="text-xs font-black text-purple-400">Bad Cards</div>
+                <div class="text-[8px] text-slate-400 font-normal">CAH prompt game</div>
+              </div>
+            </button>
           </div>
         </div>
 
-        <!-- Joined Players Roster & Add Bot Trigger -->
+        <!-- AI Co-Host Roaster Option -->
+        <div class="w-full my-1 flex items-center justify-between bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+          <div class="text-left">
+            <span class="block text-[10px] font-bold text-slate-200">🤖 AI Co-Host Roaster</span>
+            <span class="block text-[8px] text-slate-400">Gemini 3.6 Flash roasts</span>
+          </div>
+          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
+            <button id="roaster-toggle-off" onclick="event.stopPropagation(); setRoasterEnabled(false);" class="px-2.5 py-0.5 rounded bg-rose-600 text-white transition font-black shadow">OFF</button>
+            <button id="roaster-toggle-on" onclick="event.stopPropagation(); setRoasterEnabled(true);" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition">ON</button>
+          </div>
+        </div>
+
+        <!-- Popular Vote House Rule Toggle -->
+        <div id="cah-popular-vote-option" class="w-full my-1 flex items-center justify-between bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+          <div class="text-left">
+            <span class="block text-[10px] font-bold text-slate-200">⭐ Popular Vote Bonus</span>
+            <span class="block text-[8px] text-slate-400">+1 Bonus point for player-voted card</span>
+          </div>
+          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
+            <button id="popular-toggle-off" onclick="event.stopPropagation(); setPopularVoteEnabled(false);" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition">OFF</button>
+            <button id="popular-toggle-on" onclick="event.stopPropagation(); setPopularVoteEnabled(true);" class="px-2.5 py-0.5 rounded bg-emerald-600 text-white transition font-black shadow">ON</button>
+          </div>
+        </div>
+
+        <!-- Card Packs Selector (Shown for Bad Cards) -->
+        <div id="card-packs-selector-container" class="w-full text-left bg-slate-900/80 p-1.5 rounded-xl border border-slate-800 my-1">
+          <span class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Included Card Packs</span>
+          <div id="card-packs-grid" class="flex flex-wrap gap-1 max-h-12 overflow-y-auto">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Joined Players Roster -->
         <div class="w-full my-1">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-bold text-slate-300">Joined Players (<span id="player-count">0</span>)</span>
-            <!-- Add AI Bot Player Button for Solo Test Mode -->
-            <button onclick="event.stopPropagation(); addBotPlayers();" class="px-2 py-0.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-bold text-[10px] transition shadow cursor-pointer">
+            <span class="text-[10px] font-bold text-slate-300">Joined Players (<span id="player-count">0</span>)</span>
+            <button onclick="event.stopPropagation(); addBotPlayers();" class="px-2 py-0.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-bold text-[9px] transition shadow cursor-pointer">
               🤖 Add AI Bots (+2)
             </button>
           </div>
-          <div id="player-roster-grid" class="flex flex-wrap justify-center gap-1.5 max-h-16 overflow-y-auto p-0.5">
-            <span class="text-slate-500 italic text-[11px]">Waiting for players to join...</span>
+          <div id="player-roster-grid" class="flex flex-wrap justify-center gap-1.5 max-h-14 overflow-y-auto p-0.5">
+            <span class="text-slate-500 italic text-[10px]">Waiting for players to join...</span>
           </div>
         </div>
 
-        <!-- Start Game Button -->
-        <button id="start-game-btn" onclick="event.stopPropagation(); triggerStartGame();" disabled class="w-full mt-1.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-base tracking-wider shadow-lg transition transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
+        <button id="start-game-btn" onclick="event.stopPropagation(); triggerStartGame();" disabled class="w-full mt-1 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-sm tracking-wider shadow-lg transition transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
           START GAME
         </button>
       </div>
@@ -206,41 +214,28 @@
       <p class="text-slate-300 font-semibold text-base mb-2">
         Look up at the TV screen!
       </p>
-      <p class="text-xs text-slate-400">
-        Host voice & questions are buffering...
-      </p>
     </div>
   </section>
 
-  <!-- ==================== SCREEN 1.8: FUNNY QUESTION SPLASH SCREEN ==================== -->
+  <!-- ==================== SCREEN 1.8: TRIVIA QUESTION SPLASH ==================== -->
   <section id="screen-question-splash" class="hidden flex-1 flex flex-col items-center justify-center text-center z-10 py-6 min-h-0 overflow-hidden">
     <div class="animate-splash-zoom glass-panel p-10 sm:p-14 rounded-3xl border-2 border-indigo-500/60 shadow-2xl max-w-2xl w-full flex flex-col items-center relative overflow-hidden">
-      <!-- Animated Background Pulse Glow -->
-      <div class="absolute -inset-1 bg-gradient-to-r from-red-600 via-purple-600 to-emerald-500 rounded-3xl blur opacity-30 animate-pulse"></div>
-
       <div class="relative z-10">
         <span id="splash-category-badge" class="px-5 py-2 rounded-full bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 font-extrabold uppercase tracking-widest text-xs mb-3 inline-block shadow-lg">
-          General Knowledge • Medium
+          General Knowledge
         </span>
-
         <h2 id="splash-question-num" class="animate-glow-pulse text-6xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-pink-400 to-cyan-300 tracking-wider my-3 drop-shadow-2xl">
           QUESTION 1
         </h2>
-
         <p id="splash-funny-subtitle" class="font-black text-2xl sm:text-3xl text-emerald-400 tracking-wide mt-2 glow-gold">
           🔥 Warm Up Time!
-        </p>
-
-        <p class="text-xs text-slate-400 uppercase tracking-widest mt-6 font-bold">
-          Prepare Your Controllers
         </p>
       </div>
     </div>
   </section>
 
-  <!-- ==================== SCREEN 2: QUESTION SCREEN ==================== -->
+  <!-- ==================== SCREEN 2: TRIVIA QUESTION SCREEN ==================== -->
   <section id="screen-question" class="hidden flex-1 flex flex-col justify-between z-10 py-1 min-h-0 overflow-hidden">
-    <!-- Question Header Metadata -->
     <div class="flex items-center justify-between glass-panel px-6 py-2.5 rounded-xl border border-slate-800 shrink-0">
       <div class="flex items-center gap-3">
         <span id="question-num-badge" class="px-3 py-1 rounded-lg bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-bold text-sm">
@@ -250,166 +245,178 @@
           General Knowledge
         </span>
       </div>
-
-      <!-- Real-Time Cash Ticker -->
       <div class="flex items-center gap-4">
         <div class="text-right">
           <span class="text-[10px] text-slate-400 uppercase tracking-widest block">Current Value</span>
-          <span id="cash-ticker-text" class="font-mono-code font-black text-2xl text-emerald-400 glow-gold">
-            $1,000
-          </span>
+          <span id="cash-ticker-text" class="font-mono-code font-black text-2xl text-emerald-400 glow-gold">$1,000</span>
         </div>
         <div class="text-right border-l border-slate-700 pl-4">
           <span class="text-[10px] text-slate-400 uppercase tracking-widest block">Answered</span>
-          <span id="answered-count-text" class="font-bold text-xl text-slate-200">
-            0 / 0
-          </span>
+          <span id="answered-count-text" class="font-bold text-xl text-slate-200">0 / 0</span>
         </div>
       </div>
     </div>
 
-    <!-- Question Prompt Card (Compact & Scrollable if text is long) -->
     <div class="glass-panel p-4 sm:p-6 rounded-2xl text-center shadow-lg my-2 border border-slate-700/80 shrink-0 min-h-0 max-h-[30vh] overflow-y-auto flex items-center justify-center">
       <h2 id="question-prompt-text" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-snug text-white tracking-wide">
-        Loading Question Prompt...
+        Loading Question...
       </h2>
     </div>
 
-    <!-- Live Question Roster & Scoreboard Bar -->
-    <div id="live-question-scoreboard" class="flex items-center justify-center gap-2 overflow-x-auto py-1 my-0.5 shrink-0 min-h-[36px]">
-      <!-- Dynamic Live Player Pills -->
-    </div>
+    <div id="live-question-scoreboard" class="flex items-center justify-center gap-2 overflow-x-auto py-1 my-0.5 shrink-0 min-h-[36px]"></div>
 
-    <!-- Countdown Progress Bar -->
     <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden border border-slate-800 my-1 relative shrink-0">
       <div id="question-timer-bar" class="bg-gradient-to-r from-emerald-400 via-amber-400 to-red-500 h-full w-full transition-all duration-100 ease-linear"></div>
     </div>
 
-    <!-- 4 Choice Cards Grid -->
     <div class="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-6xl mx-auto shrink-0 mb-1">
-      <!-- Card A -->
       <div id="choice-card-0" class="card-choice glass-panel p-4 rounded-xl flex items-center gap-4 border-2 border-red-500/40 bg-red-950/20">
-        <div class="w-12 h-12 rounded-lg bg-red-600 flex items-center justify-center font-black text-2xl text-white shadow-md shrink-0">
-          A
-        </div>
+        <div class="w-12 h-12 rounded-lg bg-red-600 flex items-center justify-center font-black text-2xl text-white shadow-md shrink-0">A</div>
         <span id="choice-text-0" class="text-lg sm:text-xl font-extrabold text-slate-100 leading-tight">Choice A</span>
       </div>
-
-      <!-- Card B -->
       <div id="choice-card-1" class="card-choice glass-panel p-4 rounded-xl flex items-center gap-4 border-2 border-blue-500/40 bg-blue-950/20">
-        <div class="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center font-black text-2xl text-white shadow-md shrink-0">
-          B
-        </div>
+        <div class="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center font-black text-2xl text-white shadow-md shrink-0">B</div>
         <span id="choice-text-1" class="text-lg sm:text-xl font-extrabold text-slate-100 leading-tight">Choice B</span>
       </div>
-
-      <!-- Card C -->
       <div id="choice-card-2" class="card-choice glass-panel p-4 rounded-xl flex items-center gap-4 border-2 border-amber-500/40 bg-amber-950/20">
-        <div class="w-12 h-12 rounded-lg bg-amber-600 flex items-center justify-center font-black text-2xl text-white shadow-md shrink-0">
-          C
-        </div>
+        <div class="w-12 h-12 rounded-lg bg-amber-600 flex items-center justify-center font-black text-2xl text-white shadow-md shrink-0">C</div>
         <span id="choice-text-2" class="text-lg sm:text-xl font-extrabold text-slate-100 leading-tight">Choice C</span>
       </div>
-
-      <!-- Card D -->
       <div id="choice-card-3" class="card-choice glass-panel p-4 rounded-xl flex items-center gap-4 border-2 border-emerald-500/40 bg-emerald-950/20">
-        <div class="w-12 h-12 rounded-lg bg-emerald-600 flex items-center justify-center font-black text-2xl text-white shadow-md shrink-0">
-          D
-        </div>
+        <div class="w-12 h-12 rounded-lg bg-emerald-600 flex items-center justify-center font-black text-2xl text-white shadow-md shrink-0">D</div>
         <span id="choice-text-3" class="text-lg sm:text-xl font-extrabold text-slate-100 leading-tight">Choice D</span>
       </div>
     </div>
   </section>
 
-  <!-- ==================== SCREEN 3: REVEAL SCREEN ==================== -->
+  <!-- ==================== SCREEN 3: TRIVIA REVEAL SCREEN ==================== -->
   <section id="screen-reveal" class="hidden flex-1 flex flex-col justify-between z-10 py-1 min-h-0">
-    <!-- Reveal Title Header -->
     <div class="text-center mb-1 shrink-0">
-      <div class="flex items-center justify-center gap-2 mb-0.5">
-        <span class="px-3 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold uppercase tracking-widest text-[11px]">
-          Round Reveal
-        </span>
-      </div>
+      <span class="px-3 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold uppercase tracking-widest text-[11px]">
+        Round Reveal
+      </span>
       <h2 id="reveal-correct-headline" class="text-2xl sm:text-3xl font-black text-white mt-0.5">
         The Correct Answer was...
       </h2>
     </div>
 
-    <!-- Reveal Auto-Advance Countdown Bar -->
     <div class="w-full max-w-3xl mx-auto bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800 my-0.5 shrink-0">
       <div id="reveal-timer-bar" class="bg-emerald-400 h-full w-full transition-all duration-100 ease-linear"></div>
     </div>
 
-    <!-- Highlighted Correct Choice Card -->
     <div id="reveal-correct-card" class="glass-panel p-3 sm:p-4 rounded-xl border-2 border-emerald-500 bg-emerald-950/40 text-center max-w-3xl mx-auto w-full shadow-xl shrink-0 my-1">
       <span id="reveal-correct-letter" class="inline-block px-2.5 py-0.5 rounded-lg bg-emerald-500 text-slate-950 font-black text-lg mb-0.5">A</span>
       <h3 id="reveal-correct-text" class="text-xl sm:text-2xl font-black text-emerald-300">Correct Answer Text</h3>
     </div>
 
-    <!-- AI Host Roast / Commentary Banner -->
     <div id="reveal-roast-banner" class="glass-panel p-2.5 rounded-xl border border-amber-500/40 bg-amber-950/30 text-center max-w-3xl mx-auto w-full my-1 flex items-center justify-center gap-2.5 shrink-0">
-      <span class="text-base shrink-0">🤖</span>
-      <p id="reveal-roast-text" class="text-xs sm:text-sm font-bold text-amber-200 italic leading-snug">
-        "Host roast loading..."
-      </p>
+      <span class="text-xl">🤖</span>
+      <p id="reveal-roast-text" class="text-amber-200 font-bold italic text-sm">"Gemini Roast..."</p>
     </div>
 
-    <!-- Leaderboard Standings Table (2-Column Responsive Grid) -->
-    <div class="glass-panel p-3.5 rounded-xl max-w-4xl mx-auto w-full border border-slate-700 flex-1 min-h-0 overflow-hidden flex flex-col my-1">
-      <h3 class="text-base font-extrabold text-slate-300 mb-1.5 flex items-center justify-between shrink-0">
-        <span>Leaderboard & Round Bank Changes</span>
-        <span class="text-[11px] text-slate-500 font-normal">Fast Answers = Max Cash</span>
-      </h3>
-
-      <div id="reveal-leaderboard-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto pr-1 flex-1">
-        <!-- Rendered via JS -->
-      </div>
+    <div class="glass-panel p-3 rounded-xl border border-slate-800 max-w-4xl mx-auto w-full flex-1 min-h-0 flex flex-col justify-between my-1">
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block text-center mb-1">Leaderboard</span>
+      <div id="reveal-leaderboard-list" class="grid grid-cols-2 gap-2 overflow-y-auto pr-1"></div>
     </div>
   </section>
 
-  <!-- ==================== SCREEN 4: GAME OVER SCREEN ==================== -->
-  <section id="screen-gameover" class="hidden flex-1 flex flex-col items-center justify-center text-center z-10 py-2 min-h-0">
-    <span class="px-4 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-black text-xs uppercase tracking-widest mb-1">
-      GAME OVER
-    </span>
-    <h2 class="text-3xl sm:text-4xl font-black text-white mb-0.5">Final Cash Earnings</h2>
-
-    <!-- Winner Champion Card -->
-    <div id="winner-champion-card" class="glass-panel p-4 rounded-xl border-2 border-amber-400 bg-gradient-to-b from-amber-950/40 to-slate-900 max-w-md w-full shadow-2xl my-2 shrink-0">
-      <div class="text-3xl mb-0.5">👑</div>
-      <span class="text-[10px] font-bold text-amber-400 uppercase tracking-widest block">GRAND CHAMPION</span>
-      <h3 id="winner-name-text" class="text-2xl sm:text-3xl font-black text-white my-0.5">Player 1</h3>
-      <div id="winner-cash-text" class="font-mono-code font-black text-3xl sm:text-4xl text-emerald-400 glow-gold">
-        +$8,500
+  <!-- ==================== SCREEN 4: BAD CARDS PROMPT SCREEN ==================== -->
+  <section id="screen-cah-prompt" class="hidden flex-1 flex flex-col justify-between z-10 py-2 min-h-0">
+    <div class="flex items-center justify-between glass-panel px-6 py-2.5 rounded-xl border border-slate-800 shrink-0">
+      <div class="flex items-center gap-3">
+        <span id="cah-round-badge" class="px-3 py-1 rounded-lg bg-purple-600/30 border border-purple-500/40 text-purple-300 font-bold text-sm">
+          Bad Cards • Round 1/4
+        </span>
+        <span class="text-slate-300 font-semibold text-sm">
+          Judge (Czar): <span id="cah-judge-nickname-text" class="text-amber-400 font-black">---</span>
+        </span>
+      </div>
+      <div class="text-right">
+        <span class="text-[10px] text-slate-400 uppercase tracking-widest block">Cards Submitted</span>
+        <span id="cah-submitted-counter" class="font-mono-code font-black text-xl text-purple-400">0 / 0</span>
       </div>
     </div>
 
-    <!-- Full Leaderboard (2-Column Responsive Grid) -->
-    <div class="glass-panel p-3 rounded-xl max-w-3xl w-full border border-slate-700 my-1 flex-1 min-h-0 flex flex-col overflow-hidden">
-      <div id="final-leaderboard-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto pr-1 flex-1">
-        <!-- Rendered via JS -->
-      </div>
+    <div class="glass-panel p-8 sm:p-12 rounded-3xl text-center shadow-2xl my-4 border-2 border-purple-500/40 bg-slate-950/90 shrink-0 min-h-0 max-h-[45vh] flex flex-col items-center justify-center relative overflow-hidden">
+      <span class="px-4 py-1.5 rounded-full bg-purple-500/20 text-purple-300 font-black text-xs uppercase tracking-widest mb-4 border border-purple-500/30">
+        Black Prompt Card
+      </span>
+      <h2 id="cah-prompt-text" class="text-3xl sm:text-4xl lg:text-5xl font-black leading-snug text-white tracking-wide">
+        Loading Prompt...
+      </h2>
     </div>
 
-    <button onclick="event.stopPropagation(); window.location.reload();" class="mt-2 px-5 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-base shadow-xl transition cursor-pointer shrink-0">
-      PLAY AGAIN
-    </button>
+    <div id="cah-submissions-roster" class="flex flex-wrap items-center justify-center gap-3 py-2 shrink-0"></div>
   </section>
 
-  <!-- Footer -->
-  <footer class="w-full flex items-center justify-between text-[10px] text-slate-500 z-10 border-t border-slate-800/80 pt-2 shrink-0">
-    <span>Bad Data TV Receiver</span>
-    <span>Google Cast CAF Receiver Enabled</span>
-  </footer>
+  <!-- ==================== SCREEN 5: BAD CARDS JUDGING SCREEN ==================== -->
+  <section id="screen-cah-judging" class="hidden flex-1 flex flex-col justify-between z-10 py-2 min-h-0">
+    <div class="text-center mb-2 shrink-0">
+      <span class="px-4 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold uppercase tracking-widest text-xs">
+        Judging Phase
+      </span>
+      <h2 class="text-2xl sm:text-3xl font-black text-white mt-1">
+        <span id="cah-judging-name" class="text-amber-400">Judge</span> is picking the winning card!
+      </h2>
+    </div>
 
-  <!-- Web Audio FX & Speech Engine Script -->
+    <div id="cah-cards-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-5xl mx-auto w-full my-auto shrink"></div>
+  </section>
+
+  <!-- ==================== SCREEN 6: BAD CARDS REVEAL SCREEN ==================== -->
+  <section id="screen-cah-reveal" class="hidden flex-1 flex flex-col justify-between z-10 py-2 min-h-0">
+    <div class="text-center mb-1 shrink-0">
+      <span class="px-4 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold uppercase tracking-widest text-xs">
+        Winning Combination
+      </span>
+      <h2 class="text-3xl font-black text-white mt-1">
+        👑 <span id="cah-winner-name" class="text-emerald-400">Winner</span> Wins the Round!
+      </h2>
+    </div>
+
+    <div class="glass-panel p-6 sm:p-8 rounded-3xl border-2 border-emerald-500 bg-emerald-950/30 text-center max-w-4xl mx-auto w-full shadow-2xl shrink-0 my-2">
+      <p id="cah-reveal-prompt" class="text-lg text-slate-300 mb-2 font-semibold"></p>
+      <div class="inline-block glass-panel px-6 py-4 rounded-2xl border-2 border-emerald-400 bg-white text-slate-950 font-black text-2xl sm:text-3xl shadow-xl my-2">
+        <span id="cah-reveal-winning-card">Winning Card Text</span>
+      </div>
+    </div>
+
+    <div id="cah-reveal-roast-banner" class="glass-panel p-3 rounded-xl border border-amber-500/40 bg-amber-950/30 text-center max-w-3xl mx-auto w-full my-1 flex items-center justify-center gap-3 shrink-0">
+      <span class="text-xl">🤖</span>
+      <p id="cah-roast-text" class="text-amber-200 font-bold italic text-sm">"Gemini Roast..."</p>
+    </div>
+
+    <div id="cah-reveal-leaderboard" class="grid grid-cols-2 gap-2 max-w-3xl mx-auto w-full shrink-0 my-1"></div>
+  </section>
+
+  <!-- ==================== SCREEN 7: GAME OVER SCREEN ==================== -->
+  <section id="screen-gameover" class="hidden flex-1 flex flex-col justify-between z-10 py-2 min-h-0">
+    <div class="text-center mb-2 shrink-0">
+      <span class="px-4 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-black uppercase tracking-widest text-xs">
+        Game Completed
+      </span>
+      <h2 class="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-emerald-400 to-cyan-300 mt-2">
+        GRAND CHAMPION
+      </h2>
+    </div>
+
+    <div class="glass-panel p-6 rounded-3xl border-2 border-amber-400/80 bg-amber-950/20 text-center max-w-xl mx-auto w-full shadow-2xl shrink-0 my-2">
+      <div class="text-5xl mb-2">🏆</div>
+      <h3 id="winner-name-text" class="text-3xl sm:text-4xl font-black text-white glow-gold">Player Name</h3>
+      <div id="winner-cash-text" class="font-mono-code font-black text-3xl text-emerald-400 mt-1">$0</div>
+    </div>
+
+    <div class="glass-panel p-4 rounded-2xl border border-slate-800 max-w-2xl mx-auto w-full flex-1 min-h-0 flex flex-col justify-between my-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block text-center mb-2">Final Standings</span>
+      <div id="final-leaderboard-list" class="grid grid-cols-2 gap-2 overflow-y-auto pr-1"></div>
+    </div>
+  </section>
+
   <script>
-    // Web Audio API Synthesizer (Works 100% on all browsers & TVs)
     class SoundFX {
       constructor() {
         this.ctx = null;
       }
-
       init() {
         if (!this.ctx) {
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -421,206 +428,48 @@
           this.ctx.resume();
         }
       }
-
-      playTone(freq = 440, type = 'sine', duration = 0.15, vol = 0.3) {
-        if (!this.ctx) this.init();
-        if (!this.ctx) return;
-        try {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = type;
-          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-          gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start();
-          osc.stop(this.ctx.currentTime + duration);
-        } catch(e) {}
-      }
-
       playQuestionChime() {
-        this.playTone(523.25, 'sine', 0.12, 0.4); // C5
-        setTimeout(() => this.playTone(659.25, 'sine', 0.12, 0.4), 100); // E5
-        setTimeout(() => this.playTone(783.99, 'sine', 0.25, 0.5), 200); // G5
-      }
-
-      playSplashMusic(questionNum = 1) {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
-          const now = this.ctx.currentTime;
-          // Scale root notes across questions for dynamic musical variety (C, D, Eb, F, G, A, Bb, C, D, E)
-          const baseFreqs = [261.63, 293.66, 311.13, 349.23, 392.00, 440.00, 466.16, 523.25, 587.33, 659.25];
-          const root = baseFreqs[(questionNum - 1) % baseFreqs.length];
-
-          // 1. Sub-Bass Impact Drop
-          const bassOsc = this.ctx.createOscillator();
-          const bassGain = this.ctx.createGain();
-          bassOsc.type = 'sawtooth';
-          bassOsc.frequency.setValueAtTime(root / 2, now);
-          bassOsc.frequency.exponentialRampToValueAtTime(35, now + 0.7);
-          bassGain.gain.setValueAtTime(0.35, now);
-          bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-          bassOsc.connect(bassGain);
-          bassGain.connect(this.ctx.destination);
-          bassOsc.start(now);
-          bassOsc.stop(now + 0.7);
-
-          // 2. Upbeat Game Show Fanfare Arpeggio
-          const intervals = [1, 1.25, 1.5, 2, 2.5, 3];
-          intervals.forEach((mult, idx) => {
-            const startTime = now + (idx * 0.13);
-            const noteFreq = root * mult;
-
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          const t = this.ctx.currentTime;
+          notes.forEach((freq, idx) => {
+            const startTime = t + (idx * 0.08);
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-
-            osc.type = (idx % 2 === 0) ? 'triangle' : 'square';
-            osc.frequency.setValueAtTime(noteFreq, startTime);
-
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, startTime);
             gain.gain.setValueAtTime(0.25, startTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.45);
-
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
-
             osc.start(startTime);
-            osc.stop(startTime + 0.45);
+            osc.stop(startTime + 0.35);
           });
-
-          // 3. Shimmering Game Show Chord Stab at 0.95s
-          setTimeout(() => {
-            if (!this.ctx) return;
-            const t = this.ctx.currentTime;
-            [root * 2, root * 2.5, root * 3].forEach(f => {
-              const osc = this.ctx.createOscillator();
-              const gain = this.ctx.createGain();
-              osc.type = 'sine';
-              osc.frequency.setValueAtTime(f, t);
-              gain.gain.setValueAtTime(0.2, t);
-              gain.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
-              osc.connect(gain);
-              gain.connect(this.ctx.destination);
-              osc.start(t);
-              osc.stop(t + 0.9);
-            });
-          }, 950);
-
         } catch(e) {}
       }
-
-      playRevealChime() {
-        this.playTone(587.33, 'triangle', 0.15, 0.4); // D5
-        setTimeout(() => this.playTone(880, 'triangle', 0.3, 0.5), 120); // A5
-      }
-
-      playVictoryFanfare() {
-        this.playTone(523.25, 'triangle', 0.15, 0.5);
-        setTimeout(() => this.playTone(659.25, 'triangle', 0.15, 0.5), 120);
-        setTimeout(() => this.playTone(783.99, 'triangle', 0.15, 0.5), 240);
-        setTimeout(() => this.playTone(1046.50, 'triangle', 0.5, 0.6), 360);
-      }
-
-      // 120 BPM Ambient Synth Bass Music Bed during 15s Question Round
-      startQuestionMusic(durationMs = 15000) {
-        if (!this.ctx) this.init();
-        if (!this.ctx) return;
-        this.stopQuestionMusic();
-
-        try {
-          const now = this.ctx.currentTime;
-          this.bgOscs = [];
-          this.bgGains = [];
-
-          // Sub-bass pulsing rhythm
-          const bassOsc = this.ctx.createOscillator();
-          const bassGain = this.ctx.createGain();
-          const filter = this.ctx.createBiquadFilter();
-
-          bassOsc.type = 'sawtooth';
-          bassOsc.frequency.setValueAtTime(65.41, now); // C2 note
-
-          filter.type = 'lowpass';
-          filter.frequency.setValueAtTime(180, now);
-
-          bassGain.gain.setValueAtTime(0.08, now);
-          bassGain.gain.linearRampToValueAtTime(0.12, now + 1.0);
-          bassGain.gain.setValueAtTime(0.12, now + (durationMs / 1000) - 1.5);
-          bassGain.gain.linearRampToValueAtTime(0.001, now + (durationMs / 1000));
-
-          bassOsc.connect(filter);
-          filter.connect(bassGain);
-          bassGain.connect(this.ctx.destination);
-
-          bassOsc.start(now);
-          bassOsc.stop(now + (durationMs / 1000));
-
-          this.bgOscs.push(bassOsc);
-          this.bgGains.push(bassGain);
-        } catch(e) {}
-      }
-
-      stopQuestionMusic() {
-        if (this.bgOscs && this.bgOscs.length) {
-          this.bgOscs.forEach(osc => {
-            try { osc.stop(); osc.disconnect(); } catch(e) {}
-          });
-          this.bgOscs = [];
-        }
-      }
-
-      // Tense Ticking Clock Impulse in Last 5 Seconds
-      playClockTick(isUrgent = false) {
-        if (!this.ctx) this.init();
-        if (!this.ctx) return;
-        try {
-          const t = this.ctx.currentTime;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-
-          osc.type = isUrgent ? 'sawtooth' : 'sine';
-          osc.frequency.setValueAtTime(isUrgent ? 1400 : 1000, t);
-          osc.frequency.exponentialRampToValueAtTime(600, t + 0.05);
-
-          gain.gain.setValueAtTime(isUrgent ? 0.25 : 0.15, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-
-          osc.start(t);
-          osc.stop(t + 0.05);
-        } catch(e) {}
-      }
-
-      // Shimmering 4-Note Ascending Cash Gain "Cha-Ching!"
       playCashGainChime() {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
-          const notes = [1046.50, 1318.51, 1567.98, 2093.00]; // C6, E6, G6, C7
+          const notes = [1046.50, 1318.51, 1567.98, 2093.00];
           const t = this.ctx.currentTime;
           notes.forEach((freq, idx) => {
             const startTime = t + (idx * 0.06);
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-
             osc.type = 'sine';
             osc.frequency.setValueAtTime(freq, startTime);
             gain.gain.setValueAtTime(0.3, startTime);
             gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
-
             osc.connect(gain);
             gain.connect(this.ctx.destination);
-
             osc.start(startTime);
             osc.stop(startTime + 0.25);
           });
         } catch(e) {}
       }
-
-      // Low Detuned "Bad Data" Glitch Buzzer
       playBadDataBuzzer() {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
@@ -629,78 +478,18 @@
           [130, 138].forEach(freq => {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(freq, t);
             osc.frequency.linearRampToValueAtTime(60, t + 0.35);
-
             gain.gain.setValueAtTime(0.3, t);
             gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-
             osc.connect(gain);
             gain.connect(this.ctx.destination);
-
             osc.start(t);
             osc.stop(t + 0.35);
           });
         } catch(e) {}
       }
-
-      // Victory Canvas Confetti Burst for Grand Champion
-      triggerConfetti() {
-        try {
-          let canvas = document.getElementById('confetti-canvas');
-          if (!canvas) {
-            canvas = document.createElement('canvas');
-            canvas.id = 'confetti-canvas';
-            canvas.className = 'fixed inset-0 pointer-events-none z-50';
-            document.body.appendChild(canvas);
-          }
-          const ctx = canvas.getContext('2d');
-          canvas.width = window.innerWidth;
-          canvas.height = window.innerHeight;
-
-          const colors = ['#34d399', '#fbbf24', '#f43f5e', '#60a5fa', '#a78bfa', '#f472b6'];
-          const particles = [];
-          for (let i = 0; i < 90; i++) {
-            particles.push({
-              x: Math.random() * canvas.width,
-              y: Math.random() * canvas.height - canvas.height,
-              r: Math.random() * 6 + 4,
-              d: Math.random() * 90,
-              color: colors[Math.floor(Math.random() * colors.length)],
-              tilt: Math.floor(Math.random() * 10) - 10,
-              tiltAngleIncremental: Math.random() * 0.07 + 0.05,
-              tiltAngle: 0
-            });
-          }
-
-          const draw = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p) => {
-              p.tiltAngle += p.tiltAngleIncremental;
-              p.y += (Math.cos(p.d) + 1 + p.r / 2) * 1.5;
-              p.x += Math.sin(p.d) * 1.5;
-              p.tilt = Math.sin(p.tiltAngle) * 15;
-
-              ctx.beginPath();
-              ctx.lineWidth = p.r;
-              ctx.strokeStyle = p.color;
-              ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
-              ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
-              ctx.stroke();
-            });
-
-            if (particles.some(p => p.y < canvas.height)) {
-              requestAnimationFrame(draw);
-            } else {
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
-          };
-          draw();
-        } catch(e) {}
-      }
-
       enhanceAudioElement(audioEl) {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
@@ -708,8 +497,6 @@
           if (!this.audioSourceMap) this.audioSourceMap = new WeakMap();
           if (!this.audioSourceMap.has(audioEl)) {
             const source = this.ctx.createMediaElementSource(audioEl);
-
-            // Broadcast Radio Dynamics Compressor Node for Voice Punch & Presence
             const compressor = this.ctx.createDynamicsCompressor();
             compressor.threshold.setValueAtTime(-24, this.ctx.currentTime);
             compressor.knee.setValueAtTime(12, this.ctx.currentTime);
@@ -717,7 +504,6 @@
             compressor.attack.setValueAtTime(0.003, this.ctx.currentTime);
             compressor.release.setValueAtTime(0.25, this.ctx.currentTime);
 
-            // Presence Boost EQ filter (3.2kHz peak filter for vocal clarity)
             const eq = this.ctx.createBiquadFilter();
             eq.type = 'peaking';
             eq.frequency.setValueAtTime(3200, this.ctx.currentTime);
@@ -729,36 +515,70 @@
             compressor.connect(this.ctx.destination);
             this.audioSourceMap.set(audioEl, source);
           }
-        } catch(e) {
-          // Fallback if media element graph creation fails
-        }
+        } catch(e) {}
       }
     }
 
     const sfx = new SoundFX();
-
     let socket;
     let roomCode = '';
     let ttsEnabled = true;
     let audioUnlocked = false;
     let roundTimerInterval = null;
-    let currentBaseValue = 1000;
-    let roundStartTime = 0;
-    const roundDurationMs = 15000;
     let currentAudio = null;
-    let selectedSourceMode = 'mix';
-    let availablePacks = [];
-    let selectedPackIds = [];
+    let selectedGameId = 'trivia';
     let isRoasterEnabled = false;
+    let isPopularVoteEnabled = true;
+    let availableCardPacks = [];
+    let selectedCardPackIds = [];
+    let currentRoster = [];
+
+    function selectGame(gameId) {
+      selectedGameId = gameId;
+      document.getElementById('game-card-trivia').className = (gameId === 'trivia') ? 'p-2 rounded-xl bg-slate-900 border-2 border-emerald-500 text-white font-extrabold transition shadow flex items-center gap-2 cursor-pointer' : 'p-2 rounded-xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold transition shadow flex items-center gap-2 cursor-pointer';
+      document.getElementById('game-card-cah').className = (gameId === 'cah') ? 'p-2 rounded-xl bg-slate-900 border-2 border-purple-500 text-white font-extrabold transition shadow flex items-center gap-2 cursor-pointer' : 'p-2 rounded-xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold transition shadow flex items-center gap-2 cursor-pointer';
+      
+      const cahOpts = document.getElementById('cah-popular-vote-option');
+      const packOpts = document.getElementById('card-packs-selector-container');
+      if (cahOpts) cahOpts.style.display = (gameId === 'cah') ? 'flex' : 'none';
+      if (packOpts) packOpts.style.display = (gameId === 'cah') ? 'block' : 'none';
+
+      if (socket && roomCode) {
+        socket.emit('select_game', { roomCode, gameId });
+      }
+    }
 
     function setRoasterEnabled(enabled) {
       isRoasterEnabled = enabled;
       const btnOff = document.getElementById('roaster-toggle-off');
       const btnOn = document.getElementById('roaster-toggle-on');
       if (btnOff && btnOn) {
-        btnOff.className = enabled ? 'px-3 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer' : 'px-3 py-1 rounded bg-rose-600 text-white transition cursor-pointer font-black shadow';
-        btnOn.className = enabled ? 'px-3 py-1 rounded bg-emerald-600 text-white transition cursor-pointer font-black shadow' : 'px-3 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer';
+        btnOff.className = enabled ? 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer' : 'px-2.5 py-0.5 rounded bg-rose-600 text-white transition cursor-pointer font-black shadow';
+        btnOn.className = enabled ? 'px-2.5 py-0.5 rounded bg-emerald-600 text-white transition cursor-pointer font-black shadow' : 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
       }
+    }
+
+    function setPopularVoteEnabled(enabled) {
+      isPopularVoteEnabled = enabled;
+      const btnOff = document.getElementById('popular-toggle-off');
+      const btnOn = document.getElementById('popular-toggle-on');
+      if (btnOff && btnOn) {
+        btnOff.className = enabled ? 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer' : 'px-2.5 py-0.5 rounded bg-rose-600 text-white transition cursor-pointer font-black shadow';
+        btnOn.className = enabled ? 'px-2.5 py-0.5 rounded bg-emerald-600 text-white transition cursor-pointer font-black shadow' : 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
+      }
+    }
+
+    function renderCardPacks(packs) {
+      availableCardPacks = packs || [];
+      const grid = document.getElementById('card-packs-grid');
+      if (!grid) return;
+
+      selectedCardPackIds = availableCardPacks.map(p => p.id);
+      grid.innerHTML = availableCardPacks.map(p => `
+        <span class="px-2 py-0.5 rounded bg-purple-600/40 border border-purple-500/60 text-purple-200 text-[9px] font-bold">
+          ✓ ${p.name} (${p.blackCount}B / ${p.whiteCount}W)
+        </span>
+      `).join('');
     }
 
     function addBotPlayers() {
@@ -767,79 +587,14 @@
       socket.emit('add_bot_players', { roomCode, count: 2 });
     }
 
-    function setSourceMode(mode) {
-      selectedSourceMode = mode;
-      ['mix', 'custom', 'api'].forEach(m => {
-        const btn = document.getElementById(`mode-btn-${m}`);
-        if (btn) {
-          btn.className = (m === mode) ? 'py-1.5 rounded-lg bg-indigo-600 text-white transition' : 'py-1.5 rounded-lg text-slate-400 hover:text-white transition';
-        }
-      });
-
-      const packContainer = document.getElementById('packs-selector-container');
-      if (packContainer) {
-        packContainer.style.display = (mode === 'api') ? 'none' : 'block';
-      }
-    }
-
-    function renderPackSelector(packs) {
-      availablePacks = packs || [];
-      const grid = document.getElementById('packs-grid');
-      if (!grid) return;
-
-      if (availablePacks.length === 0) {
-        grid.innerHTML = '<span class="text-xs text-slate-500 italic">No custom JSON packs found in data/</span>';
-        return;
-      }
-
-      grid.innerHTML = availablePacks.map(p => {
-        const isChecked = selectedPackIds.includes(p.id);
-        const bgClass = isChecked ? 'bg-emerald-600/40 border-emerald-500/80 text-emerald-200 shadow-md' : 'bg-slate-800/80 border-slate-700 text-slate-400 opacity-60';
-        return `
-          <button onclick="event.stopPropagation(); togglePackSelection('${p.id}')" class="px-2.5 py-1 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition ${bgClass} cursor-pointer hover:scale-105 active:scale-95">
-            <span>${isChecked ? '✓' : '+'}</span>
-            <span>${p.name}</span>
-            <span class="opacity-60 text-[10px]">(${p.count})</span>
-          </button>
-        `;
-      }).join('');
-    }
-
-    function togglePackSelection(packId) {
-      if (selectedPackIds.includes(packId)) {
-        selectedPackIds = selectedPackIds.filter(id => id !== packId);
-      } else {
-        selectedPackIds.push(packId);
-      }
-      renderPackSelector(availablePacks);
-    }
-
-    function selectAllPacks() {
-      selectedPackIds = availablePacks.map(p => p.id);
-      renderPackSelector(availablePacks);
-    }
-
-    function clearAllPacks() {
-      selectedPackIds = [];
-      renderPackSelector(availablePacks);
-    }
-
-    // Unlock audio context on user click/interaction
     function unlockAudioHost() {
       sfx.init();
       if (audioUnlocked) return;
       audioUnlocked = true;
-
       const badge = document.getElementById('audio-prompt-badge');
       if (badge) {
         badge.textContent = '✓ Sound & Voice Host Active!';
         badge.className = 'px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold uppercase tracking-widest';
-      }
-
-      if ('speechSynthesis' in window) {
-        try {
-          window.speechSynthesis.resume();
-        } catch(e) {}
       }
     }
 
@@ -849,42 +604,21 @@
       speakText("Audio host activated! ... Welcome to Bad Data!");
     }
 
-    // Expressive Game Host Voice Function with Dramatic Pacing
     function speakText(text) {
       sfx.init();
       if (!ttsEnabled) return;
-
       const cleanText = text.substring(0, 500).trim();
       if (!cleanText) return;
 
       if (currentAudio) {
-        try {
-          currentAudio.pause();
-          currentAudio.currentTime = 0;
-        } catch(e) {}
+        try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(e) {}
       }
 
       const ttsApiUrl = `/api/tts?text=${encodeURIComponent(cleanText)}`;
       currentAudio = new Audio(ttsApiUrl);
       currentAudio.volume = 1.0;
       sfx.enhanceAudioElement(currentAudio);
-
-      const playPromise = currentAudio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn('[TTS API Playback Failed, trying Web Speech API]', err);
-          if ('speechSynthesis' in window) {
-            try {
-              window.speechSynthesis.resume();
-              const u = new SpeechSynthesisUtterance(cleanText);
-              u.volume = 1.0;
-              u.rate = 0.95;
-              u.pitch = 1.05;
-              window.speechSynthesis.speak(u);
-            } catch(e) {}
-          }
-        });
-      }
+      currentAudio.play().catch(() => {});
     }
 
     function toggleTTS() {
@@ -895,23 +629,8 @@
       if (!ttsEnabled && currentAudio) {
         try { currentAudio.pause(); } catch(e) {}
       }
-      if (!ttsEnabled && ('speechSynthesis' in window)) {
-        window.speechSynthesis.cancel();
-      }
     }
 
-    // Initialize Cast Receiver Context
-    try {
-      if (window.cast && cast.framework) {
-        const castContext = cast.framework.CastReceiverContext.getInstance();
-        castContext.start();
-        console.log('[CastReceiver] CAF Receiver Started successfully.');
-      }
-    } catch (e) {
-      console.log('[CastReceiver] Standalone browser mode.');
-    }
-
-    // Socket.io Connection
     socket = io();
 
     socket.on('connect', () => {
@@ -926,10 +645,8 @@
       document.getElementById('qr-code-img').src = data.qrCodeDataUrl;
       document.getElementById('play-url-text').textContent = data.playUrl;
       updateRoster(data.players || []);
-      renderPackSelector(data.availablePacks || []);
+      renderCardPacks(data.availableCardPacks || []);
     });
-
-    let currentRoster = [];
 
     socket.on('roster_update', (data) => {
       updateRoster(data.players || []);
@@ -942,7 +659,7 @@
       document.getElementById('player-count').textContent = currentRoster.length;
 
       if (currentRoster.length === 0) {
-        rosterContainer.innerHTML = '<span class="text-slate-500 italic text-xs">Waiting for players to join...</span>';
+        rosterContainer.innerHTML = '<span class="text-slate-500 italic text-[10px]">Waiting for players to join...</span>';
         startBtn.disabled = true;
         return;
       }
@@ -956,228 +673,56 @@
       `).join('');
     }
 
-    function renderLiveQuestionScoreboard(answeredCount = 0) {
-      const container = document.getElementById('live-question-scoreboard');
-      if (!container || !currentRoster || currentRoster.length === 0) return;
-
-      container.innerHTML = currentRoster.map(p => `
-        <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-700/80 text-xs shadow">
-          <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${p.color}"></span>
-          <span class="font-bold text-white truncate max-w-[120px]">${p.nickname}</span>
-          <span class="font-mono-code font-black text-emerald-400">$${(p.score || 0).toLocaleString()}</span>
-        </div>
-      `).join('');
-    }
-
     function triggerStartGame() {
       if (!roomCode) return;
       unlockAudioHost();
       showScreen('screen-getready');
       document.getElementById('mini-room-badge').classList.remove('hidden');
       sfx.playQuestionChime();
-      speakText("Get ready! Round 1 is starting!");
+      speakText("Get ready! Starting game!");
 
       socket.emit('start_game', {
         roomCode,
-        sourceMode: selectedSourceMode,
-        selectedPacks: selectedPackIds,
-        enableRoaster: isRoasterEnabled
+        enableRoaster: isRoasterEnabled,
+        enablePopularVote: isPopularVoteEnabled,
+        selectedCardPacks: selectedCardPackIds
       });
     }
 
-    // Game Starting Notice (Get Ready Screen)
     socket.on('game_starting_notice', () => {
       showScreen('screen-getready');
       document.getElementById('mini-room-badge').classList.remove('hidden');
     });
 
-    const FUNNY_QUESTION_SUBTITLES = [
-      "🔥 Easy Money (Don't Screw Up)",
-      "⚡ Brain Cells Assembling...",
-      "💣 Financial Disaster Imminent",
-      "💸 Say Goodbye To Your Cash",
-      "🚨 Halfway To Academic Ruin",
-      "⚠️ Random Guessing Activated",
-      "🔥 Point Of No Return",
-      "💀 High-Stakes Panic",
-      "⚡ Total Bankruptcy Imminent",
-      "🏆 THE ULTIMATE BAD DATA"
-    ];
-
-    // Game Question Phase Start
+    // ================= TRIVIA EVENTS =================
     socket.on('question_start', (data) => {
       document.getElementById('mini-room-badge').classList.remove('hidden');
-
-      // 1. Show Animated Funny Question Splash Screen
       showScreen('screen-question-splash');
 
-      const subtitleIndex = (data.questionNum - 1) % FUNNY_QUESTION_SUBTITLES.length;
       document.getElementById('splash-question-num').textContent = `QUESTION ${data.questionNum}`;
-      document.getElementById('splash-funny-subtitle').textContent = FUNNY_QUESTION_SUBTITLES[subtitleIndex];
+      document.getElementById('splash-funny-subtitle').textContent = `🔥 Round ${data.questionNum}`;
       document.getElementById('splash-category-badge').textContent = `${data.category} • ${data.difficulty.toUpperCase()}`;
 
-      // Play Dynamic Game Show Splash Music Clip (2.4s intro stinger)
-      sfx.playSplashMusic(data.questionNum);
-
-      // 2. After 1.8s funny animated splash, transition to main question screen & start host speech
       setTimeout(() => {
         showScreen('screen-question');
-        sfx.startQuestionMusic(data.durationMs);
-
         document.getElementById('question-num-badge').textContent = `Question ${data.questionNum}/${data.totalQuestions}`;
         document.getElementById('category-badge').textContent = `${data.category} • ${data.difficulty.toUpperCase()}`;
         document.getElementById('question-prompt-text').textContent = data.question;
 
-        document.getElementById('answered-count-text').textContent = `0 / ${currentRoster.length || document.getElementById('player-count').textContent}`;
-
-        renderLiveQuestionScoreboard(0);
-
-        currentBaseValue = data.baseValue;
-        roundStartTime = Date.now();
-
-        // Reset & Render 4 Choice Cards
         for (let i = 0; i < 4; i++) {
-          const cardEl = document.getElementById(`choice-card-${i}`);
           const textEl = document.getElementById(`choice-text-${i}`);
-          if (cardEl) {
-            cardEl.className = `card-choice glass-panel p-4 rounded-xl flex items-center gap-4 border-2 ${
-              i === 0 ? 'border-red-500/40 bg-red-950/20' :
-              i === 1 ? 'border-blue-500/40 bg-blue-950/20' :
-              i === 2 ? 'border-amber-500/40 bg-amber-950/20' :
-              'border-emerald-500/40 bg-emerald-950/20'
-            }`;
-          }
-          if (textEl) {
-            textEl.textContent = data.choices[i] || '';
-          }
+          if (textEl) textEl.textContent = data.choices[i] || '';
         }
 
-        // Announcer reads ONLY the raw question text (no "Question #" wording)
         speakText(data.question);
-
-        // Start dynamic timer ticker
-        startTimerTicker(data.durationMs, data.baseValue);
-      }, 2400);
+      }, 2000);
     });
 
-    socket.on('player_answered_update', (data) => {
-      document.getElementById('answered-count-text').textContent = `${data.totalAnswered} / ${data.totalPlayers}`;
-    });
-
-    socket.on('all_players_answered', () => {
-      if (roundTimerInterval) clearInterval(roundTimerInterval);
-      sfx.stopQuestionMusic();
-
-      const timerBar = document.getElementById('question-timer-bar');
-      if (timerBar) {
-        timerBar.className = 'bg-emerald-500 h-full w-full transition-all duration-300 ease-out';
-      }
-
-      const answeredText = document.getElementById('answered-count-text');
-      if (answeredText) {
-        answeredText.innerHTML = '<span class="text-emerald-400 font-black animate-pulse">✓ ALL ANSWERS IN!</span>';
-      }
-    });
-
-    function startTimerTicker(durationMs, baseValue) {
-      if (roundTimerInterval) clearInterval(roundTimerInterval);
-
-      const timerBar = document.getElementById('question-timer-bar');
-      const cashTicker = document.getElementById('cash-ticker-text');
-
-      const start = Date.now();
-      let lastTickSec = -1;
-
-      roundTimerInterval = setInterval(() => {
-        const elapsed = Date.now() - start;
-        const progress = Math.min(1, elapsed / durationMs);
-        const remainingPct = (1 - progress) * 100;
-        const remainingMs = Math.max(0, durationMs - elapsed);
-        const remainingSec = Math.ceil(remainingMs / 1000);
-
-        timerBar.style.width = `${remainingPct}%`;
-
-        // Dynamic timer bar color shifting
-        if (remainingPct > 45) {
-          timerBar.className = 'bg-emerald-400 h-full w-full transition-all duration-100 ease-linear';
-        } else if (remainingPct > 25) {
-          timerBar.className = 'bg-amber-400 h-full w-full transition-all duration-100 ease-linear';
-        } else {
-          timerBar.className = 'bg-rose-500 animate-pulse h-full w-full transition-all duration-100 ease-linear';
-        }
-
-        // Ticking sound during last 5 seconds
-        if (remainingSec <= 5 && remainingSec > 0 && remainingSec !== lastTickSec) {
-          lastTickSec = remainingSec;
-          sfx.playClockTick(remainingSec <= 2);
-        }
-
-        // Decrease cash ticker linearly from baseValue to 10%
-        const minFactor = 0.1;
-        const factor = 1 - progress * (1 - minFactor);
-        const currentCash = Math.round(baseValue * factor);
-
-        cashTicker.textContent = `$${currentCash.toLocaleString()}`;
-
-        if (progress >= 1) {
-          clearInterval(roundTimerInterval);
-        }
-      }, 50);
-    }
-
-    let revealTimerInterval = null;
-    function startRevealTimerTicker(durationMs) {
-      if (revealTimerInterval) clearInterval(revealTimerInterval);
-      const timerBar = document.getElementById('reveal-timer-bar');
-      if (!timerBar) return;
-
-      const start = Date.now();
-      revealTimerInterval = setInterval(() => {
-        const elapsed = Date.now() - start;
-        const progress = Math.min(1, elapsed / durationMs);
-        const remainingPct = (1 - progress) * 100;
-        timerBar.style.width = `${remainingPct}%`;
-
-        if (progress >= 1) {
-          clearInterval(revealTimerInterval);
-        }
-      }, 50);
-    }
-
-    // Round Reveal Phase
     socket.on('round_reveal', (data) => {
-      if (data.leaderboard) currentRoster = data.leaderboard;
-      if (roundTimerInterval) clearInterval(roundTimerInterval);
-      sfx.stopQuestionMusic();
       showScreen('screen-reveal');
-
-      // Start reveal progress countdown bar
-      startRevealTimerTicker(data.revealDurationMs || 6500);
-
       const labels = ['A', 'B', 'C', 'D'];
       document.getElementById('reveal-correct-letter').textContent = labels[data.correctIndex];
       document.getElementById('reveal-correct-text').textContent = data.correctAnswerText;
-
-      // Highlight correct choice card & dim wrong ones on screen-question underlying view
-      for (let i = 0; i < 4; i++) {
-        const cardEl = document.getElementById(`choice-card-${i}`);
-        if (cardEl) {
-          if (i === data.correctIndex) {
-            cardEl.className = 'card-choice glass-panel p-4 rounded-xl flex items-center gap-4 border-4 border-emerald-400 bg-emerald-950/80 shadow-[0_0_35px_rgba(52,211,153,0.7)] animate-pulse scale-[1.02]';
-          } else {
-            cardEl.className = 'card-choice glass-panel p-4 rounded-xl flex items-center gap-4 border-2 border-slate-800 bg-slate-950/40 opacity-40 filter grayscale-[40%]';
-          }
-        }
-      }
-
-      // Play appropriate reveal SFX: Cash Gain chime if someone earned cash, else Bad Data buzzer
-      const anyGain = data.leaderboard && data.leaderboard.some(p => p.lastRoundGain > 0);
-      if (anyGain) {
-        sfx.playCashGainChime();
-      } else {
-        sfx.playBadDataBuzzer();
-      }
-      setTimeout(() => sfx.playRevealChime(), 300);
 
       const roastBanner = document.getElementById('reveal-roast-banner');
       const roastTextEl = document.getElementById('reveal-roast-text');
@@ -1188,56 +733,118 @@
         roastBanner.classList.add('hidden');
       }
 
-      // Expressive Host Announcer Phrasing with AI Host Roast
-      const roastClause = data.hostRoast ? ` ... ${data.hostRoast}` : '';
-      speakText(`The correct answer was... option ${labels[data.correctIndex]}! ... ${data.correctAnswerText}${roastClause}`);
+      speakText(`The correct answer was... option ${labels[data.correctIndex]}! ... ${data.correctAnswerText}`);
 
-      // Render Leaderboard & Cash Changes
       const listContainer = document.getElementById('reveal-leaderboard-list');
-      listContainer.innerHTML = data.leaderboard.map((p, rank) => {
-        const isGain = p.lastRoundGain >= 0;
-        const gainFormatted = isGain ? `+$${p.lastRoundGain.toLocaleString()}` : `-$${Math.abs(p.lastRoundGain).toLocaleString()}`;
-        const gainClass = isGain ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' : 'text-red-400 bg-red-500/10 border-red-500/30';
-
-        return `
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 shadow-sm hover:border-slate-700 transition">
-            <div class="flex items-center gap-2 min-w-0 pr-1">
-              <span class="font-black text-slate-500 text-sm w-4 shrink-0">#${rank + 1}</span>
-              <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${p.color}"></span>
-              <span class="font-extrabold text-base text-white truncate max-w-[110px] sm:max-w-[160px]">${p.nickname}</span>
-              ${p.answered ? (p.answerIndex === data.correctIndex ? '<span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded shrink-0">CORRECT</span>' : '<span class="text-[10px] font-bold text-red-400 bg-red-500/20 px-1.5 py-0.5 rounded shrink-0">BAD DATA</span>') : '<span class="text-[10px] font-bold text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded shrink-0">NO ANSWER</span>'}
-            </div>
-            <div class="flex items-center gap-2 shrink-0">
-              <span class="font-mono-code font-bold text-[11px] px-2 py-0.5 rounded-md border ${gainClass}">${gainFormatted}</span>
-              <span class="font-mono-code font-black text-lg text-slate-100">$${p.score.toLocaleString()}</span>
-            </div>
+      listContainer.innerHTML = data.leaderboard.map((p, rank) => `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-500">#${rank + 1}</span>
+            <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${p.color}"></span>
+            <span class="font-bold text-white">${p.nickname}</span>
           </div>
-        `;
-      }).join('');
+          <span class="font-mono-code font-bold text-emerald-400">$${p.score.toLocaleString()}</span>
+        </div>
+      `).join('');
     });
 
-    // Game Over Phase
+    // ================= BAD CARDS EVENTS =================
+    socket.on('cah_round_start', (data) => {
+      document.getElementById('mini-room-badge').classList.remove('hidden');
+      showScreen('screen-cah-prompt');
+
+      document.getElementById('cah-round-badge').textContent = `Bad Cards • Round ${data.roundNum}/${data.totalRounds}`;
+      document.getElementById('cah-judge-nickname-text').textContent = data.judgeNickname;
+      document.getElementById('cah-prompt-text').textContent = data.prompt;
+      document.getElementById('cah-submitted-counter').textContent = `0 / ${data.players.filter(p => !p.isJudge).length}`;
+
+      const roster = document.getElementById('cah-submissions-roster');
+      roster.innerHTML = data.players.map(p => `
+        <div class="px-3 py-1 rounded-full ${p.isJudge ? 'bg-amber-500/20 border border-amber-500/40 text-amber-300' : 'bg-slate-900 border border-slate-800 text-slate-400'} text-xs font-bold">
+          ${p.nickname} ${p.isJudge ? '👑 JUDGE' : '⏳ Waiting'}
+        </div>
+      `).join('');
+
+      speakText(`Round ${data.roundNum}! Prompt: ${data.prompt}`);
+    });
+
+    socket.on('cah_submission_update', (data) => {
+      document.getElementById('cah-submitted-counter').textContent = `${data.submittedCount} / ${data.totalRequired}`;
+      const roster = document.getElementById('cah-submissions-roster');
+      if (roster) {
+        roster.innerHTML = data.players.map(p => `
+          <div class="px-3 py-1 rounded-full ${p.isJudge ? 'bg-amber-500/20 border border-amber-500/40 text-amber-300' : p.submitted ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300' : 'bg-slate-900 border border-slate-800 text-slate-400'} text-xs font-bold">
+            ${p.nickname} ${p.isJudge ? '👑 JUDGE' : p.submitted ? '✓ SUBMITTED' : '⏳ Thinking'}
+          </div>
+        `).join('');
+      }
+    });
+
+    socket.on('cah_judging_phase', (data) => {
+      showScreen('screen-cah-judging');
+      document.getElementById('cah-judging-name').textContent = data.judgeNickname;
+
+      const grid = document.getElementById('cah-cards-grid');
+      grid.innerHTML = data.submissions.map((sub, idx) => `
+        <div class="glass-panel p-5 rounded-2xl border-2 border-slate-700 bg-white text-slate-950 font-black text-lg shadow-xl text-center flex flex-col justify-between min-h-[140px]">
+          <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Option ${idx + 1}</span>
+          <p class="my-auto">${sub.cardText}</p>
+          <span class="text-[10px] text-slate-400">Bad Cards</span>
+        </div>
+      `).join('');
+
+      speakText(`All cards are in! ${data.judgeNickname} is picking the winner!`);
+    });
+
+    socket.on('cah_round_reveal', (data) => {
+      showScreen('screen-cah-reveal');
+      document.getElementById('cah-winner-name').textContent = data.winnerNickname;
+      document.getElementById('cah-reveal-prompt').textContent = data.prompt;
+      document.getElementById('cah-reveal-winning-card').textContent = data.winningCardText;
+
+      const roastBanner = document.getElementById('cah-reveal-roast-banner');
+      const roastTextEl = document.getElementById('cah-roast-text');
+      if (data.hostRoast && roastBanner && roastTextEl) {
+        roastTextEl.textContent = `"${data.hostRoast}"`;
+        roastBanner.classList.remove('hidden');
+      } else if (roastBanner) {
+        roastBanner.classList.add('hidden');
+      }
+
+      sfx.playCashGainChime();
+      speakText(`The winner is ${data.winnerNickname}! ... Winning card: ${data.winningCardText}`);
+
+      const leaderboardGrid = document.getElementById('cah-reveal-leaderboard');
+      leaderboardGrid.innerHTML = data.leaderboard.map((p, rank) => `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-500">#${rank + 1}</span>
+            <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${p.color}"></span>
+            <span class="font-bold text-white">${p.nickname}</span>
+          </div>
+          <span class="font-mono-code font-black text-purple-400">${p.score} pts</span>
+        </div>
+      `).join('');
+    });
+
     socket.on('game_over', (data) => {
-      sfx.stopQuestionMusic();
       showScreen('screen-gameover');
-      sfx.playVictoryFanfare();
-      sfx.triggerConfetti();
       const winner = data.leaderboard[0];
       if (winner) {
         document.getElementById('winner-name-text').textContent = winner.nickname;
-        document.getElementById('winner-cash-text').textContent = `$${winner.score.toLocaleString()}`;
-        speakText(`Game Over! ... Congratulations to ${winner.nickname} for winning with ${winner.score.toLocaleString()} dollars!`);
+        document.getElementById('winner-cash-text').textContent = `${winner.score} pts / $`;
+        speakText(`Game Over! Congratulations to ${winner.nickname}!`);
       }
 
       const listContainer = document.getElementById('final-leaderboard-list');
       listContainer.innerHTML = data.leaderboard.map((p, rank) => `
-        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 shadow-sm">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <span class="font-extrabold text-slate-400 text-sm w-4 shrink-0">#${rank + 1}</span>
-            <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${p.color}"></span>
-            <span class="font-extrabold text-base text-white truncate max-w-[140px] sm:max-w-[200px]">${p.nickname}</span>
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-400">#${rank + 1}</span>
+            <span class="w-3 h-3 rounded-full" style="background-color: ${p.color}"></span>
+            <span class="font-bold text-white">${p.nickname}</span>
           </div>
-          <span class="font-mono-code font-black text-lg text-emerald-400 shrink-0">$${p.score.toLocaleString()}</span>
+          <span class="font-mono-code font-bold text-emerald-400">${p.score}</span>
         </div>
       `).join('');
     });
@@ -1249,13 +856,13 @@
 
     function triggerEndGameEarly() {
       if (!roomCode) return;
-      if (confirm("Are you sure you want to end the game early and view final scores?")) {
+      if (confirm("End game early?")) {
         socket.emit('end_game_early', { roomCode });
       }
     }
 
     function showScreen(screenId) {
-      const screens = ['screen-lobby', 'screen-getready', 'screen-question-splash', 'screen-question', 'screen-reveal', 'screen-gameover'];
+      const screens = ['screen-lobby', 'screen-getready', 'screen-question-splash', 'screen-question', 'screen-reveal', 'screen-cah-prompt', 'screen-cah-judging', 'screen-cah-reveal', 'screen-gameover'];
       screens.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -1263,20 +870,16 @@
         }
       });
 
-      // Toggle Next Question Button visibility (Only show during reveal screen)
       const nextBtn = document.getElementById('next-question-btn');
       if (nextBtn) {
-        nextBtn.classList.toggle('hidden', screenId !== 'screen-reveal');
+        nextBtn.classList.toggle('hidden', !['screen-reveal', 'screen-cah-reveal'].includes(screenId));
       }
 
-      // Toggle End Game Button visibility (Only show during active game rounds/reveals)
       const endBtn = document.getElementById('end-game-btn');
       if (endBtn) {
-        const isActiveGameScreen = ['screen-getready', 'screen-question-splash', 'screen-question', 'screen-reveal'].includes(screenId);
-        endBtn.classList.toggle('hidden', !isActiveGameScreen);
+        endBtn.classList.toggle('hidden', ['screen-lobby', 'screen-gameover'].includes(screenId));
       }
 
-      // Hide Voice Host ON/OFF Toggle Button once game starts (only visible in lobby)
       const ttsBtn = document.getElementById('tts-toggle-btn');
       if (ttsBtn) {
         ttsBtn.classList.toggle('hidden', screenId !== 'screen-lobby');

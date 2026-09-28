@@ -31,14 +31,14 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
     }
     .btn-tactile:active {
-      transform: scale(0.95);
+      transform: scale(0.96);
     }
   </style>
 </head>
 <body class="h-screen w-screen flex flex-col justify-between p-4 sm:p-6 bg-slate-950 overflow-hidden relative">
 
-  <!-- Mobile Header Banner (Shown after join) -->
-  <header id="mobile-header" class="hidden w-full flex items-center justify-between pb-3 border-b border-slate-800">
+  <!-- Mobile Header Banner -->
+  <header id="mobile-header" class="hidden w-full flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
     <div class="flex items-center gap-2">
       <span id="player-avatar-badge" class="w-4 h-4 rounded-full bg-emerald-500"></span>
       <span id="player-nickname-text" class="font-extrabold text-lg text-white">Player</span>
@@ -54,7 +54,7 @@
 
   <!-- ==================== SCREEN 1: JOIN FORM ==================== -->
   <main id="screen-join" class="flex-1 flex flex-col items-center justify-center w-full max-w-sm mx-auto">
-    <div class="w-full text-center mb-8">
+    <div class="w-full text-center mb-6">
       <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-red-600 via-purple-600 to-emerald-500 flex items-center justify-center font-black text-3xl mx-auto shadow-xl shadow-red-500/20 mb-3">
         BD
       </div>
@@ -91,18 +91,14 @@
       </div>
       <h2 class="text-3xl font-black text-white mb-2">YOU'RE IN!</h2>
       <p class="text-slate-400 text-sm leading-relaxed mb-6">
-        Look up at the TV display. The game will start shortly!
+        Look up at the TV display. The host will start shortly!
       </p>
-      <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
-        Tip: Fast answers score maximum cash. Wrong answers subtract cash!
-      </div>
     </div>
   </main>
 
-  <!-- ==================== SCREEN 3: ANSWER SCREEN ==================== -->
+  <!-- ==================== SCREEN 3: TRIVIA ANSWER SCREEN ==================== -->
   <main id="screen-answer" class="hidden flex-1 flex flex-col justify-between w-full max-w-md mx-auto py-2">
-    <!-- Active Ticker Bar -->
-    <div class="flex items-center justify-between glass-panel px-4 py-2 rounded-xl border border-slate-800">
+    <div class="flex items-center justify-between glass-panel px-4 py-2 rounded-xl border border-slate-800 shrink-0">
       <span id="question-num-mobile" class="text-xs font-bold text-indigo-300 bg-indigo-600/30 px-3 py-1 rounded-lg">
         Q 1/10
       </span>
@@ -114,63 +110,117 @@
       </div>
     </div>
 
-    <!-- Confirmation Lock Banner (Shown after click) -->
     <div id="locked-banner" class="hidden my-auto glass-panel p-8 rounded-3xl text-center border-2 border-emerald-500 bg-emerald-950/40 shadow-2xl">
-      <div class="w-16 h-16 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-3xl mx-auto mb-3">
-        ✓
-      </div>
+      <div class="w-16 h-16 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-3xl mx-auto mb-3">✓</div>
       <h3 class="text-3xl font-black text-white">ANSWER LOCKED IN</h3>
       <p class="text-emerald-300 text-sm mt-1">Look at the TV for results!</p>
     </div>
 
-    <!-- 4 Tactile Answer Buttons -->
     <div id="buttons-grid" class="grid grid-cols-2 gap-4 w-full my-auto">
-      <!-- Button A -->
-      <button onclick="submitAnswer(0)" class="btn-tactile h-36 rounded-2xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-5xl flex items-center justify-center shadow-lg shadow-red-600/30 border-2 border-red-400/30">
-        A
-      </button>
-      <!-- Button B -->
-      <button onclick="submitAnswer(1)" class="btn-tactile h-36 rounded-2xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-black text-5xl flex items-center justify-center shadow-lg shadow-blue-600/30 border-2 border-blue-400/30">
-        B
-      </button>
-      <!-- Button C -->
-      <button onclick="submitAnswer(2)" class="btn-tactile h-36 rounded-2xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white font-black text-5xl flex items-center justify-center shadow-lg shadow-amber-600/30 border-2 border-amber-400/30">
-        C
-      </button>
-      <!-- Button D -->
-      <button onclick="submitAnswer(3)" class="btn-tactile h-36 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-black text-5xl flex items-center justify-center shadow-lg shadow-emerald-600/30 border-2 border-emerald-400/30">
-        D
-      </button>
+      <button onclick="submitAnswer(0)" class="btn-tactile h-36 rounded-2xl bg-red-600 text-white font-black text-5xl flex items-center justify-center shadow-lg border-2 border-red-400/30">A</button>
+      <button onclick="submitAnswer(1)" class="btn-tactile h-36 rounded-2xl bg-blue-600 text-white font-black text-5xl flex items-center justify-center shadow-lg border-2 border-blue-400/30">B</button>
+      <button onclick="submitAnswer(2)" class="btn-tactile h-36 rounded-2xl bg-amber-600 text-white font-black text-5xl flex items-center justify-center shadow-lg border-2 border-amber-400/30">C</button>
+      <button onclick="submitAnswer(3)" class="btn-tactile h-36 rounded-2xl bg-emerald-600 text-white font-black text-5xl flex items-center justify-center shadow-lg border-2 border-emerald-400/30">D</button>
     </div>
   </main>
 
-  <!-- ==================== SCREEN 4: RESULT SCREEN ==================== -->
+  <!-- ==================== SCREEN 4: TRIVIA RESULT SCREEN ==================== -->
   <main id="screen-result" class="hidden flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto">
     <div id="result-card" class="glass-panel p-8 rounded-3xl border border-slate-700 shadow-2xl w-full">
-      <div id="result-badge" class="w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3">
-        +
-      </div>
+      <div id="result-badge" class="w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3">+</div>
       <h2 id="result-headline" class="text-3xl font-black text-white mb-1">CORRECT!</h2>
-      <div id="result-gain-text" class="font-mono-code font-black text-4xl my-2">
-        +$850
-      </div>
+      <div id="result-gain-text" class="font-mono-code font-black text-4xl my-2">+$850</div>
       <div class="border-t border-slate-800 my-4"></div>
-      <span class="text-xs text-slate-400 uppercase tracking-widest block">Total Bank Balance</span>
-      <span id="result-total-score" class="font-mono-code font-black text-3xl text-white">
-        $1,250
-      </span>
+      <span class="text-xs text-slate-400 uppercase tracking-widest block">Total Score</span>
+      <span id="result-total-score" class="font-mono-code font-black text-3xl text-white">$1,250</span>
     </div>
   </main>
 
-  <!-- Socket Script -->
+  <!-- ==================== SCREEN 5: BAD CARDS PLAYER HAND ==================== -->
+  <main id="screen-cah-player" class="hidden flex-1 flex flex-col justify-between w-full max-w-md mx-auto py-1 min-h-0 overflow-hidden">
+    <div class="glass-panel p-3 rounded-xl border border-purple-500/40 text-center shrink-0 mb-1 flex items-center justify-between">
+      <div class="text-left pr-2">
+        <span class="text-[9px] font-bold text-purple-400 uppercase tracking-widest block">Black Card Prompt</span>
+        <p id="cah-player-prompt-text" class="text-xs font-bold text-white leading-tight mt-0.5 max-h-10 overflow-y-auto">Prompt text...</p>
+      </div>
+      <!-- Discard & Redraw 1-per-game button -->
+      <button id="cah-redraw-btn" onclick="triggerDiscardRedraw()" class="px-2.5 py-1.5 rounded-lg bg-indigo-600/80 hover:bg-indigo-500 text-white font-bold text-[10px] shrink-0 shadow transition cursor-pointer border border-indigo-400/40">
+        ♻️ Redraw (1)
+      </button>
+    </div>
+
+    <!-- Hand Cards Carousel / Grid -->
+    <div id="cah-hand-grid" class="flex-1 min-h-0 overflow-y-auto space-y-2 py-1 pr-1">
+      <!-- 7 White Cards rendered via JS -->
+    </div>
+
+    <!-- Confirm Submit Button -->
+    <button id="cah-submit-btn" onclick="submitCahCard()" disabled class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-lg tracking-wider shadow-lg shrink-0 mt-1 cursor-pointer transition">
+      SUBMIT CARD
+    </button>
+  </main>
+
+  <!-- ==================== SCREEN 6: BAD CARDS JUDGE WAITING ==================== -->
+  <main id="screen-cah-judge-waiting" class="hidden flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto">
+    <div class="glass-panel p-8 rounded-3xl border-2 border-amber-500/40 bg-amber-950/20 shadow-2xl w-full">
+      <div class="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-4xl mx-auto mb-4 animate-bounce">
+        👑
+      </div>
+      <h2 class="text-3xl font-black text-white mb-2">YOU ARE THE JUDGE!</h2>
+      <p class="text-slate-300 text-sm mb-4">Waiting for players to submit white cards...</p>
+      <div id="cah-judge-progress-text" class="font-mono-code font-black text-2xl text-amber-400">0 / 0 Submitted</div>
+    </div>
+  </main>
+
+  <!-- ==================== SCREEN 7: BAD CARDS JUDGE PICK OPTIONS ==================== -->
+  <main id="screen-cah-judge-pick" class="hidden flex-1 flex flex-col justify-between w-full max-w-md mx-auto py-1 min-h-0 overflow-hidden">
+    <div class="glass-panel p-3 rounded-xl border border-amber-500/40 text-center shrink-0 mb-1">
+      <span class="text-[10px] font-bold text-amber-400 uppercase tracking-widest block">👑 You Are The Judge! Tap Your Favorite</span>
+      <p id="cah-judge-prompt-header" class="text-xs sm:text-sm font-bold text-white leading-tight mt-0.5 max-h-12 overflow-y-auto">Prompt text...</p>
+    </div>
+
+    <div id="cah-judge-options-grid" class="flex-1 min-h-0 overflow-y-auto space-y-2 py-1 pr-1"></div>
+
+    <button id="cah-confirm-winner-btn" onclick="confirmJudgeWinner()" disabled class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-lg tracking-wider shadow-lg shrink-0 mt-1 cursor-pointer transition">
+      PICK WINNER 👑
+    </button>
+  </main>
+
+  <!-- ==================== SCREEN 8: BAD CARDS NON-JUDGE WAITING & POPULAR VOTE ==================== -->
+  <main id="screen-cah-waiting-judge" class="hidden flex-1 flex flex-col justify-between w-full max-w-md mx-auto py-1 min-h-0 overflow-hidden">
+    <div class="glass-panel p-4 rounded-2xl border border-purple-500/40 bg-purple-950/20 text-center shrink-0 mb-1">
+      <h3 class="text-xl font-black text-white">CARD SUBMITTED!</h3>
+      <p class="text-slate-300 text-xs mt-0.5">Waiting for <span id="cah-judge-waiting-name" class="text-amber-400 font-bold">Judge</span> to pick the winner...</p>
+    </div>
+
+    <!-- Popular Vote Selection Container -->
+    <div id="cah-popular-vote-container" class="flex-1 min-h-0 flex flex-col justify-between">
+      <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest block text-center my-1">⭐ Vote for Popular Vote Bonus (+1 Pt)</span>
+      <div id="cah-popular-vote-grid" class="flex-1 min-h-0 overflow-y-auto space-y-2 py-1 pr-1"></div>
+    </div>
+  </main>
+
+  <!-- ==================== SCREEN 9: BAD CARDS RESULT SCREEN ==================== -->
+  <main id="screen-cah-result" class="hidden flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto">
+    <div id="cah-result-card" class="glass-panel p-8 rounded-3xl border border-slate-700 shadow-2xl w-full">
+      <div id="cah-result-badge" class="w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3">👑</div>
+      <h2 id="cah-result-headline" class="text-2xl font-black text-white mb-1">WINNER REVEALED</h2>
+      <p id="cah-result-winning-text" class="font-bold text-lg text-purple-300 my-3 bg-slate-900 p-3 rounded-xl border border-slate-800">Winning Card Text</p>
+      <div class="border-t border-slate-800 my-4"></div>
+      <span class="text-xs text-slate-400 uppercase tracking-widest block">Your Total Points</span>
+      <span id="cah-result-total-score" class="font-mono-code font-black text-3xl text-purple-400">0 pts</span>
+    </div>
+  </main>
+
   <script>
     let socket;
     let currentRoomCode = '';
     let playerNickname = '';
     let playerColor = '';
     let timerInterval = null;
+    let selectedHandCardIndex = null;
+    let selectedJudgeSubId = null;
 
-    // Check URL parameters for pre-filled room code (e.g. ?code=ABCD)
     const urlParams = new URLSearchParams(window.location.search);
     const codeParam = urlParams.get('code');
     if (codeParam) {
@@ -185,7 +235,6 @@
       const nickname = document.getElementById('input-nickname').value.trim();
 
       if (!code || !nickname) return;
-
       currentRoomCode = code;
       playerNickname = nickname;
 
@@ -204,17 +253,15 @@
       document.getElementById('player-avatar-badge').style.backgroundColor = playerColor;
       document.getElementById('player-nickname-text').textContent = data.nickname;
       document.getElementById('player-room-text').textContent = data.roomCode;
-
       showScreen('screen-lobby');
     });
 
-    // Question Active Trigger on Controller
+    // ================= TRIVIA HANDLERS =================
     socket.on('controller_question_active', (data) => {
       showScreen('screen-answer');
       document.getElementById('buttons-grid').classList.remove('hidden');
       document.getElementById('locked-banner').classList.add('hidden');
       document.getElementById('question-num-mobile').textContent = `Q ${data.questionNum}/${data.totalQuestions}`;
-
       startMobileTicker(data.durationMs, data.baseValue);
     });
 
@@ -229,40 +276,26 @@
         const minFactor = 0.1;
         const factor = 1 - progress * (1 - minFactor);
         const currentCash = Math.round(baseValue * factor);
-
         ticker.textContent = `$${currentCash.toLocaleString()}`;
         if (progress >= 1) clearInterval(timerInterval);
       }, 100);
     }
 
     function submitAnswer(answerIndex) {
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
-      }
+      if (navigator.vibrate) navigator.vibrate(50);
       socket.emit('submit_answer', { roomCode: currentRoomCode, answerIndex });
     }
 
-    socket.on('answer_received', (data) => {
+    socket.on('answer_received', () => {
       document.getElementById('buttons-grid').classList.add('hidden');
       document.getElementById('locked-banner').classList.remove('hidden');
       if (timerInterval) clearInterval(timerInterval);
     });
 
-    socket.on('all_players_answered', () => {
-      if (timerInterval) clearInterval(timerInterval);
-      const banner = document.getElementById('locked-banner');
-      if (banner) {
-        const desc = banner.querySelector('p');
-        if (desc) desc.textContent = '✓ All answers in! Revealing results...';
-      }
-    });
-
-    // Round Results for Controller
     socket.on('round_result_controller', (data) => {
       showScreen('screen-result');
       if (timerInterval) clearInterval(timerInterval);
 
-      const card = document.getElementById('result-card');
       const badge = document.getElementById('result-badge');
       const headline = document.getElementById('result-headline');
       const gainText = document.getElementById('result-gain-text');
@@ -271,7 +304,7 @@
       totalScore.textContent = `$${data.totalScore.toLocaleString()}`;
 
       if (!data.answered) {
-        badge.className = 'w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3 bg-slate-800 text-slate-400 border border-slate-700';
+        badge.className = 'w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3 bg-slate-800 text-slate-400';
         badge.textContent = '-';
         headline.textContent = 'NO ANSWER';
         gainText.textContent = '$0';
@@ -291,6 +324,188 @@
       }
     });
 
+    // ================= BAD CARDS HANDLERS =================
+    let hasUsedRedraw = false;
+    let selectedPopularVoteSubId = null;
+
+    socket.on('cah_controller_round', (data) => {
+      selectedHandCardIndex = null;
+      hasUsedRedraw = Boolean(data.usedRedraw);
+
+      if (data.isJudge) {
+        showScreen('screen-cah-judge-waiting');
+        document.getElementById('cah-judge-progress-text').textContent = `0 / ${data.totalRequired} Submitted`;
+      } else {
+        showScreen('screen-cah-player');
+        document.getElementById('cah-player-prompt-text').textContent = data.prompt;
+        document.getElementById('cah-submit-btn').disabled = true;
+
+        const redrawBtn = document.getElementById('cah-redraw-btn');
+        if (redrawBtn) {
+          redrawBtn.disabled = hasUsedRedraw;
+          redrawBtn.textContent = hasUsedRedraw ? '♻️ Used' : '♻️ Redraw (1)';
+          redrawBtn.className = hasUsedRedraw ? 'px-2.5 py-1.5 rounded-lg bg-slate-800 text-slate-500 font-bold text-[10px] shrink-0 opacity-50 cursor-not-allowed border border-slate-700' : 'px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] shrink-0 shadow transition cursor-pointer border border-indigo-400/40';
+        }
+
+        renderHandCards(data.hand || []);
+      }
+    });
+
+    function renderHandCards(hand) {
+      const grid = document.getElementById('cah-hand-grid');
+      if (!grid) return;
+
+      grid.innerHTML = hand.map((cardText, idx) => `
+        <button onclick="selectHandCard(${idx})" id="hand-card-${idx}" class="w-full p-3.5 rounded-2xl bg-white text-slate-950 font-extrabold text-sm text-left shadow-lg border-2 border-slate-300 transition btn-tactile">
+          ${cardText}
+        </button>
+      `).join('');
+    }
+
+    function triggerDiscardRedraw() {
+      if (hasUsedRedraw || !currentRoomCode) return;
+      if (confirm("Burn up to 3 cards and draw fresh replacements? (Used once per game)")) {
+        if (navigator.vibrate) navigator.vibrate(40);
+        socket.emit('discard_redraw', { roomCode: currentRoomCode, cardIndices: [0, 1, 2] });
+      }
+    }
+
+    socket.on('redraw_confirm', (data) => {
+      hasUsedRedraw = true;
+      const redrawBtn = document.getElementById('cah-redraw-btn');
+      if (redrawBtn) {
+        redrawBtn.disabled = true;
+        redrawBtn.textContent = '♻️ Used';
+        redrawBtn.className = 'px-2.5 py-1.5 rounded-lg bg-slate-800 text-slate-500 font-bold text-[10px] shrink-0 opacity-50 cursor-not-allowed border border-slate-700';
+      }
+      renderHandCards(data.hand || []);
+    });
+
+    function selectHandCard(idx) {
+      if (navigator.vibrate) navigator.vibrate(30);
+      selectedHandCardIndex = idx;
+      
+      const cards = document.querySelectorAll('#cah-hand-grid button');
+      cards.forEach((c, i) => {
+        if (i === idx) {
+          c.className = 'w-full p-3.5 rounded-2xl bg-purple-600 text-white font-extrabold text-sm text-left shadow-xl border-4 border-purple-400 scale-[1.02] transition';
+        } else {
+          c.className = 'w-full p-3.5 rounded-2xl bg-white/70 text-slate-900 font-extrabold text-sm text-left shadow-md border-2 border-slate-300 opacity-60 transition';
+        }
+      });
+
+      document.getElementById('cah-submit-btn').disabled = false;
+    }
+
+    function submitCahCard() {
+      if (selectedHandCardIndex === null || !currentRoomCode) return;
+      if (navigator.vibrate) navigator.vibrate(60);
+      socket.emit('submit_card', { roomCode: currentRoomCode, cardIndex: selectedHandCardIndex });
+    }
+
+    socket.on('card_submitted_confirm', () => {
+      showScreen('screen-cah-waiting-judge');
+    });
+
+    socket.on('cah_judge_status_update', (data) => {
+      const txt = document.getElementById('cah-judge-progress-text');
+      if (txt) txt.textContent = `${data.submittedCount} / ${data.totalRequired} Submitted`;
+    });
+
+    socket.on('cah_judge_pick_options', (data) => {
+      selectedJudgeSubId = null;
+      showScreen('screen-cah-judge-pick');
+      document.getElementById('cah-judge-prompt-header').textContent = data.prompt;
+      document.getElementById('cah-confirm-winner-btn').disabled = true;
+
+      const grid = document.getElementById('cah-judge-options-grid');
+      grid.innerHTML = data.submissions.map(sub => `
+        <button onclick="selectJudgeOption('${sub.id}')" id="judge-opt-${sub.id}" class="w-full p-4 rounded-2xl bg-white text-slate-950 font-black text-base text-left shadow-xl border-2 border-slate-300 transition btn-tactile">
+          ${sub.cardText}
+        </button>
+      `).join('');
+    });
+
+    function selectJudgeOption(subId) {
+      if (navigator.vibrate) navigator.vibrate(40);
+      selectedJudgeSubId = subId;
+      const btns = document.querySelectorAll('#cah-judge-options-grid button');
+      btns.forEach(b => {
+        if (b.id === `judge-opt-${subId}`) {
+          b.className = 'w-full p-4 rounded-2xl bg-amber-500 text-slate-950 font-black text-base text-left shadow-2xl border-4 border-amber-300 scale-[1.02] transition';
+        } else {
+          b.className = 'w-full p-4 rounded-2xl bg-white/70 text-slate-900 font-extrabold text-base text-left shadow-md border-2 border-slate-300 opacity-50 transition';
+        }
+      });
+
+      document.getElementById('cah-confirm-winner-btn').disabled = false;
+    }
+
+    function confirmJudgeWinner() {
+      if (!selectedJudgeSubId || !currentRoomCode) return;
+      if (navigator.vibrate) navigator.vibrate(70);
+      socket.emit('pick_winner', { roomCode: currentRoomCode, submissionId: selectedJudgeSubId });
+    }
+
+    socket.on('cah_waiting_for_judge', (data) => {
+      document.getElementById('cah-judge-waiting-name').textContent = data.judgeNickname;
+      showScreen('screen-cah-waiting-judge');
+
+      const popContainer = document.getElementById('cah-popular-vote-container');
+      const popGrid = document.getElementById('cah-popular-vote-grid');
+
+      if (data.enablePopularVote && data.submissions && data.submissions.length > 0 && popContainer && popGrid) {
+        popContainer.style.display = 'flex';
+        popGrid.innerHTML = data.submissions.map(sub => `
+          <button onclick="submitPopularVote('${sub.id}')" id="pop-vote-${sub.id}" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-bold text-xs text-left shadow hover:border-emerald-500 transition">
+            ⭐ ${sub.cardText}
+          </button>
+        `).join('');
+      } else if (popContainer) {
+        popContainer.style.display = 'none';
+      }
+    });
+
+    function submitPopularVote(subId) {
+      if (navigator.vibrate) navigator.vibrate(30);
+      selectedPopularVoteSubId = subId;
+      socket.emit('popular_vote', { roomCode: currentRoomCode, submissionId: subId });
+
+      const btns = document.querySelectorAll('#cah-popular-vote-grid button');
+      btns.forEach(b => {
+        if (b.id === `pop-vote-${subId}`) {
+          b.className = 'w-full p-3 rounded-xl bg-emerald-600 text-white font-black text-xs text-left shadow border-2 border-emerald-400';
+        } else {
+          b.className = 'w-full p-3 rounded-xl bg-slate-900/60 text-slate-400 font-bold text-xs text-left opacity-40';
+        }
+      });
+    }
+
+    socket.on('cah_controller_reveal', (data) => {
+      showScreen('screen-cah-result');
+      const badge = document.getElementById('cah-result-badge');
+      const headline = document.getElementById('cah-result-headline');
+      const winText = document.getElementById('cah-result-winning-text');
+      const totalScore = document.getElementById('cah-result-total-score');
+
+      totalScore.textContent = `${data.totalScore} pts`;
+      winText.textContent = `"${data.winningCardText}"`;
+
+      if (data.isWinner) {
+        badge.className = 'w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3 bg-amber-400 text-slate-950 animate-bounce';
+        badge.textContent = '👑';
+        headline.textContent = 'YOU WON THE ROUND!';
+      } else if (data.isPopularWinner) {
+        badge.className = 'w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3 bg-emerald-500 text-slate-950 animate-bounce';
+        badge.textContent = '⭐';
+        headline.textContent = 'POPULAR VOTE WINNER! (+1 Pt)';
+      } else {
+        badge.className = 'w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3 bg-purple-600 text-white';
+        badge.textContent = '🃏';
+        headline.textContent = `Winner: ${data.winnerNickname}`;
+      }
+    });
+
     socket.on('host_disconnected', (data) => {
       alert(data.message || 'TV Host disconnected');
       window.location.reload();
@@ -298,14 +513,20 @@
 
     function triggerMobileEndGame() {
       if (!currentRoomCode) return;
-      if (confirm("Are you sure you want to end the game early and view final scores?")) {
+      if (confirm("End game early?")) {
         socket.emit('end_game_early', { roomCode: currentRoomCode });
       }
     }
 
     function showScreen(screenId) {
-      ['screen-join', 'screen-lobby', 'screen-answer', 'screen-result'].forEach(id => {
-        document.getElementById(id).classList.toggle('hidden', id !== screenId);
+      const screens = [
+        'screen-join', 'screen-lobby', 'screen-answer', 'screen-result',
+        'screen-cah-player', 'screen-cah-judge-waiting', 'screen-cah-judge-pick',
+        'screen-cah-waiting-judge', 'screen-cah-result'
+      ];
+      screens.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('hidden', id !== screenId);
       });
 
       const endBtn = document.getElementById('mobile-end-btn');
