@@ -463,7 +463,7 @@ io.on('connection', (socket) => {
           await runCahRound(io, roomCode);
         } else if (adv && adv.isGameOver) {
           const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
-          io.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+          io.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
         }
       }
     } else {
@@ -475,7 +475,7 @@ io.on('connection', (socket) => {
           await runQuestionRound(io, roomCode);
         } else if (adv && adv.isGameOver) {
           const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
-          io.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+          io.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
         }
       }
     }
@@ -488,7 +488,7 @@ io.on('connection', (socket) => {
     roomManager.clearRoomTimer(room);
     room.status = 'GAME_OVER';
     const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
-    io.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+    io.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
   });
 
   socket.on('reset_to_lobby', ({ roomCode }) => {
@@ -689,7 +689,7 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
   });
 
   if (isGameOver) {
-    ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+    ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
   } else if (currentJudgePlayer && currentJudgePlayer.isBot) {
     // If Judge is a bot player, automatically advance after reveal audio
     let revealDurationMs = 7000;
@@ -704,7 +704,7 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
         if (adv && !adv.isGameOver) {
           await runCahRound(ioInstance, roomCode);
         } else {
-          ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+          ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: currentR.selectedGameId });
         }
       }
     }, revealDurationMs);
@@ -853,13 +853,13 @@ async function evaluateAndReveal(ioInstance, roomCode) {
           await runQuestionRound(ioInstance, roomCode);
         } else if (adv && adv.isGameOver) {
           const leaderboard = currentR.players ? [...currentR.players].sort((a, b) => b.score - a.score) : [];
-          ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+          ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: currentR.selectedGameId });
         }
       }
     }, revealDurationMs);
     roomManager.setRoomTimer(results.room, autoAdvanceHandle);
   } else {
-    ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard: results.leaderboard });
+    ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard: results.leaderboard, selectedGameId: results.room ? results.room.selectedGameId : 'trivia' });
   }
 }
 

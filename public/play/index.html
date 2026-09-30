@@ -90,9 +90,14 @@
         ✓
       </div>
       <h2 class="text-2xl font-black text-white mb-1">YOU'RE IN!</h2>
-      <p class="text-slate-400 text-xs leading-relaxed mb-4">
+      <p class="text-slate-400 text-xs leading-relaxed mb-2">
         Look up at the TV display. The game will start shortly!
       </p>
+
+      <!-- Selected Game Mode Indicator -->
+      <div id="mobile-selected-game-badge" class="inline-block px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-xs font-bold text-slate-300 my-2 shadow">
+        🎮 Game Mode: <span id="mobile-game-mode-name" class="font-black text-emerald-400">Trivia</span>
+      </div>
 
       <!-- Solo Test Helper Button -->
       <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-left my-2">
@@ -264,6 +269,19 @@
       socket.emit('join_room', { roomCode: code, nickname });
     }
 
+    function updateMobileGameModeDisplay(gameId) {
+      const nameEl = document.getElementById('mobile-game-mode-name');
+      if (nameEl) {
+        if (gameId === 'cah') {
+          nameEl.textContent = 'Bad Cards 🃏';
+          nameEl.className = 'font-black text-purple-400';
+        } else {
+          nameEl.textContent = 'Bad Data Trivia ❓';
+          nameEl.className = 'font-black text-emerald-400';
+        }
+      }
+    }
+
     socket.on('join_error', (data) => {
       const errEl = document.getElementById('join-error-msg');
       errEl.textContent = data.message || 'Failed to join room.';
@@ -276,6 +294,33 @@
       document.getElementById('player-avatar-badge').style.backgroundColor = playerColor;
       document.getElementById('player-nickname-text').textContent = data.nickname;
       document.getElementById('player-room-text').textContent = data.roomCode;
+      if (data.selectedGameId) {
+        updateMobileGameModeDisplay(data.selectedGameId);
+      }
+      showScreen('screen-lobby');
+    });
+
+    socket.on('game_selected', (data) => {
+      if (data && data.selectedGameId) {
+        updateMobileGameModeDisplay(data.selectedGameId);
+      }
+    });
+
+    socket.on('controller_reset_lobby', (data) => {
+      selectedHandCardIndex = null;
+      selectedJudgeSubId = null;
+      if (data && data.selectedGameId) {
+        updateMobileGameModeDisplay(data.selectedGameId);
+      }
+      showScreen('screen-lobby');
+    });
+
+    socket.on('game_over', (data) => {
+      selectedHandCardIndex = null;
+      selectedJudgeSubId = null;
+      if (data && data.selectedGameId) {
+        updateMobileGameModeDisplay(data.selectedGameId);
+      }
       showScreen('screen-lobby');
     });
 
