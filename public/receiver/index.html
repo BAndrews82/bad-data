@@ -425,6 +425,12 @@
       <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block text-center mb-2">Final Standings</span>
       <div id="final-leaderboard-list" class="grid grid-cols-2 gap-2 overflow-y-auto pr-1"></div>
     </div>
+
+    <div class="text-center mt-2 shrink-0">
+      <button onclick="triggerResetToLobby()" class="px-8 py-3 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-black text-sm tracking-wider shadow-2xl transition cursor-pointer active:scale-95 animate-pulse">
+        🎮 START NEW GAME ➔
+      </button>
+    </div>
   </section>
 
   <script>
@@ -885,6 +891,17 @@
         </div>
       `).join('');
     });
+
+    socket.on('room_reset_lobby', (data) => {
+      showScreen('screen-lobby');
+      document.getElementById('mini-room-badge').classList.add('hidden');
+      if (data.players) updateRoster(data.players);
+    });
+
+    function triggerResetToLobby() {
+      if (!roomCode) return;
+      socket.emit('reset_to_lobby', { roomCode });
+    }
 
     function triggerNextQuestion() {
       if (!roomCode) return;

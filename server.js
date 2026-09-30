@@ -494,6 +494,27 @@ io.on('connection', (socket) => {
     io.to(`room_${roomCode}`).emit('game_over', { leaderboard });
   });
 
+  socket.on('reset_to_lobby', ({ roomCode }) => {
+    const room = roomManager.getRoom(roomCode);
+    if (!room) return;
+
+    roomManager.clearRoomTimer(room);
+    const resetRoom = roomManager.resetRoomToLobby(roomCode);
+    if (resetRoom) {
+      console.log(`[Room ${roomCode}] Reset room back to LOBBY home screen.`);
+      io.to(`host_${roomCode}`).emit('room_reset_lobby', {
+        roomCode,
+        selectedGameId: resetRoom.selectedGameId,
+        players: resetRoom.players
+      });
+
+      io.to(`room_${roomCode}`).emit('controller_reset_lobby', {
+        roomCode,
+        players: resetRoom.players
+      });
+    }
+  });
+
   socket.on('disconnect', () => {
     const { room, player, isHost } = roomManager.handleDisconnect(socket.id);
     if (room) {
