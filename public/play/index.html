@@ -73,7 +73,7 @@
   <!-- ==================== SCREEN 1: JOIN FORM ==================== -->
   <main id="screen-join" class="flex-1 flex flex-col items-center justify-center w-full max-w-sm mx-auto">
     <div class="w-full text-center mb-6">
-      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-red-600 via-purple-600 to-emerald-500 flex items-center justify-center font-black text-3xl mx-auto shadow-xl shadow-red-500/20 mb-3">
+      <div onclick="handleLogoTap()" class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-red-600 via-purple-600 to-emerald-500 flex items-center justify-center font-black text-3xl mx-auto shadow-xl shadow-red-500/20 mb-3 cursor-pointer">
         BD
       </div>
       <h1 class="text-3xl font-black tracking-wider text-white">BAD DATA</h1>
@@ -273,7 +273,34 @@
       document.getElementById('input-room-code').value = codeParam.toUpperCase().trim();
     }
 
-    socket = io();
+    let logoTapCount = 0;
+    let logoTapTimer = null;
+    let isVipHost = false;
+
+    function handleLogoTap() {
+      logoTapCount++;
+      if (logoTapTimer) clearTimeout(logoTapTimer);
+      logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 2000);
+
+      if (logoTapCount >= 3) {
+        logoTapCount = 0;
+        const modal = document.getElementById('vip-pin-modal');
+        if (modal) modal.classList.remove('hidden');
+      }
+    }
+
+    function submitVipPin(e) {
+      e.preventDefault();
+      const pin = document.getElementById('input-vip-pin').value.trim();
+      if (pin === '8282') {
+        localStorage.setItem('bad_data_vip_token', 'VIP_AUTHENTICATED_8282');
+        alert('👑 Device Authorized as VIP Host!');
+        const modal = document.getElementById('vip-pin-modal');
+        if (modal) modal.classList.add('hidden');
+      } else {
+        alert('Invalid VIP PIN.');
+      }
+    }
 
     function handleJoinSubmit(e) {
       e.preventDefault();
@@ -284,7 +311,8 @@
       currentRoomCode = code;
       playerNickname = nickname;
 
-      socket.emit('join_room', { roomCode: code, nickname });
+      const vipToken = localStorage.getItem('bad_data_vip_token') || null;
+      socket.emit('join_room', { roomCode: code, nickname, vipToken });
     }
 
     function updateMobileGameModeDisplay(gameId) {
@@ -313,9 +341,15 @@
 
     socket.on('joined_successfully', (data) => {
       playerColor = data.color;
+      isVipHost = Boolean(data.isVip);
       document.getElementById('mobile-header').classList.remove('hidden');
       document.getElementById('player-avatar-badge').style.backgroundColor = playerColor;
-      document.getElementById('player-nickname-text').textContent = data.nickname;
+      
+      const nickText = document.getElementById('player-nickname-text');
+      if (nickText) {
+        nickText.innerHTML = isVipHost ? `${data.nickname} <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-black border border-amber-500/40">👑 VIP HOST</span>` : data.nickname;
+      }
+
       document.getElementById('player-room-text').textContent = data.roomCode;
       if (data.selectedGameId) {
         updateMobileGameModeDisplay(data.selectedGameId);
@@ -323,6 +357,12 @@
       if (data.themeId) {
         updateMobileTheme(data.themeId);
       }
+
+      const vipDrawer = document.getElementById('vip-controls-drawer');
+      if (vipDrawer) {
+        vipDrawer.classList.toggle('hidden', !isVipHost);
+      }
+
       showScreen('screen-lobby');
     });
 
@@ -710,6 +750,12 @@
       }
     }
 
+    function triggerMobileNextRound() {
+      if (!currentRoomCode) return;
+      if (navigator.vibrate) navigator.vibrate(40);
+      socket.emit('next_question_request', { roomCode: currentRoomCode });
+    }
+
     function showScreen(screenId) {
       const screens = [
         'screen-join', 'screen-lobby', 'screen-answer', 'screen-result',
@@ -727,5 +773,35 @@
       }
     }
   </script>
+
+  <!-- VIP Host Controls Drawer (Visible ONLY to VIP Phone) -->
+  <div id="vip-controls-drawer" class="hidden fixed bottom-2 left-2 right-2 z-50 glass-panel p-2 rounded-2xl border border-amber-500/50 shadow-2xl bg-slate-950/90 text-center">
+    <div class="flex items-center justify-between gap-1 text-[10px] font-black">
+      <button onclick="triggerMobileNextRound()" class="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow cursor-pointer btn-tactile">
+        ⏩ NEXT ROUND
+      </button>
+      <button onclick="triggerMobileEndGame()" class="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white shadow cursor-pointer btn-tactile">
+        🛑 END GAME
+      </button>
+      <button onclick="addBotPlayersMobile()" class="flex-1 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white shadow cursor-pointer btn-tactile">
+        🤖 +2 BOTS
+      </button>
+    </div>
+  </div>
+
+  <!-- Secret VIP PIN Modal -->
+  <div id="vip-pin-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onclick="document.getElementById('vip-pin-modal').classList.add('hidden');">
+    <div class="glass-panel max-w-xs w-full p-5 rounded-2xl border border-amber-500/40 shadow-2xl text-center" onclick="event.stopPropagation();">
+      <div class="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 font-bold flex items-center justify-center text-xl mx-auto mb-2">👑</div>
+      <h3 class="text-base font-black text-white mb-1">VIP Host Authorization</h3>
+      <p class="text-[10px] text-slate-400 mb-3">Enter 4-digit Master Host PIN</p>
+      <form onsubmit="submitVipPin(event)" class="space-y-3">
+        <input type="password" id="input-vip-pin" maxlength="4" placeholder="••••" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-center font-mono-code font-black text-2xl text-amber-400 focus:outline-none focus:border-amber-400">
+        <button type="submit" class="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg transition">
+          Authorize Device 👑
+        </button>
+      </form>
+    </div>
+  </div>
 </body>
 </html>

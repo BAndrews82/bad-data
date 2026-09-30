@@ -344,8 +344,8 @@ io.on('connection', (socket) => {
     io.to(`room_${room.code}`).emit('roster_update', { players: room.players });
   });
 
-  socket.on('join_room', ({ roomCode, nickname }) => {
-    const result = roomManager.joinRoom(roomCode, nickname, socket.id);
+  socket.on('join_room', ({ roomCode, nickname, vipToken }) => {
+    const result = roomManager.joinRoom(roomCode, nickname, socket.id, vipToken);
     if (result.error) {
       return socket.emit('join_error', { message: result.error });
     }
@@ -358,7 +358,8 @@ io.on('connection', (socket) => {
       nickname: player.nickname,
       color: player.color,
       selectedGameId: room.selectedGameId,
-      themeId: room.themeId || 'midnight'
+      themeId: room.themeId || 'midnight',
+      isVip: Boolean(player.isVip)
     });
 
     io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
@@ -474,6 +475,9 @@ io.on('connection', (socket) => {
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
 
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    if (!isAuth) return;
+
     if (room.selectedGameId === 'cah') {
       if (room.status === 'CAH_REVEAL') {
         roomManager.clearRoomTimer(room);
@@ -486,8 +490,7 @@ io.on('connection', (socket) => {
         }
       }
     } else {
-      const isHost = (room.hostSocketId === socket.id);
-      if (room.status === 'REVEAL' && isHost) {
+      if (room.status === 'REVEAL') {
         roomManager.clearRoomTimer(room);
         const adv = roomManager.advanceNextRound(roomCode);
         if (adv && !adv.isGameOver) {
@@ -503,6 +506,9 @@ io.on('connection', (socket) => {
   socket.on('end_game_early', ({ roomCode }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
+
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    if (!isAuth) return;
 
     roomManager.clearRoomTimer(room);
     room.status = 'GAME_OVER';
