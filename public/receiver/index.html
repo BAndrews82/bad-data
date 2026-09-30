@@ -133,14 +133,14 @@
         <div class="w-full my-1">
           <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-left">Select Game Mode</label>
           <div class="grid grid-cols-2 gap-2 text-left">
-            <button id="game-card-trivia" onclick="event.stopPropagation(); selectGame('trivia');" class="p-2 rounded-xl bg-slate-900 border-2 border-emerald-500 text-white font-extrabold transition shadow flex items-center gap-2 cursor-pointer">
+            <button id="game-card-trivia" onclick="event.stopPropagation(); selectGame('trivia');" class="p-2 rounded-xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold transition shadow flex items-center gap-2 cursor-pointer">
               <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-base">❓</div>
               <div>
                 <div class="text-xs font-black text-emerald-400">Trivia</div>
                 <div class="text-[8px] text-slate-400 font-normal">Cash countdown</div>
               </div>
             </button>
-            <button id="game-card-cah" onclick="event.stopPropagation(); selectGame('cah');" class="p-2 rounded-xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold transition shadow flex items-center gap-2 cursor-pointer">
+            <button id="game-card-cah" onclick="event.stopPropagation(); selectGame('cah');" class="p-2 rounded-xl bg-slate-900 border-2 border-purple-500 text-white font-extrabold transition shadow flex items-center gap-2 cursor-pointer">
               <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center font-black text-base">🃏</div>
               <div>
                 <div class="text-xs font-black text-purple-400">Bad Cards</div>
@@ -547,7 +547,7 @@
     let audioUnlocked = false;
     let roundTimerInterval = null;
     let currentAudio = null;
-    let selectedGameId = 'trivia';
+    let selectedGameId = 'cah';
     let isRoasterEnabled = false;
     let isPopularVoteEnabled = false;
     let availableCardPacks = [];

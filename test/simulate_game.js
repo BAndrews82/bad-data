@@ -38,6 +38,7 @@ async function runSimulation() {
     socket.on('start_game', async ({ roomCode }) => {
       const room = roomManager.getRoom(roomCode);
       if (!room) return;
+      roomManager.selectGame(roomCode, 'trivia');
       const questions = TriviaService.getFallbackQuestions(10);
       roomManager.setupGame(roomCode, questions);
       const activeRoom = roomManager.startRound(roomCode);
