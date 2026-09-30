@@ -145,6 +145,7 @@
             <button id="mobile-sfx-gameshow" onclick="event.stopPropagation(); selectSfxPackMobile('game_show');" class="px-2 py-0.5 rounded bg-indigo-600 text-white cursor-pointer font-black shadow">🕹️ Modern</button>
             <button id="mobile-sfx-retro" onclick="event.stopPropagation(); selectSfxPackMobile('retro');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">👾 Retro</button>
             <button id="mobile-sfx-subtle" onclick="event.stopPropagation(); selectSfxPackMobile('subtle');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">🎵 Subtle</button>
+            <button id="mobile-sfx-halloween" onclick="event.stopPropagation(); selectSfxPackMobile('halloween');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">🎃 Spooky</button>
           </div>
         </div>
 
@@ -536,10 +537,12 @@
       const btnShow = document.getElementById('mobile-sfx-gameshow');
       const btnRetro = document.getElementById('mobile-sfx-retro');
       const btnSubtle = document.getElementById('mobile-sfx-subtle');
-      if (btnShow && btnRetro && btnSubtle) {
+      const btnSpooky = document.getElementById('mobile-sfx-halloween');
+      if (btnShow && btnRetro && btnSubtle && btnSpooky) {
         btnShow.className = (packId === 'game_show') ? 'px-2 py-0.5 rounded bg-indigo-600 text-white cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
         btnRetro.className = (packId === 'retro') ? 'px-2 py-0.5 rounded bg-purple-600 text-white cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
         btnSubtle.className = (packId === 'subtle') ? 'px-2 py-0.5 rounded bg-teal-600 text-white cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+        btnSpooky.className = (packId === 'halloween') ? 'px-2 py-0.5 rounded bg-orange-600 text-white cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
       }
     });
 

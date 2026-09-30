@@ -459,7 +459,7 @@
         }
       }
       setPack(packId) {
-        if (['game_show', 'retro', 'subtle'].includes(packId)) {
+        if (['game_show', 'retro', 'subtle', 'halloween'].includes(packId)) {
           this.pack = packId;
         }
       }
@@ -468,6 +468,7 @@
         if (!this.ctx) return;
         try {
           const t = this.ctx.currentTime;
+          const isHalloween = (this.pack === 'halloween');
           const bufferSize = Math.floor(this.ctx.sampleRate * 0.15);
           const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
           const data = buffer.getChannelData(0);
@@ -479,9 +480,9 @@
 
           const filter = this.ctx.createBiquadFilter();
           filter.type = 'bandpass';
-          filter.frequency.setValueAtTime(400, t);
-          filter.frequency.exponentialRampToValueAtTime(2200, t + 0.12);
-          filter.Q.setValueAtTime(3.0, t);
+          filter.frequency.setValueAtTime(isHalloween ? 250 : 400, t);
+          filter.frequency.exponentialRampToValueAtTime(isHalloween ? 1600 : 2200, t + 0.12);
+          filter.Q.setValueAtTime(isHalloween ? 4.5 : 3.0, t);
 
           const gain = this.ctx.createGain();
           gain.gain.setValueAtTime(0.35, t);
@@ -498,18 +499,19 @@
         if (!this.ctx) return;
         try {
           const t = this.ctx.currentTime;
+          const isHalloween = (this.pack === 'halloween');
           const subOsc = this.ctx.createOscillator();
           const subGain = this.ctx.createGain();
-          subOsc.type = 'sine';
-          subOsc.frequency.setValueAtTime(90, t);
-          subOsc.frequency.exponentialRampToValueAtTime(30, t + 0.3);
+          subOsc.type = isHalloween ? 'sawtooth' : 'sine';
+          subOsc.frequency.setValueAtTime(isHalloween ? 110 : 90, t);
+          subOsc.frequency.exponentialRampToValueAtTime(isHalloween ? 25 : 30, t + 0.35);
           subGain.gain.setValueAtTime(0.6, t);
-          subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+          subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
 
           subOsc.connect(subGain);
           subGain.connect(this.ctx.destination);
           subOsc.start(t);
-          subOsc.stop(t + 0.3);
+          subOsc.stop(t + 0.35);
 
           const bufferSize = Math.floor(this.ctx.sampleRate * 0.12);
           const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
@@ -533,13 +535,14 @@
         if (!this.ctx) return;
         try {
           const t = this.ctx.currentTime;
+          const isHalloween = (this.pack === 'halloween');
           const isRetro = (this.pack === 'retro');
           const isSubtle = (this.pack === 'subtle');
 
-          const notes = isRetro ? [261.63, 329.63, 392.00, 523.25, 659.25] : (isSubtle ? [440, 554.37, 659.25] : [523.25, 659.25, 783.99, 1046.50]);
-          const waveType = isRetro ? 'square' : 'sine';
-          const step = isRetro ? 0.05 : (isSubtle ? 0.12 : 0.08);
-          const duration = isRetro ? 0.18 : (isSubtle ? 0.45 : 0.35);
+          const notes = isHalloween ? [155.56, 185.00, 233.08, 311.13, 370.00] : (isRetro ? [261.63, 329.63, 392.00, 523.25, 659.25] : (isSubtle ? [440, 554.37, 659.25] : [523.25, 659.25, 783.99, 1046.50]));
+          const waveType = isHalloween ? 'triangle' : (isRetro ? 'square' : 'sine');
+          const step = isHalloween ? 0.09 : (isRetro ? 0.05 : (isSubtle ? 0.12 : 0.08));
+          const duration = isHalloween ? 0.45 : (isRetro ? 0.18 : (isSubtle ? 0.45 : 0.35));
 
           notes.forEach((freq, idx) => {
             const startTime = t + (idx * step);
@@ -547,7 +550,11 @@
             const gain = this.ctx.createGain();
             osc.type = waveType;
             osc.frequency.setValueAtTime(freq, startTime);
-            gain.gain.setValueAtTime(isSubtle ? 0.15 : (isRetro ? 0.2 : 0.25), startTime);
+            if (isHalloween) {
+              osc.frequency.linearRampToValueAtTime(freq * 1.04, startTime + (duration * 0.5));
+              osc.frequency.linearRampToValueAtTime(freq * 0.96, startTime + duration);
+            }
+            gain.gain.setValueAtTime(isSubtle ? 0.15 : (isRetro ? 0.2 : (isHalloween ? 0.3 : 0.25)), startTime);
             gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
@@ -561,12 +568,13 @@
         if (!this.ctx) return;
         try {
           const t = this.ctx.currentTime;
+          const isHalloween = (this.pack === 'halloween');
           const isRetro = (this.pack === 'retro');
           const isSubtle = (this.pack === 'subtle');
 
-          const notes = isRetro ? [523.25, 659.25, 783.99, 1046.50, 1318.51] : (isSubtle ? [523.25, 659.25, 783.99] : [1046.50, 1318.51, 1567.98, 2093.00]);
-          const waveType = isRetro ? 'square' : 'sine';
-          const step = isRetro ? 0.04 : 0.06;
+          const notes = isHalloween ? [311.13, 370.00, 466.16, 622.25, 740.00] : (isRetro ? [523.25, 659.25, 783.99, 1046.50, 1318.51] : (isSubtle ? [523.25, 659.25, 783.99] : [1046.50, 1318.51, 1567.98, 2093.00]));
+          const waveType = isHalloween ? 'sine' : (isRetro ? 'square' : 'sine');
+          const step = isHalloween ? 0.05 : (isRetro ? 0.04 : 0.06);
 
           notes.forEach((freq, idx) => {
             const startTime = t + (idx * step);
@@ -574,7 +582,10 @@
             const gain = this.ctx.createGain();
             osc.type = waveType;
             osc.frequency.setValueAtTime(freq, startTime);
-            gain.gain.setValueAtTime(isSubtle ? 0.15 : 0.25, startTime);
+            if (isHalloween) {
+              osc.frequency.exponentialRampToValueAtTime(freq * 1.12, startTime + 0.25);
+            }
+            gain.gain.setValueAtTime(isHalloween ? 0.22 : (isSubtle ? 0.15 : 0.25), startTime);
             gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
@@ -588,10 +599,25 @@
         if (!this.ctx) return;
         try {
           const t = this.ctx.currentTime;
+          const isHalloween = (this.pack === 'halloween');
           const isRetro = (this.pack === 'retro');
           const isSubtle = (this.pack === 'subtle');
 
-          if (isRetro) {
+          if (isHalloween) {
+            [98.00, 116.54, 138.59].forEach(freq => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(freq, t);
+              osc.frequency.exponentialRampToValueAtTime(35, t + 0.45);
+              gain.gain.setValueAtTime(0.35, t);
+              gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start(t);
+              osc.stop(t + 0.45);
+            });
+          } else if (isRetro) {
             [160, 120, 80].forEach((freq, idx) => {
               const osc = this.ctx.createOscillator();
               const gain = this.ctx.createGain();
