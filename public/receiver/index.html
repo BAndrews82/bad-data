@@ -105,7 +105,7 @@
       <span>🛑 END GAME</span>
     </button>
 
-    <button id="tts-toggle-btn" onclick="event.stopPropagation(); toggleTTS();" class="flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-semibold text-slate-300 hover:text-white transition border border-slate-700 shadow-lg cursor-pointer">
+    <button id="tts-toggle-btn" onclick="event.stopPropagation(); toggleTTS();" class="hidden flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-semibold text-slate-300 hover:text-white transition border border-slate-700 shadow-lg cursor-pointer">
       <svg id="tts-icon-on" class="w-4 h-4 text-emerald-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.707 12 4.414 12 5.414v13.172c0 1.000-1.077 1.707-1.707 1.077L5.586 15z"></path>
       </svg>
@@ -184,15 +184,12 @@
           </div>
         </div>
 
-        <!-- Dedicated Settings Button -->
-        <div class="w-full my-1">
-          <button onclick="event.stopPropagation(); openSettingsModal();" class="w-full py-2 px-3.5 rounded-xl bg-slate-900/90 border border-slate-700 hover:border-indigo-500 text-slate-200 font-bold text-xs flex items-center justify-between transition shadow cursor-pointer hover:bg-slate-800/90">
-            <div class="flex items-center gap-2">
-              <span class="text-base">⚙️</span>
-              <span>Game & House Rules Settings</span>
-            </div>
-            <span class="text-[10px] text-indigo-400 font-extrabold bg-indigo-500/20 px-2.5 py-1 rounded-lg border border-indigo-500/30">Customize →</span>
-          </button>
+        <!-- Card Packs Selector (Shown on Main TV Screen Lobby) -->
+        <div id="card-packs-selector-container" class="w-full text-left bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 my-1">
+          <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Available Card Packs</span>
+          <div id="card-packs-grid" class="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
+            <!-- Rendered via JS -->
+          </div>
         </div>
 
         <!-- Joined Players Roster -->
@@ -719,10 +716,8 @@
       document.getElementById('game-card-trivia').className = (gameId === 'trivia') ? 'p-2 rounded-xl bg-slate-900 border-2 border-emerald-500 text-white font-extrabold transition shadow flex items-center gap-2 cursor-pointer' : 'p-2 rounded-xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold transition shadow flex items-center gap-2 cursor-pointer';
       document.getElementById('game-card-cah').className = (gameId === 'cah') ? 'p-2 rounded-xl bg-slate-900 border-2 border-purple-500 text-white font-extrabold transition shadow flex items-center gap-2 cursor-pointer' : 'p-2 rounded-xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold transition shadow flex items-center gap-2 cursor-pointer';
       
-      const cahOpts = document.getElementById('cah-popular-vote-option');
       const packOpts = document.getElementById('card-packs-selector-container');
-      if (cahOpts) cahOpts.style.display = (gameId === 'cah') ? 'flex' : 'none';
-      if (packOpts) packOpts.style.display = (gameId === 'cah') ? 'block' : 'none';
+      if (packOpts) packOpts.style.display = 'block';
 
       if (socket && roomCode) {
         socket.emit('select_game', { roomCode, gameId });
@@ -1153,101 +1148,6 @@
       if (data) setPopularVoteEnabled(Boolean(data.popularVoteEnabled));
     });
   </script>
-  <!-- ==================== GAME & HOUSE RULES SETTINGS MODAL ==================== -->
-  <div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onclick="closeSettingsModal();">
-    <div class="glass-panel max-w-lg w-full p-5 rounded-2xl border border-slate-700 shadow-2xl relative flex flex-col gap-3 max-h-[85vh] overflow-y-auto text-left" onclick="event.stopPropagation();">
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
-        <div class="flex items-center gap-2">
-          <span class="text-xl">⚙️</span>
-          <div>
-            <h3 class="text-base font-black text-white leading-tight">Room & Game Settings</h3>
-            <p class="text-[10px] text-slate-400">Configure visual themes, voice host, and house rules</p>
-          </div>
-        </div>
-        <button onclick="event.stopPropagation(); closeSettingsModal();" class="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs flex items-center justify-center transition cursor-pointer">✕</button>
-      </div>
 
-      <!-- Settings Content -->
-      <div class="flex flex-col gap-2.5">
-        <!-- Visual Theme Preset Selector -->
-        <div class="w-full flex items-center justify-between bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
-          <div class="text-left">
-            <span class="block text-xs font-bold text-slate-200">🎨 Visual Theme Preset</span>
-            <span class="block text-[9px] text-slate-400">Synced across TV & Mobile Controllers</span>
-          </div>
-          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
-            <button id="theme-btn-midnight" onclick="event.stopPropagation(); selectTheme('midnight');" class="px-2.5 py-1 rounded bg-indigo-600 text-white transition cursor-pointer font-black shadow">🌙 Dark</button>
-            <button id="theme-btn-neon" onclick="event.stopPropagation(); selectTheme('neon');" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer">⚡ Neon</button>
-            <button id="theme-btn-gold" onclick="event.stopPropagation(); selectTheme('gold');" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer">🏆 Gold</button>
-          </div>
-        </div>
-
-        <!-- Sound Effects Pack Selector -->
-        <div class="w-full flex items-center justify-between bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
-          <div class="text-left">
-            <span class="block text-xs font-bold text-slate-200">🔊 Sound Effects Pack</span>
-            <span class="block text-[9px] text-slate-400">Game audio chimes & buzzers style</span>
-          </div>
-          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
-            <button id="sfx-btn-gameshow" onclick="event.stopPropagation(); selectSfxPack('game_show');" class="px-2.5 py-1 rounded bg-indigo-600 text-white transition cursor-pointer font-black shadow">🕹️ Modern</button>
-            <button id="sfx-btn-retro" onclick="event.stopPropagation(); selectSfxPack('retro');" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer">👾 Retro 8-Bit</button>
-            <button id="sfx-btn-subtle" onclick="event.stopPropagation(); selectSfxPack('subtle');" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer">🎵 Subtle</button>
-          </div>
-        </div>
-
-        <!-- Neural Voice Host Option -->
-        <div class="w-full flex items-center justify-between bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
-          <div class="text-left">
-            <span class="block text-xs font-bold text-slate-200">🎙️ Neural Voice Host</span>
-            <span class="block text-[9px] text-slate-400">Announcer (`am_michael`) & Co-Host (`bm_george`) narration</span>
-          </div>
-          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
-            <button id="voice-toggle-off" onclick="event.stopPropagation(); setVoiceHostEnabled(false);" class="px-2.5 py-1 rounded bg-rose-600 text-white transition cursor-pointer font-black shadow">OFF</button>
-            <button id="voice-toggle-on" onclick="event.stopPropagation(); setVoiceHostEnabled(true);" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer">ON</button>
-          </div>
-        </div>
-
-        <!-- AI Co-Host Roaster Option -->
-        <div class="w-full flex items-center justify-between bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
-          <div class="text-left">
-            <span class="block text-xs font-bold text-slate-200">🤖 AI Co-Host Roaster</span>
-            <span class="block text-[9px] text-slate-400">Real-time Gemini 3.6 Flash roasts & commentary</span>
-          </div>
-          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
-            <button id="roaster-toggle-off" onclick="event.stopPropagation(); setRoasterEnabled(false);" class="px-2.5 py-1 rounded bg-rose-600 text-white transition font-black shadow">OFF</button>
-            <button id="roaster-toggle-on" onclick="event.stopPropagation(); setRoasterEnabled(true);" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition">ON</button>
-          </div>
-        </div>
-
-        <!-- Popular Vote House Rule Toggle -->
-        <div id="cah-popular-vote-option" class="w-full flex items-center justify-between bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
-          <div class="text-left">
-            <span class="block text-xs font-bold text-slate-200">⭐ Popular Vote Bonus</span>
-            <span class="block text-[9px] text-slate-400">+1 Bonus point awarded to player-voted winning card</span>
-          </div>
-          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
-            <button id="popular-toggle-off" onclick="event.stopPropagation(); setPopularVoteEnabled(false);" class="px-2.5 py-1 rounded bg-rose-600 text-white transition cursor-pointer font-black shadow">OFF</button>
-            <button id="popular-toggle-on" onclick="event.stopPropagation(); setPopularVoteEnabled(true);" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer">ON</button>
-          </div>
-        </div>
-
-        <!-- Card Packs Selector (Shown for Bad Cards) -->
-        <div id="card-packs-selector-container" class="w-full text-left bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
-          <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Included Card Packs</span>
-          <div id="card-packs-grid" class="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
-            <!-- Rendered via JS -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="pt-2 border-t border-slate-800 flex justify-end">
-        <button onclick="event.stopPropagation(); closeSettingsModal();" class="px-5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs shadow-lg transition cursor-pointer">
-          Done & Close
-        </button>
-      </div>
-    </div>
-  </div>
 </body>
 </html>
