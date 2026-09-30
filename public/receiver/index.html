@@ -709,15 +709,15 @@
       }
     }
 
-    function selectGame(gameId) {
+    function selectGame(gameId, emitSocket = true) {
       selectedGameId = gameId;
       document.getElementById('game-card-trivia').className = (gameId === 'trivia') ? 'p-2 rounded-xl bg-slate-900 border-2 border-emerald-500 text-white font-extrabold transition shadow flex items-center gap-2 cursor-pointer' : 'p-2 rounded-xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold transition shadow flex items-center gap-2 cursor-pointer';
       document.getElementById('game-card-cah').className = (gameId === 'cah') ? 'p-2 rounded-xl bg-slate-900 border-2 border-purple-500 text-white font-extrabold transition shadow flex items-center gap-2 cursor-pointer' : 'p-2 rounded-xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold transition shadow flex items-center gap-2 cursor-pointer';
       
       const packOpts = document.getElementById('card-packs-selector-container');
-      if (packOpts) packOpts.style.display = 'block';
+      if (packOpts) packOpts.style.display = (gameId === 'cah') ? 'none' : 'block';
 
-      if (socket && roomCode) {
+      if (emitSocket && socket && roomCode) {
         socket.emit('select_game', { roomCode, gameId });
       }
     }
@@ -1134,6 +1134,12 @@
     socket.on('theme_selected', (data) => {
       if (data && data.themeId) {
         selectTheme(data.themeId, false);
+      }
+    });
+
+    socket.on('game_selected', (data) => {
+      if (data && data.selectedGameId) {
+        selectGame(data.selectedGameId, false);
       }
     });
 
