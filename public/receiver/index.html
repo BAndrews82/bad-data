@@ -980,7 +980,7 @@
 
     let selectedThemeId = 'midnight';
 
-    function selectTheme(themeId) {
+    function selectTheme(themeId, emitSocket = true) {
       selectedThemeId = themeId || 'midnight';
       document.body.className = `h-full w-full flex flex-col justify-between relative theme-${selectedThemeId}`;
 
@@ -994,12 +994,12 @@
         btnGold.className = (selectedThemeId === 'gold') ? 'px-2 py-0.5 rounded bg-amber-500 text-slate-950 transition cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
       }
 
-      if (socket && roomCode) {
+      if (emitSocket && socket && roomCode) {
         socket.emit('select_theme', { roomCode, themeId: selectedThemeId });
       }
     }
 
-    function selectSfxPack(packId) {
+    function selectSfxPack(packId, emitSocket = true) {
       sfx.setPack(packId);
       const btnShow = document.getElementById('sfx-btn-gameshow');
       const btnRetro = document.getElementById('sfx-btn-retro');
@@ -1011,7 +1011,7 @@
         btnSubtle.className = (packId === 'subtle') ? 'px-2.5 py-1 rounded bg-teal-600 text-white transition cursor-pointer font-black shadow' : 'px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer';
       }
 
-      if (socket && roomCode) {
+      if (emitSocket && socket && roomCode) {
         socket.emit('select_sfx_pack', { roomCode, sfxPack: packId });
       }
 
@@ -1132,7 +1132,13 @@
 
     socket.on('sfx_pack_selected', (data) => {
       if (data && data.sfxPack) {
-        selectSfxPack(data.sfxPack);
+        selectSfxPack(data.sfxPack, false);
+      }
+    });
+
+    socket.on('theme_selected', (data) => {
+      if (data && data.themeId) {
+        selectTheme(data.themeId, false);
       }
     });
 
