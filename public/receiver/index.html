@@ -101,9 +101,7 @@
       <span>⏩ NEXT ROUND</span>
     </button>
 
-    <button id="end-game-btn" onclick="event.stopPropagation(); triggerEndGameEarly();" class="hidden flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white transition border border-rose-400/40 shadow-lg cursor-pointer hover:scale-105 active:scale-95">
-      <span>🛑 END GAME</span>
-    </button>
+
 
     <button id="tts-toggle-btn" onclick="event.stopPropagation(); toggleTTS();" class="hidden flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-semibold text-slate-300 hover:text-white transition border border-slate-700 shadow-lg cursor-pointer">
       <svg id="tts-icon-on" class="w-4 h-4 text-emerald-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1119,10 +1117,7 @@
         nextBtn.classList.toggle('hidden', screenId !== 'screen-reveal');
       }
 
-      const endBtn = document.getElementById('end-game-btn');
-      if (endBtn) {
-        endBtn.classList.toggle('hidden', ['screen-lobby', 'screen-gameover'].includes(screenId));
-      }
+
 
       const ttsBtn = document.getElementById('tts-toggle-btn');
       if (ttsBtn) {
