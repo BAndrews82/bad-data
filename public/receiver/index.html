@@ -443,9 +443,11 @@
 
   <script>
     class SoundFX {
+    class SoundFX {
       constructor() {
         this.ctx = null;
-        this.pack = 'game_show'; // 'game_show', 'retro', 'subtle'
+        this.pack = 'game_show'; // 'game_show', 'retro', 'subtle', 'halloween'
+        this.spookyBuffers = {};
       }
       init() {
         if (!this.ctx) {
@@ -457,6 +459,37 @@
         if (this.ctx && this.ctx.state === 'suspended') {
           this.ctx.resume();
         }
+        this.preloadSpookyPacks();
+      }
+      preloadSpookyPacks() {
+        if (!this.ctx || this.isPreloaded) return;
+        this.isPreloaded = true;
+        const files = {
+          chime: '/sfx/halloween/chime.mp3',
+          cash: '/sfx/halloween/cash.mp3',
+          buzzer: '/sfx/halloween/buzzer.mp3',
+          swoosh: '/sfx/halloween/swoosh.mp3',
+          slam: '/sfx/halloween/slam.mp3'
+        };
+        Object.entries(files).forEach(([key, url]) => {
+          fetch(url)
+            .then(res => res.arrayBuffer())
+            .then(arr => this.ctx.decodeAudioData(arr))
+            .then(buf => { this.spookyBuffers[key] = buf; })
+            .catch(() => {});
+        });
+      }
+      playBufferSound(key) {
+        if (this.ctx && this.spookyBuffers && this.spookyBuffers[key]) {
+          try {
+            const source = this.ctx.createBufferSource();
+            source.buffer = this.spookyBuffers[key];
+            source.connect(this.ctx.destination);
+            source.start(0);
+            return true;
+          } catch(e) {}
+        }
+        return false;
       }
       setPack(packId) {
         if (['game_show', 'retro', 'subtle', 'halloween'].includes(packId)) {
@@ -467,8 +500,9 @@
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
+          if (this.pack === 'halloween' && this.playBufferSound('swoosh')) return;
+
           const t = this.ctx.currentTime;
-          const isHalloween = (this.pack === 'halloween');
           const bufferSize = Math.floor(this.ctx.sampleRate * 0.15);
           const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
           const data = buffer.getChannelData(0);
@@ -480,9 +514,9 @@
 
           const filter = this.ctx.createBiquadFilter();
           filter.type = 'bandpass';
-          filter.frequency.setValueAtTime(isHalloween ? 250 : 400, t);
-          filter.frequency.exponentialRampToValueAtTime(isHalloween ? 1600 : 2200, t + 0.12);
-          filter.Q.setValueAtTime(isHalloween ? 4.5 : 3.0, t);
+          filter.frequency.setValueAtTime(400, t);
+          filter.frequency.exponentialRampToValueAtTime(2200, t + 0.12);
+          filter.Q.setValueAtTime(3.0, t);
 
           const gain = this.ctx.createGain();
           gain.gain.setValueAtTime(0.35, t);
@@ -498,13 +532,14 @@
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
+          if (this.pack === 'halloween' && this.playBufferSound('slam')) return;
+
           const t = this.ctx.currentTime;
-          const isHalloween = (this.pack === 'halloween');
           const subOsc = this.ctx.createOscillator();
           const subGain = this.ctx.createGain();
-          subOsc.type = isHalloween ? 'sawtooth' : 'sine';
-          subOsc.frequency.setValueAtTime(isHalloween ? 110 : 90, t);
-          subOsc.frequency.exponentialRampToValueAtTime(isHalloween ? 25 : 30, t + 0.35);
+          subOsc.type = 'sine';
+          subOsc.frequency.setValueAtTime(90, t);
+          subOsc.frequency.exponentialRampToValueAtTime(30, t + 0.35);
           subGain.gain.setValueAtTime(0.6, t);
           subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
 
@@ -534,160 +569,72 @@
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
+          if (this.pack === 'halloween' && this.playBufferSound('chime')) return;
+
           const t = this.ctx.currentTime;
-          const isHalloween = (this.pack === 'halloween');
           const isRetro = (this.pack === 'retro');
           const isSubtle = (this.pack === 'subtle');
 
-          if (isHalloween) {
-            // Theremin Creepy Pitch Slide (440Hz -> Eb5 622Hz -> E5 659Hz with LFO vibrato)
-            const thereminOsc = this.ctx.createOscillator();
-            const thereminGain = this.ctx.createGain();
-            const lfo = this.ctx.createOscillator();
-            const lfoGain = this.ctx.createGain();
+          const notes = isRetro ? [261.63, 329.63, 392.00, 523.25, 659.25] : (isSubtle ? [440, 554.37, 659.25] : [523.25, 659.25, 783.99, 1046.50]);
+          const waveType = isRetro ? 'square' : 'sine';
+          const step = isRetro ? 0.05 : (isSubtle ? 0.12 : 0.08);
+          const duration = isRetro ? 0.18 : (isSubtle ? 0.45 : 0.35);
 
-            thereminOsc.type = 'sine';
-            thereminOsc.frequency.setValueAtTime(440, t);
-            thereminOsc.frequency.linearRampToValueAtTime(622.25, t + 0.35);
-            thereminOsc.frequency.linearRampToValueAtTime(659.25, t + 0.65);
-
-            lfo.type = 'sine';
-            lfo.frequency.setValueAtTime(6.0, t);
-            lfoGain.gain.setValueAtTime(22, t);
-            lfo.connect(thereminOsc.frequency);
-
-            thereminGain.gain.setValueAtTime(0.001, t);
-            thereminGain.gain.linearRampToValueAtTime(0.28, t + 0.1);
-            thereminGain.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
-
-            thereminOsc.connect(thereminGain);
-            thereminGain.connect(this.ctx.destination);
-
-            lfo.start(t);
-            thereminOsc.start(t);
-            lfo.stop(t + 0.7);
-            thereminOsc.stop(t + 0.7);
-
-            // Haunted Plucked Music Box Notes (C6, Db6, E6, Ab6 detuned wind-up wobble)
-            const mbNotes = [1046.50, 1108.73, 1318.51, 1661.22];
-            mbNotes.forEach((freq, idx) => {
-              const noteStart = t + (idx * 0.12);
-              const mbOsc = this.ctx.createOscillator();
-              const mbGain = this.ctx.createGain();
-              mbOsc.type = 'sine';
-              mbOsc.frequency.setValueAtTime(freq, noteStart);
-              mbOsc.frequency.linearRampToValueAtTime(freq * 1.015, noteStart + 0.5);
-
-              mbGain.gain.setValueAtTime(0.22, noteStart);
-              mbGain.gain.exponentialRampToValueAtTime(0.001, noteStart + 0.55);
-
-              mbOsc.connect(mbGain);
-              mbGain.connect(this.ctx.destination);
-              mbOsc.start(noteStart);
-              mbOsc.stop(noteStart + 0.55);
-            });
-          } else {
-            const notes = isRetro ? [261.63, 329.63, 392.00, 523.25, 659.25] : (isSubtle ? [440, 554.37, 659.25] : [523.25, 659.25, 783.99, 1046.50]);
-            const waveType = isRetro ? 'square' : 'sine';
-            const step = isRetro ? 0.05 : (isSubtle ? 0.12 : 0.08);
-            const duration = isRetro ? 0.18 : (isSubtle ? 0.45 : 0.35);
-
-            notes.forEach((freq, idx) => {
-              const startTime = t + (idx * step);
-              const osc = this.ctx.createOscillator();
-              const gain = this.ctx.createGain();
-              osc.type = waveType;
-              osc.frequency.setValueAtTime(freq, startTime);
-              gain.gain.setValueAtTime(isSubtle ? 0.15 : (isRetro ? 0.2 : 0.25), startTime);
-              gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-              osc.connect(gain);
-              gain.connect(this.ctx.destination);
-              osc.start(startTime);
-              osc.stop(startTime + duration);
-            });
-          }
+          notes.forEach((freq, idx) => {
+            const startTime = t + (idx * step);
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = waveType;
+            osc.frequency.setValueAtTime(freq, startTime);
+            gain.gain.setValueAtTime(isSubtle ? 0.15 : (isRetro ? 0.2 : 0.25), startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(startTime);
+            osc.stop(startTime + duration);
+          });
         } catch(e) {}
       }
       playCashGainChime() {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
+          if (this.pack === 'halloween' && this.playBufferSound('cash')) return;
+
           const t = this.ctx.currentTime;
-          const isHalloween = (this.pack === 'halloween');
           const isRetro = (this.pack === 'retro');
           const isSubtle = (this.pack === 'subtle');
 
-          if (isHalloween) {
-            const notes = [622.25, 740.00, 932.33, 1244.50, 1479.98];
-            notes.forEach((freq, idx) => {
-              const noteStart = t + (idx * 0.06);
-              const mbOsc = this.ctx.createOscillator();
-              const mbGain = this.ctx.createGain();
-              mbOsc.type = 'sine';
-              mbOsc.frequency.setValueAtTime(freq, noteStart);
-              mbOsc.frequency.exponentialRampToValueAtTime(freq * 1.08, noteStart + 0.35);
-              mbGain.gain.setValueAtTime(0.24, noteStart);
-              mbGain.gain.exponentialRampToValueAtTime(0.001, noteStart + 0.35);
-              mbOsc.connect(mbGain);
-              mbGain.connect(this.ctx.destination);
-              mbOsc.start(noteStart);
-              mbOsc.stop(noteStart + 0.35);
-            });
-          } else {
-            const notes = isRetro ? [523.25, 659.25, 783.99, 1046.50, 1318.51] : (isSubtle ? [523.25, 659.25, 783.99] : [1046.50, 1318.51, 1567.98, 2093.00]);
-            const waveType = isRetro ? 'square' : 'sine';
-            const step = isRetro ? 0.04 : 0.06;
+          const notes = isRetro ? [523.25, 659.25, 783.99, 1046.50, 1318.51] : (isSubtle ? [523.25, 659.25, 783.99] : [1046.50, 1318.51, 1567.98, 2093.00]);
+          const waveType = isRetro ? 'square' : 'sine';
+          const step = isRetro ? 0.04 : 0.06;
 
-            notes.forEach((freq, idx) => {
-              const startTime = t + (idx * step);
-              const osc = this.ctx.createOscillator();
-              const gain = this.ctx.createGain();
-              osc.type = waveType;
-              osc.frequency.setValueAtTime(freq, startTime);
-              gain.gain.setValueAtTime(isSubtle ? 0.15 : 0.25, startTime);
-              gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
-              osc.connect(gain);
-              gain.connect(this.ctx.destination);
-              osc.start(startTime);
-              osc.stop(startTime + 0.25);
-            });
-          }
+          notes.forEach((freq, idx) => {
+            const startTime = t + (idx * step);
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = waveType;
+            osc.frequency.setValueAtTime(freq, startTime);
+            gain.gain.setValueAtTime(isSubtle ? 0.15 : 0.25, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(startTime);
+            osc.stop(startTime + 0.25);
+          });
         } catch(e) {}
       }
       playBadDataBuzzer() {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
+          if (this.pack === 'halloween' && this.playBufferSound('buzzer')) return;
+
           const t = this.ctx.currentTime;
-          const isHalloween = (this.pack === 'halloween');
           const isRetro = (this.pack === 'retro');
           const isSubtle = (this.pack === 'subtle');
 
-          if (isHalloween) {
-            [85.00, 90.00, 110.00].forEach(freq => {
-              const osc = this.ctx.createOscillator();
-              const gain = this.ctx.createGain();
-              const tremolo = this.ctx.createOscillator();
-
-              osc.type = 'sawtooth';
-              osc.frequency.setValueAtTime(freq, t);
-              osc.frequency.exponentialRampToValueAtTime(26, t + 0.5);
-
-              tremolo.type = 'sawtooth';
-              tremolo.frequency.setValueAtTime(14.0, t);
-              tremolo.connect(gain.gain);
-
-              gain.gain.setValueAtTime(0.32, t);
-              gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-
-              osc.connect(gain);
-              gain.connect(this.ctx.destination);
-              tremolo.start(t);
-              osc.start(t);
-              tremolo.stop(t + 0.5);
-              osc.stop(t + 0.5);
-            });
-          } else if (isRetro) {
+          if (isRetro) {
             [160, 120, 80].forEach((freq, idx) => {
               const osc = this.ctx.createOscillator();
               const gain = this.ctx.createGain();
