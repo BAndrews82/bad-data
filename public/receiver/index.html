@@ -397,6 +397,10 @@
       <p id="cah-roast-text" class="text-amber-200 font-bold italic text-sm">"Gemini Roast..."</p>
     </div>
 
+    <div id="cah-reveal-judge-status" class="text-center py-1 text-amber-300 font-extrabold text-xs uppercase tracking-widest shrink-0 animate-pulse">
+      👑 Waiting for Judge <span id="cah-reveal-judge-name" class="text-amber-400 font-black">Judge</span> to tap 'START NEXT ROUND' on their phone...
+    </div>
+
     <div id="cah-reveal-leaderboard" class="grid grid-cols-2 gap-2 max-w-3xl mx-auto w-full shrink-0 my-1"></div>
   </section>
 
@@ -539,7 +543,7 @@
     let currentAudio = null;
     let selectedGameId = 'trivia';
     let isRoasterEnabled = false;
-    let isPopularVoteEnabled = true;
+    let isPopularVoteEnabled = false;
     let availableCardPacks = [];
     let selectedCardPackIds = [];
     let currentRoster = [];
@@ -832,6 +836,8 @@
       document.getElementById('cah-winner-name').textContent = data.winnerNickname;
       document.getElementById('cah-reveal-prompt').textContent = data.prompt;
       document.getElementById('cah-reveal-winning-card').textContent = data.winningCardText;
+      const judgeNameEl = document.getElementById('cah-reveal-judge-name');
+      if (judgeNameEl) judgeNameEl.textContent = data.judgeNickname || 'Judge';
 
       const roastBanner = document.getElementById('cah-reveal-roast-banner');
       const roastTextEl = document.getElementById('cah-roast-text');

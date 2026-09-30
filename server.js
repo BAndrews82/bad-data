@@ -643,6 +643,7 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
 
   ioInstance.to(`host_${roomCode}`).emit('cah_round_reveal', {
     prompt,
+    judgeNickname: room.currentJudgeNickname || 'Judge',
     winningCardText: winningSubmission.cardText,
     winnerNickname: winnerPlayer ? winnerPlayer.nickname : 'Unknown',
     winnerColor: winnerPlayer ? winnerPlayer.color : '#3B82F6',
