@@ -326,6 +326,7 @@ io.on('connection', (socket) => {
 
     console.log(`[Room ${roomCode}] Selected SFX Pack: ${sfxPack}`);
     io.to(`host_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack });
+    io.to(`room_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack });
   });
 
   socket.on('set_tts_enabled', ({ roomCode, enabled }) => {

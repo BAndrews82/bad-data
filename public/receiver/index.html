@@ -83,13 +83,13 @@
       border-color: rgba(217, 70, 239, 0.35);
       box-shadow: 0 0 25px rgba(168, 85, 247, 0.25);
     }
-    body.theme-gold {
-      background: radial-gradient(ellipse at center, #451a03 0%, #1c0a00 60%, #080200 100%);
+    body.theme-halloween {
+      background: radial-gradient(ellipse at center, #2e1005 0%, #140500 60%, #050000 100%);
     }
-    body.theme-gold .glass-panel {
-      background: rgba(40, 20, 10, 0.85);
-      border-color: rgba(245, 158, 11, 0.45);
-      box-shadow: 0 0 25px rgba(245, 158, 11, 0.3);
+    body.theme-halloween .glass-panel {
+      background: rgba(30, 10, 5, 0.88);
+      border-color: rgba(249, 115, 22, 0.45);
+      box-shadow: 0 0 25px rgba(249, 115, 22, 0.35);
     }
   </style>
 </head>
@@ -986,12 +986,12 @@
 
       const btnMid = document.getElementById('theme-btn-midnight');
       const btnNeon = document.getElementById('theme-btn-neon');
-      const btnGold = document.getElementById('theme-btn-gold');
+      const btnHalloween = document.getElementById('theme-btn-halloween');
 
-      if (btnMid && btnNeon && btnGold) {
+      if (btnMid && btnNeon && btnHalloween) {
         btnMid.className = (selectedThemeId === 'midnight') ? 'px-2 py-0.5 rounded bg-indigo-600 text-white transition cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
         btnNeon.className = (selectedThemeId === 'neon') ? 'px-2 py-0.5 rounded bg-fuchsia-600 text-white transition cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
-        btnGold.className = (selectedThemeId === 'gold') ? 'px-2 py-0.5 rounded bg-amber-500 text-slate-950 transition cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
+        btnHalloween.className = (selectedThemeId === 'halloween') ? 'px-2 py-0.5 rounded bg-orange-600 text-white transition cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
       }
 
       if (emitSocket && socket && roomCode) {

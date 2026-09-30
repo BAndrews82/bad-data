@@ -44,12 +44,12 @@
       background: rgba(23, 15, 48, 0.85);
       border-color: rgba(217, 70, 239, 0.35);
     }
-    body.theme-gold {
-      background: radial-gradient(ellipse at center, #451a03 0%, #1c0a00 60%, #080200 100%);
+    body.theme-halloween {
+      background: radial-gradient(ellipse at center, #2e1005 0%, #140500 60%, #050000 100%);
     }
-    body.theme-gold .glass-panel {
-      background: rgba(40, 20, 10, 0.85);
-      border-color: rgba(245, 158, 11, 0.45);
+    body.theme-halloween .glass-panel {
+      background: rgba(30, 10, 5, 0.88);
+      border-color: rgba(249, 115, 22, 0.45);
     }
   </style>
 </head>
@@ -134,7 +134,7 @@
           <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 font-bold">
             <button id="mobile-theme-midnight" onclick="event.stopPropagation(); selectThemeMobile('midnight');" class="px-2 py-0.5 rounded bg-indigo-600 text-white cursor-pointer font-black shadow">🌙 Dark</button>
             <button id="mobile-theme-neon" onclick="event.stopPropagation(); selectThemeMobile('neon');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">⚡ Neon</button>
-            <button id="mobile-theme-gold" onclick="event.stopPropagation(); selectThemeMobile('gold');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">🏆 Gold</button>
+            <button id="mobile-theme-halloween" onclick="event.stopPropagation(); selectThemeMobile('halloween');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">🎃 Halloween</button>
           </div>
         </div>
 
@@ -548,11 +548,11 @@
         const tId = data.themeId;
         const btnMid = document.getElementById('mobile-theme-midnight');
         const btnNeon = document.getElementById('mobile-theme-neon');
-        const btnGold = document.getElementById('mobile-theme-gold');
-        if (btnMid && btnNeon && btnGold) {
+        const btnHalloween = document.getElementById('mobile-theme-halloween');
+        if (btnMid && btnNeon && btnHalloween) {
           btnMid.className = (tId === 'midnight') ? 'px-2 py-0.5 rounded bg-indigo-600 text-white cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
           btnNeon.className = (tId === 'neon') ? 'px-2 py-0.5 rounded bg-fuchsia-600 text-white cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
-          btnGold.className = (tId === 'gold') ? 'px-2 py-0.5 rounded bg-amber-500 text-slate-950 cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+          btnHalloween.className = (tId === 'halloween') ? 'px-2 py-0.5 rounded bg-orange-600 text-white cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
         }
       }
     });
