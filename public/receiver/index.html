@@ -169,8 +169,8 @@
             <span class="block text-[8px] text-slate-400">+1 Bonus point for player-voted card</span>
           </div>
           <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
-            <button id="popular-toggle-off" onclick="event.stopPropagation(); setPopularVoteEnabled(false);" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition">OFF</button>
-            <button id="popular-toggle-on" onclick="event.stopPropagation(); setPopularVoteEnabled(true);" class="px-2.5 py-0.5 rounded bg-emerald-600 text-white transition font-black shadow">ON</button>
+            <button id="popular-toggle-off" onclick="event.stopPropagation(); setPopularVoteEnabled(false);" class="px-2.5 py-0.5 rounded bg-rose-600 text-white transition cursor-pointer font-black shadow">OFF</button>
+            <button id="popular-toggle-on" onclick="event.stopPropagation(); setPopularVoteEnabled(true);" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer">ON</button>
           </div>
         </div>
 
@@ -679,6 +679,7 @@
       document.getElementById('play-url-text').textContent = data.playUrl;
       updateRoster(data.players || []);
       renderCardPacks(data.availableCardPacks || []);
+      setPopularVoteEnabled(false);
     });
 
     socket.on('roster_update', (data) => {
