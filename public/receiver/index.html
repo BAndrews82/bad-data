@@ -83,6 +83,24 @@
       border-color: rgba(217, 70, 239, 0.35);
       box-shadow: 0 0 25px rgba(168, 85, 247, 0.25);
     }
+    body.theme-matrix {
+      background-color: #020b05;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    body.theme-matrix .glass-panel {
+      background: rgba(4, 20, 10, 0.88);
+      border: 1.5px solid #00ff66;
+      box-shadow: 0 0 25px rgba(0, 255, 102, 0.35), inset 0 0 10px rgba(0, 255, 102, 0.15);
+      position: relative;
+    }
+    body.theme-gameshow {
+      background: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #0f172a 50%, #020617 100%);
+    }
+    body.theme-gameshow .glass-panel {
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 2px solid #eab308;
+      box-shadow: 0 0 30px rgba(234, 179, 8, 0.35), inset 0 0 15px rgba(234, 179, 8, 0.15);
+    }
     body.theme-halloween {
       background: radial-gradient(ellipse at center, #2e1005 0%, #140500 60%, #050000 100%);
     }
@@ -91,9 +109,20 @@
       border-color: rgba(249, 115, 22, 0.45);
       box-shadow: 0 0 25px rgba(249, 115, 22, 0.35);
     }
+    body.theme-retro {
+      background: #090014;
+    }
+    body.theme-retro .glass-panel {
+      background: #12002b;
+      border: 3px solid #00f0ff;
+      box-shadow: 6px 6px 0px #ff0055, 0 0 20px rgba(0, 240, 255, 0.4);
+      border-radius: 6px !important;
+    }
   </style>
 </head>
 <body onclick="unlockAudioHost()" class="h-full w-full flex flex-col justify-between bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black relative">
+  <canvas id="matrix-canvas" class="fixed inset-0 pointer-events-none z-0 hidden"></canvas>
+  <canvas id="fog-canvas" class="fixed inset-0 pointer-events-none z-0 hidden"></canvas>
 
   <!-- Voice Control & Game Control (Top Right) -->
   <div class="absolute top-4 right-6 z-50 flex items-center gap-3">
@@ -1027,20 +1056,117 @@
       speakText(`All cards are in! ${data.judgeNickname} is picking the winner!`);
     });
 
+    let matrixInterval = null;
+    function startMatrixRain() {
+      stopMatrixRain();
+      const canvas = document.getElementById('matrix-canvas');
+      if (!canvas) return;
+      canvas.classList.remove('hidden');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      const chars = '0123456789ABCDEFｦｱｳｴｵｶｷｹｺｻｼｽｾｿﾀﾂﾃﾅﾆﾇﾈﾊﾋﾎﾏﾐﾑﾒﾓﾔﾕﾗﾘﾜ';
+      const fontSize = 16;
+      const columns = Math.floor(canvas.width / fontSize);
+      const drops = Array(columns).fill(1);
+      
+      function draw() {
+        ctx.fillStyle = 'rgba(2, 11, 5, 0.08)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#00ff66';
+        ctx.font = fontSize + 'px monospace';
+        
+        for (let i = 0; i < drops.length; i++) {
+          const text = chars[Math.floor(Math.random() * chars.length)];
+          ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+          if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+          drops[i]++;
+        }
+      }
+      matrixInterval = setInterval(draw, 40);
+    }
+
+    function stopMatrixRain() {
+      if (matrixInterval) {
+        clearInterval(matrixInterval);
+        matrixInterval = null;
+      }
+      const canvas = document.getElementById('matrix-canvas');
+      if (canvas) canvas.classList.add('hidden');
+    }
+
+    let fogAnimationId = null;
+    function startEerieFog() {
+      stopEerieFog();
+      const canvas = document.getElementById('fog-canvas');
+      if (!canvas) return;
+      canvas.classList.remove('hidden');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      const particles = [];
+      for (let i = 0; i < 25; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 120 + 80,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.2,
+          alpha: Math.random() * 0.15 + 0.05
+        });
+      }
+      
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < -p.radius) p.x = canvas.width + p.radius;
+          if (p.x > canvas.width + p.radius) p.x = -p.radius;
+          if (p.y < -p.radius) p.y = canvas.height + p.radius;
+          if (p.y > canvas.height + p.radius) p.y = -p.radius;
+          
+          const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+          grad.addColorStop(0, `rgba(249, 115, 22, ${p.alpha})`);
+          grad.addColorStop(0.5, `rgba(168, 85, 247, ${p.alpha * 0.5})`);
+          grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        fogAnimationId = requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    function stopEerieFog() {
+      if (fogAnimationId) {
+        cancelAnimationFrame(fogAnimationId);
+        fogAnimationId = null;
+      }
+      const canvas = document.getElementById('fog-canvas');
+      if (canvas) canvas.classList.add('hidden');
+    }
+
     let selectedThemeId = 'midnight';
 
     function selectTheme(themeId, emitSocket = true) {
       selectedThemeId = themeId || 'midnight';
       document.body.className = `h-full w-full flex flex-col justify-between relative theme-${selectedThemeId}`;
 
-      const btnMid = document.getElementById('theme-btn-midnight');
-      const btnNeon = document.getElementById('theme-btn-neon');
-      const btnHalloween = document.getElementById('theme-btn-halloween');
+      stopMatrixRain();
+      stopEerieFog();
 
-      if (btnMid && btnNeon && btnHalloween) {
-        btnMid.className = (selectedThemeId === 'midnight') ? 'px-2 py-0.5 rounded bg-indigo-600 text-white transition cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
-        btnNeon.className = (selectedThemeId === 'neon') ? 'px-2 py-0.5 rounded bg-fuchsia-600 text-white transition cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
-        btnHalloween.className = (selectedThemeId === 'halloween') ? 'px-2 py-0.5 rounded bg-orange-600 text-white transition cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
+      if (selectedThemeId === 'matrix') {
+        startMatrixRain();
+      } else if (selectedThemeId === 'halloween') {
+        startEerieFog();
       }
 
       if (emitSocket && socket && roomCode) {
