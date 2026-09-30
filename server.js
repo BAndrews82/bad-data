@@ -320,6 +320,14 @@ io.on('connection', (socket) => {
     io.to(`room_${room.code}`).emit('theme_selected', { themeId: room.themeId });
   });
 
+  socket.on('select_sfx_pack', ({ roomCode, sfxPack }) => {
+    const room = roomManager.selectSfxPack(roomCode, sfxPack);
+    if (!room) return;
+
+    console.log(`[Room ${roomCode}] Selected SFX Pack: ${sfxPack}`);
+    io.to(`host_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack });
+  });
+
   socket.on('add_bot_players', ({ roomCode, count }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || room.status !== 'LOBBY') return;

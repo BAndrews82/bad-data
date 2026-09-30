@@ -450,6 +450,7 @@
     class SoundFX {
       constructor() {
         this.ctx = null;
+        this.pack = 'game_show'; // 'game_show', 'retro', 'subtle'
       }
       init() {
         if (!this.ctx) {
@@ -462,24 +463,101 @@
           this.ctx.resume();
         }
       }
+      setPack(packId) {
+        if (['game_show', 'retro', 'subtle'].includes(packId)) {
+          this.pack = packId;
+        }
+      }
+      playCardSwoosh() {
+        if (!this.ctx) this.init();
+        if (!this.ctx) return;
+        try {
+          const t = this.ctx.currentTime;
+          const bufferSize = Math.floor(this.ctx.sampleRate * 0.15);
+          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+          }
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buffer;
+
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(400, t);
+          filter.frequency.exponentialRampToValueAtTime(2200, t + 0.12);
+          filter.Q.setValueAtTime(3.0, t);
+
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(0.35, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+          noise.start(t);
+        } catch(e) {}
+      }
+      playCardSlam() {
+        if (!this.ctx) this.init();
+        if (!this.ctx) return;
+        try {
+          const t = this.ctx.currentTime;
+          const subOsc = this.ctx.createOscillator();
+          const subGain = this.ctx.createGain();
+          subOsc.type = 'sine';
+          subOsc.frequency.setValueAtTime(90, t);
+          subOsc.frequency.exponentialRampToValueAtTime(30, t + 0.3);
+          subGain.gain.setValueAtTime(0.6, t);
+          subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+
+          subOsc.connect(subGain);
+          subGain.connect(this.ctx.destination);
+          subOsc.start(t);
+          subOsc.stop(t + 0.3);
+
+          const bufferSize = Math.floor(this.ctx.sampleRate * 0.12);
+          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 3);
+          }
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buffer;
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(0.4, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+
+          noise.connect(gain);
+          gain.connect(this.ctx.destination);
+          noise.start(t);
+        } catch(e) {}
+      }
       playQuestionChime() {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
-          const notes = [523.25, 659.25, 783.99, 1046.50];
           const t = this.ctx.currentTime;
+          const isRetro = (this.pack === 'retro');
+          const isSubtle = (this.pack === 'subtle');
+
+          const notes = isRetro ? [261.63, 329.63, 392.00, 523.25, 659.25] : (isSubtle ? [440, 554.37, 659.25] : [523.25, 659.25, 783.99, 1046.50]);
+          const waveType = isRetro ? 'square' : 'sine';
+          const step = isRetro ? 0.05 : (isSubtle ? 0.12 : 0.08);
+          const duration = isRetro ? 0.18 : (isSubtle ? 0.45 : 0.35);
+
           notes.forEach((freq, idx) => {
-            const startTime = t + (idx * 0.08);
+            const startTime = t + (idx * step);
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-            osc.type = 'sine';
+            osc.type = waveType;
             osc.frequency.setValueAtTime(freq, startTime);
-            gain.gain.setValueAtTime(0.25, startTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+            gain.gain.setValueAtTime(isSubtle ? 0.15 : (isRetro ? 0.2 : 0.25), startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
             osc.start(startTime);
-            osc.stop(startTime + 0.35);
+            osc.stop(startTime + duration);
           });
         } catch(e) {}
       }
@@ -487,15 +565,21 @@
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
-          const notes = [1046.50, 1318.51, 1567.98, 2093.00];
           const t = this.ctx.currentTime;
+          const isRetro = (this.pack === 'retro');
+          const isSubtle = (this.pack === 'subtle');
+
+          const notes = isRetro ? [523.25, 659.25, 783.99, 1046.50, 1318.51] : (isSubtle ? [523.25, 659.25, 783.99] : [1046.50, 1318.51, 1567.98, 2093.00]);
+          const waveType = isRetro ? 'square' : 'sine';
+          const step = isRetro ? 0.04 : 0.06;
+
           notes.forEach((freq, idx) => {
-            const startTime = t + (idx * 0.06);
+            const startTime = t + (idx * step);
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-            osc.type = 'sine';
+            osc.type = waveType;
             osc.frequency.setValueAtTime(freq, startTime);
-            gain.gain.setValueAtTime(0.3, startTime);
+            gain.gain.setValueAtTime(isSubtle ? 0.15 : 0.25, startTime);
             gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
@@ -509,19 +593,49 @@
         if (!this.ctx) return;
         try {
           const t = this.ctx.currentTime;
-          [130, 138].forEach(freq => {
+          const isRetro = (this.pack === 'retro');
+          const isSubtle = (this.pack === 'subtle');
+
+          if (isRetro) {
+            [160, 120, 80].forEach((freq, idx) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'square';
+              osc.frequency.setValueAtTime(freq, t + (idx * 0.08));
+              gain.gain.setValueAtTime(0.2, t + (idx * 0.08));
+              gain.gain.exponentialRampToValueAtTime(0.001, t + (idx * 0.08) + 0.1);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start(t + (idx * 0.08));
+              osc.stop(t + (idx * 0.08) + 0.1);
+            });
+          } else if (isSubtle) {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(freq, t);
-            osc.frequency.linearRampToValueAtTime(60, t + 0.35);
-            gain.gain.setValueAtTime(0.3, t);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(140, t);
+            osc.frequency.exponentialRampToValueAtTime(50, t + 0.25);
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
             osc.start(t);
-            osc.stop(t + 0.35);
-          });
+            osc.stop(t + 0.25);
+          } else {
+            [130, 138].forEach(freq => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(freq, t);
+              osc.frequency.linearRampToValueAtTime(60, t + 0.35);
+              gain.gain.setValueAtTime(0.3, t);
+              gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start(t);
+              osc.stop(t + 0.35);
+            });
+          }
         } catch(e) {}
       }
       enhanceAudioElement(audioEl) {
@@ -865,6 +979,7 @@
         </div>
       `).join('');
 
+      sfx.playCardSwoosh();
       speakText(`All cards are in! ${data.judgeNickname} is picking the winner!`);
     });
 
@@ -887,6 +1002,25 @@
       if (socket && roomCode) {
         socket.emit('select_theme', { roomCode, themeId: selectedThemeId });
       }
+    }
+
+    function selectSfxPack(packId) {
+      sfx.setPack(packId);
+      const btnShow = document.getElementById('sfx-btn-gameshow');
+      const btnRetro = document.getElementById('sfx-btn-retro');
+      const btnSubtle = document.getElementById('sfx-btn-subtle');
+
+      if (btnShow && btnRetro && btnSubtle) {
+        btnShow.className = (packId === 'game_show') ? 'px-2.5 py-1 rounded bg-indigo-600 text-white transition cursor-pointer font-black shadow' : 'px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer';
+        btnRetro.className = (packId === 'retro') ? 'px-2.5 py-1 rounded bg-purple-600 text-white transition cursor-pointer font-black shadow' : 'px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer';
+        btnSubtle.className = (packId === 'subtle') ? 'px-2.5 py-1 rounded bg-teal-600 text-white transition cursor-pointer font-black shadow' : 'px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer';
+      }
+
+      if (socket && roomCode) {
+        socket.emit('select_sfx_pack', { roomCode, sfxPack: packId });
+      }
+
+      sfx.playQuestionChime();
     }
 
     socket.on('cah_round_reveal', (data) => {
@@ -913,7 +1047,8 @@
         roastBanner.classList.add('hidden');
       }
 
-      sfx.playCashGainChime();
+      sfx.playCardSlam();
+      setTimeout(() => sfx.playCashGainChime(), 300);
       speakText(`The winner is ${data.winnerNickname}! ... Winning card: ${data.winningCardText}`);
 
       const leaderboardGrid = document.getElementById('cah-reveal-leaderboard');
@@ -999,6 +1134,12 @@
         ttsBtn.classList.toggle('hidden', false);
       }
     }
+
+    socket.on('sfx_pack_selected', (data) => {
+      if (data && data.sfxPack) {
+        selectSfxPack(data.sfxPack);
+      }
+    });
   </script>
   <!-- ==================== GAME & HOUSE RULES SETTINGS MODAL ==================== -->
   <div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onclick="closeSettingsModal();">
@@ -1027,6 +1168,19 @@
             <button id="theme-btn-midnight" onclick="event.stopPropagation(); selectTheme('midnight');" class="px-2.5 py-1 rounded bg-indigo-600 text-white transition cursor-pointer font-black shadow">🌙 Dark</button>
             <button id="theme-btn-neon" onclick="event.stopPropagation(); selectTheme('neon');" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer">⚡ Neon</button>
             <button id="theme-btn-gold" onclick="event.stopPropagation(); selectTheme('gold');" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer">🏆 Gold</button>
+          </div>
+        </div>
+
+        <!-- Sound Effects Pack Selector -->
+        <div class="w-full flex items-center justify-between bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
+          <div class="text-left">
+            <span class="block text-xs font-bold text-slate-200">🔊 Sound Effects Pack</span>
+            <span class="block text-[9px] text-slate-400">Game audio chimes & buzzers style</span>
+          </div>
+          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
+            <button id="sfx-btn-gameshow" onclick="event.stopPropagation(); selectSfxPack('game_show');" class="px-2.5 py-1 rounded bg-indigo-600 text-white transition cursor-pointer font-black shadow">🕹️ Modern</button>
+            <button id="sfx-btn-retro" onclick="event.stopPropagation(); selectSfxPack('retro');" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer">👾 Retro 8-Bit</button>
+            <button id="sfx-btn-subtle" onclick="event.stopPropagation(); selectSfxPack('subtle');" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition cursor-pointer">🎵 Subtle</button>
           </div>
         </div>
 
