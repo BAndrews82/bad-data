@@ -455,10 +455,6 @@ io.on('connection', (socket) => {
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
 
-    const isHost = (room.hostSocketId === socket.id);
-    const isJudge = (room.currentJudgeSocketId === socket.id);
-    if (!isHost && !isJudge) return;
-
     if (room.selectedGameId === 'cah') {
       if (room.status === 'CAH_REVEAL') {
         roomManager.clearRoomTimer(room);
@@ -471,6 +467,7 @@ io.on('connection', (socket) => {
         }
       }
     } else {
+      const isHost = (room.hostSocketId === socket.id);
       if (room.status === 'REVEAL' && isHost) {
         roomManager.clearRoomTimer(room);
         const adv = roomManager.advanceNextRound(roomCode);
