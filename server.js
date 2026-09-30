@@ -453,18 +453,25 @@ io.on('connection', (socket) => {
 
   socket.on('next_question_request', async ({ roomCode }) => {
     const room = roomManager.getRoom(roomCode);
-    if (!room || room.hostSocketId !== socket.id) return;
+    if (!room) return;
+
+    const isHost = (room.hostSocketId === socket.id);
+    const isJudge = (room.currentJudgeSocketId === socket.id);
+    if (!isHost && !isJudge) return;
 
     if (room.selectedGameId === 'cah') {
-      const adv = roomManager.advanceNextRound(roomCode);
-      if (adv && !adv.isGameOver) {
-        await runCahRound(io, roomCode);
-      } else if (adv && adv.isGameOver) {
-        const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
-        io.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+      if (room.status === 'CAH_REVEAL') {
+        roomManager.clearRoomTimer(room);
+        const adv = roomManager.advanceNextRound(roomCode);
+        if (adv && !adv.isGameOver) {
+          await runCahRound(io, roomCode);
+        } else if (adv && adv.isGameOver) {
+          const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
+          io.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+        }
       }
     } else {
-      if (room.status === 'REVEAL') {
+      if (room.status === 'REVEAL' && isHost) {
         roomManager.clearRoomTimer(room);
         const adv = roomManager.advanceNextRound(roomCode);
         if (adv && !adv.isGameOver) {
@@ -646,25 +653,31 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
     isGameOver
   });
 
+  const currentJudgePlayer = room.players.find(p => p.socketId === room.currentJudgeSocketId);
   room.players.forEach(p => {
     const isWinner = winnerPlayer && p.socketId === winnerPlayer.socketId;
     const isPopularWinner = popularWinnerPlayer && p.socketId === popularWinnerPlayer.socketId;
+    const isJudge = Boolean(currentJudgePlayer && p.socketId === currentJudgePlayer.socketId);
     ioInstance.to(p.socketId).emit('cah_controller_reveal', {
       isWinner,
       isPopularWinner,
+      isJudge,
+      isGameOver,
       winnerNickname: winnerPlayer ? winnerPlayer.nickname : 'Unknown',
       winningCardText: winningSubmission.cardText,
       totalScore: p.score
     });
   });
 
-  let revealDurationMs = 7000;
-  if (finalRevealAudio && finalRevealAudio.buffer) {
-    const audioSecs = finalRevealAudio.buffer.length / 16000;
-    revealDurationMs = Math.max(7000, Math.min(10000, Math.ceil((audioSecs + 1.5) * 1000)));
-  }
-
-  if (!isGameOver) {
+  if (isGameOver) {
+    ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard });
+  } else if (currentJudgePlayer && currentJudgePlayer.isBot) {
+    // If Judge is a bot player, automatically advance after reveal audio
+    let revealDurationMs = 7000;
+    if (finalRevealAudio && finalRevealAudio.buffer) {
+      const audioSecs = finalRevealAudio.buffer.length / 16000;
+      revealDurationMs = Math.max(7000, Math.min(10000, Math.ceil((audioSecs + 1.5) * 1000)));
+    }
     const timerHandle = setTimeout(async () => {
       const currentR = roomManager.getRoom(roomCode);
       if (currentR && currentR.status === 'CAH_REVEAL') {
@@ -677,8 +690,6 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
       }
     }, revealDurationMs);
     roomManager.setRoomTimer(room, timerHandle);
-  } else {
-    ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard });
   }
 }
 
