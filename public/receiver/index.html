@@ -182,8 +182,8 @@
           </div>
         </div>
 
-        <!-- Card Packs Selector (Shown on Main TV Screen Lobby) -->
-        <div id="card-packs-selector-container" class="w-full text-left bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 my-1">
+        <!-- Card Packs Selector (Shown for Trivia mode) -->
+        <div id="card-packs-selector-container" style="display: none;" class="hidden w-full text-left bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 my-1">
           <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Available Card Packs</span>
           <div id="card-packs-grid" class="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
             <!-- Rendered via JS -->
@@ -715,7 +715,15 @@
       document.getElementById('game-card-cah').className = (gameId === 'cah') ? 'p-2 rounded-xl bg-slate-900 border-2 border-purple-500 text-white font-extrabold transition shadow flex items-center gap-2 cursor-pointer' : 'p-2 rounded-xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold transition shadow flex items-center gap-2 cursor-pointer';
       
       const packOpts = document.getElementById('card-packs-selector-container');
-      if (packOpts) packOpts.style.display = (gameId === 'cah') ? 'none' : 'block';
+      if (packOpts) {
+        if (gameId === 'cah') {
+          packOpts.classList.add('hidden');
+          packOpts.style.display = 'none';
+        } else {
+          packOpts.classList.remove('hidden');
+          packOpts.style.display = 'block';
+        }
+      }
 
       if (emitSocket && socket && roomCode) {
         socket.emit('select_game', { roomCode, gameId });
@@ -817,6 +825,7 @@
       renderCardPacks(data.availableCardPacks || []);
       setPopularVoteEnabled(false);
       selectTheme(data.themeId || 'midnight');
+      selectGame(data.selectedGameId || 'trivia', false);
     });
 
     socket.on('roster_update', (data) => {
