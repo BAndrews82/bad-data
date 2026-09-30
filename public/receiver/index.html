@@ -150,6 +150,18 @@
           </div>
         </div>
 
+        <!-- Neural Voice Host Option -->
+        <div class="w-full my-1 flex items-center justify-between bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+          <div class="text-left">
+            <span class="block text-[10px] font-bold text-slate-200">🎙️ Neural Voice Host</span>
+            <span class="block text-[8px] text-slate-400">Announcer & Co-Host voice speech</span>
+          </div>
+          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
+            <button id="voice-toggle-off" onclick="event.stopPropagation(); setVoiceHostEnabled(false);" class="px-2.5 py-0.5 rounded bg-rose-600 text-white transition cursor-pointer font-black shadow">OFF</button>
+            <button id="voice-toggle-on" onclick="event.stopPropagation(); setVoiceHostEnabled(true);" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer">ON</button>
+          </div>
+        </div>
+
         <!-- AI Co-Host Roaster Option -->
         <div class="w-full my-1 flex items-center justify-between bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
           <div class="text-left">
@@ -554,6 +566,29 @@
     let selectedCardPackIds = [];
     let currentRoster = [];
 
+    function setVoiceHostEnabled(enabled) {
+      ttsEnabled = enabled;
+      const btnOff = document.getElementById('voice-toggle-off');
+      const btnOn = document.getElementById('voice-toggle-on');
+      if (btnOff && btnOn) {
+        btnOff.className = enabled ? 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer' : 'px-2.5 py-0.5 rounded bg-rose-600 text-white transition cursor-pointer font-black shadow';
+        btnOn.className = enabled ? 'px-2.5 py-0.5 rounded bg-emerald-600 text-white transition cursor-pointer font-black shadow' : 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
+      }
+
+      const iconOn = document.getElementById('tts-icon-on');
+      const iconOff = document.getElementById('tts-icon-off');
+      const statusText = document.getElementById('tts-status-text');
+      if (iconOn && iconOff && statusText) {
+        iconOn.classList.toggle('hidden', !ttsEnabled);
+        iconOff.classList.toggle('hidden', ttsEnabled);
+        statusText.textContent = ttsEnabled ? 'Voice Host: ON' : 'Voice Host: OFF';
+      }
+
+      if (!ttsEnabled && currentAudio) {
+        try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(e) {}
+      }
+    }
+
     function selectGame(gameId) {
       selectedGameId = gameId;
       document.getElementById('game-card-trivia').className = (gameId === 'trivia') ? 'p-2 rounded-xl bg-slate-900 border-2 border-emerald-500 text-white font-extrabold transition shadow flex items-center gap-2 cursor-pointer' : 'p-2 rounded-xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold transition shadow flex items-center gap-2 cursor-pointer';
@@ -563,17 +598,6 @@
       const packOpts = document.getElementById('card-packs-selector-container');
       if (cahOpts) cahOpts.style.display = (gameId === 'cah') ? 'flex' : 'none';
       if (packOpts) packOpts.style.display = (gameId === 'cah') ? 'block' : 'none';
-
-      // Set voice host default: OFF for Bad Cards (cah), ON for Bad Data Trivia
-      ttsEnabled = (gameId !== 'cah');
-      const iconOn = document.getElementById('tts-icon-on');
-      const iconOff = document.getElementById('tts-icon-off');
-      const statusText = document.getElementById('tts-status-text');
-      if (iconOn && iconOff && statusText) {
-        iconOn.classList.toggle('hidden', !ttsEnabled);
-        iconOff.classList.toggle('hidden', ttsEnabled);
-        statusText.textContent = ttsEnabled ? 'Voice Host: ON' : 'Voice Host: OFF';
-      }
 
       if (socket && roomCode) {
         socket.emit('select_game', { roomCode, gameId });
@@ -655,13 +679,7 @@
     }
 
     function toggleTTS() {
-      ttsEnabled = !ttsEnabled;
-      document.getElementById('tts-icon-on').classList.toggle('hidden', !ttsEnabled);
-      document.getElementById('tts-icon-off').classList.toggle('hidden', ttsEnabled);
-      document.getElementById('tts-status-text').textContent = ttsEnabled ? 'Voice Host: ON' : 'Voice Host: OFF';
-      if (!ttsEnabled && currentAudio) {
-        try { currentAudio.pause(); } catch(e) {}
-      }
+      setVoiceHostEnabled(!ttsEnabled);
     }
 
     socket = io();
@@ -937,7 +955,7 @@
 
       const ttsBtn = document.getElementById('tts-toggle-btn');
       if (ttsBtn) {
-        ttsBtn.classList.toggle('hidden', screenId !== 'screen-lobby');
+        ttsBtn.classList.toggle('hidden', false);
       }
     }
   </script>
