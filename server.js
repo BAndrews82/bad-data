@@ -328,6 +328,27 @@ io.on('connection', (socket) => {
     io.to(`host_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack });
   });
 
+  socket.on('set_tts_enabled', ({ roomCode, enabled }) => {
+    const room = roomManager.setRoomSetting(roomCode, 'ttsEnabled', enabled);
+    if (!room) return;
+    io.to(`host_${room.code}`).emit('tts_toggled', { ttsEnabled: room.ttsEnabled });
+    io.to(`room_${room.code}`).emit('tts_toggled', { ttsEnabled: room.ttsEnabled });
+  });
+
+  socket.on('set_roaster_enabled', ({ roomCode, enabled }) => {
+    const room = roomManager.setRoomSetting(roomCode, 'roasterEnabled', enabled);
+    if (!room) return;
+    io.to(`host_${room.code}`).emit('roaster_toggled', { roasterEnabled: room.roasterEnabled });
+    io.to(`room_${room.code}`).emit('roaster_toggled', { roasterEnabled: room.roasterEnabled });
+  });
+
+  socket.on('set_popular_vote_enabled', ({ roomCode, enabled }) => {
+    const room = roomManager.setRoomSetting(roomCode, 'popularVoteEnabled', enabled);
+    if (!room) return;
+    io.to(`host_${room.code}`).emit('popular_vote_toggled', { popularVoteEnabled: room.popularVoteEnabled });
+    io.to(`room_${room.code}`).emit('popular_vote_toggled', { popularVoteEnabled: room.popularVoteEnabled });
+  });
+
   socket.on('add_bot_players', ({ roomCode, count }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || room.status !== 'LOBBY') return;

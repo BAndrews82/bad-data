@@ -1140,6 +1140,18 @@
         selectSfxPack(data.sfxPack);
       }
     });
+
+    socket.on('tts_toggled', (data) => {
+      if (data) setVoiceHostEnabled(Boolean(data.ttsEnabled));
+    });
+
+    socket.on('roaster_toggled', (data) => {
+      if (data) setRoasterEnabled(Boolean(data.roasterEnabled));
+    });
+
+    socket.on('popular_vote_toggled', (data) => {
+      if (data) setPopularVoteEnabled(Boolean(data.popularVoteEnabled));
+    });
   </script>
   <!-- ==================== GAME & HOUSE RULES SETTINGS MODAL ==================== -->
   <div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onclick="closeSettingsModal();">

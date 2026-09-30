@@ -121,6 +121,61 @@
         🎮 Game Mode: <span id="mobile-game-mode-name" class="font-black text-emerald-400">Trivia</span>
       </div>
 
+      <!-- VIP Host Settings Panel (Visible ONLY to VIP Phone) -->
+      <div id="mobile-vip-settings-card" class="hidden p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-left my-2 space-y-2">
+        <div class="flex items-center justify-between border-b border-amber-500/30 pb-1.5">
+          <span class="text-xs font-black text-amber-300 flex items-center gap-1">👑 Room & House Rules Settings</span>
+          <span class="text-[9px] text-amber-400 font-bold bg-amber-500/20 px-1.5 py-0.5 rounded">VIP Host</span>
+        </div>
+
+        <!-- Visual Theme Selector -->
+        <div class="flex items-center justify-between text-[10px]">
+          <span class="font-bold text-slate-300">🎨 Visual Theme</span>
+          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 font-bold">
+            <button id="mobile-theme-midnight" onclick="event.stopPropagation(); selectThemeMobile('midnight');" class="px-2 py-0.5 rounded bg-indigo-600 text-white cursor-pointer font-black shadow">🌙 Dark</button>
+            <button id="mobile-theme-neon" onclick="event.stopPropagation(); selectThemeMobile('neon');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">⚡ Neon</button>
+            <button id="mobile-theme-gold" onclick="event.stopPropagation(); selectThemeMobile('gold');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">🏆 Gold</button>
+          </div>
+        </div>
+
+        <!-- Sound Effects Pack Selector -->
+        <div class="flex items-center justify-between text-[10px]">
+          <span class="font-bold text-slate-300">🔊 SFX Pack</span>
+          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 font-bold">
+            <button id="mobile-sfx-gameshow" onclick="event.stopPropagation(); selectSfxPackMobile('game_show');" class="px-2 py-0.5 rounded bg-indigo-600 text-white cursor-pointer font-black shadow">🕹️ Modern</button>
+            <button id="mobile-sfx-retro" onclick="event.stopPropagation(); selectSfxPackMobile('retro');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">👾 Retro</button>
+            <button id="mobile-sfx-subtle" onclick="event.stopPropagation(); selectSfxPackMobile('subtle');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">🎵 Subtle</button>
+          </div>
+        </div>
+
+        <!-- Voice Host Toggle -->
+        <div class="flex items-center justify-between text-[10px]">
+          <span class="font-bold text-slate-300">🎙️ Neural Voice Host</span>
+          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 font-bold">
+            <button id="mobile-tts-off" onclick="event.stopPropagation(); setTtsEnabledMobile(false);" class="px-2.5 py-0.5 rounded bg-rose-600 text-white cursor-pointer font-black shadow">OFF</button>
+            <button id="mobile-tts-on" onclick="event.stopPropagation(); setTtsEnabledMobile(true);" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">ON</button>
+          </div>
+        </div>
+
+        <!-- AI Co-Host Roaster Toggle -->
+        <div class="flex items-center justify-between text-[10px]">
+          <span class="font-bold text-slate-300">🤖 AI Co-Host Roaster</span>
+          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 font-bold">
+            <button id="mobile-roaster-off" onclick="event.stopPropagation(); setRoasterEnabledMobile(false);" class="px-2.5 py-0.5 rounded bg-rose-600 text-white cursor-pointer font-black shadow">OFF</button>
+            <button id="mobile-roaster-on" onclick="event.stopPropagation(); setRoasterEnabledMobile(true);" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">ON</button>
+          </div>
+        </div>
+
+        <!-- Popular Vote Toggle -->
+        <div class="flex items-center justify-between text-[10px]">
+          <span class="font-bold text-slate-300">⭐ Popular Vote Bonus</span>
+          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 font-bold">
+            <button id="mobile-popular-off" onclick="event.stopPropagation(); setPopularVoteMobile(false);" class="px-2.5 py-0.5 rounded bg-rose-600 text-white cursor-pointer font-black shadow">OFF</button>
+            <button id="mobile-popular-on" onclick="event.stopPropagation(); setPopularVoteMobile(true);" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">ON</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Solo Test Helper Button -->
       <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-left my-2">
         <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Testing Solo?</span>
@@ -401,7 +456,84 @@
         vipDrawer.classList.toggle('hidden', !isVipHost);
       }
 
+      const vipCard = document.getElementById('mobile-vip-settings-card');
+      if (vipCard) {
+        vipCard.classList.toggle('hidden', !isVipHost);
+      }
+
       showScreen('screen-lobby');
+    });
+
+    function selectThemeMobile(themeId) {
+      if (!currentRoomCode) return;
+      if (navigator.vibrate) navigator.vibrate(30);
+      socket.emit('select_theme', { roomCode: currentRoomCode, themeId });
+    }
+
+    function selectSfxPackMobile(sfxPack) {
+      if (!currentRoomCode) return;
+      if (navigator.vibrate) navigator.vibrate(30);
+      socket.emit('select_sfx_pack', { roomCode: currentRoomCode, sfxPack });
+    }
+
+    function setTtsEnabledMobile(enabled) {
+      if (!currentRoomCode) return;
+      if (navigator.vibrate) navigator.vibrate(30);
+      socket.emit('set_tts_enabled', { roomCode: currentRoomCode, enabled });
+    }
+
+    function setRoasterEnabledMobile(enabled) {
+      if (!currentRoomCode) return;
+      if (navigator.vibrate) navigator.vibrate(30);
+      socket.emit('set_roaster_enabled', { roomCode: currentRoomCode, enabled });
+    }
+
+    function setPopularVoteMobile(enabled) {
+      if (!currentRoomCode) return;
+      if (navigator.vibrate) navigator.vibrate(30);
+      socket.emit('set_popular_vote_enabled', { roomCode: currentRoomCode, enabled });
+    }
+
+    socket.on('tts_toggled', (data) => {
+      const enabled = data ? Boolean(data.ttsEnabled) : false;
+      const offBtn = document.getElementById('mobile-tts-off');
+      const onBtn = document.getElementById('mobile-tts-on');
+      if (offBtn && onBtn) {
+        offBtn.className = enabled ? 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer' : 'px-2.5 py-0.5 rounded bg-rose-600 text-white cursor-pointer font-black shadow';
+        onBtn.className = enabled ? 'px-2.5 py-0.5 rounded bg-emerald-600 text-white cursor-pointer font-black shadow' : 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+      }
+    });
+
+    socket.on('roaster_toggled', (data) => {
+      const enabled = data ? Boolean(data.roasterEnabled) : false;
+      const offBtn = document.getElementById('mobile-roaster-off');
+      const onBtn = document.getElementById('mobile-roaster-on');
+      if (offBtn && onBtn) {
+        offBtn.className = enabled ? 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer' : 'px-2.5 py-0.5 rounded bg-rose-600 text-white cursor-pointer font-black shadow';
+        onBtn.className = enabled ? 'px-2.5 py-0.5 rounded bg-emerald-600 text-white cursor-pointer font-black shadow' : 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+      }
+    });
+
+    socket.on('popular_vote_toggled', (data) => {
+      const enabled = data ? Boolean(data.popularVoteEnabled) : false;
+      const offBtn = document.getElementById('mobile-popular-off');
+      const onBtn = document.getElementById('mobile-popular-on');
+      if (offBtn && onBtn) {
+        offBtn.className = enabled ? 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer' : 'px-2.5 py-0.5 rounded bg-rose-600 text-white cursor-pointer font-black shadow';
+        onBtn.className = enabled ? 'px-2.5 py-0.5 rounded bg-emerald-600 text-white cursor-pointer font-black shadow' : 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+      }
+    });
+
+    socket.on('sfx_pack_selected', (data) => {
+      const packId = data ? data.sfxPack : 'game_show';
+      const btnShow = document.getElementById('mobile-sfx-gameshow');
+      const btnRetro = document.getElementById('mobile-sfx-retro');
+      const btnSubtle = document.getElementById('mobile-sfx-subtle');
+      if (btnShow && btnRetro && btnSubtle) {
+        btnShow.className = (packId === 'game_show') ? 'px-2 py-0.5 rounded bg-indigo-600 text-white cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+        btnRetro.className = (packId === 'retro') ? 'px-2 py-0.5 rounded bg-purple-600 text-white cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+        btnSubtle.className = (packId === 'subtle') ? 'px-2 py-0.5 rounded bg-teal-600 text-white cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+      }
     });
 
     socket.on('game_selected', (data) => {
@@ -413,6 +545,15 @@
     socket.on('theme_selected', (data) => {
       if (data && data.themeId) {
         updateMobileTheme(data.themeId);
+        const tId = data.themeId;
+        const btnMid = document.getElementById('mobile-theme-midnight');
+        const btnNeon = document.getElementById('mobile-theme-neon');
+        const btnGold = document.getElementById('mobile-theme-gold');
+        if (btnMid && btnNeon && btnGold) {
+          btnMid.className = (tId === 'midnight') ? 'px-2 py-0.5 rounded bg-indigo-600 text-white cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+          btnNeon.className = (tId === 'neon') ? 'px-2 py-0.5 rounded bg-fuchsia-600 text-white cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+          btnGold.className = (tId === 'gold') ? 'px-2 py-0.5 rounded bg-amber-500 text-slate-950 cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+        }
       }
     });
 
