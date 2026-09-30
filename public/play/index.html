@@ -599,15 +599,33 @@
 
       if (!data.isGameOver) {
         if (data.isJudge) {
-          if (judgeContainer) judgeContainer.classList.remove('hidden');
-          if (nonJudgeMsg) nonJudgeMsg.classList.add('hidden');
+          if (judgeContainer) {
+            judgeContainer.classList.remove('hidden');
+            judgeContainer.style.display = 'block';
+          }
+          if (nonJudgeMsg) {
+            nonJudgeMsg.classList.add('hidden');
+            nonJudgeMsg.style.display = 'none';
+          }
         } else {
-          if (judgeContainer) judgeContainer.classList.add('hidden');
-          if (nonJudgeMsg) nonJudgeMsg.classList.remove('hidden');
+          if (judgeContainer) {
+            judgeContainer.classList.add('hidden');
+            judgeContainer.style.display = 'none';
+          }
+          if (nonJudgeMsg) {
+            nonJudgeMsg.classList.remove('hidden');
+            nonJudgeMsg.style.display = 'block';
+          }
         }
       } else {
-        if (judgeContainer) judgeContainer.classList.add('hidden');
-        if (nonJudgeMsg) nonJudgeMsg.classList.add('hidden');
+        if (judgeContainer) {
+          judgeContainer.classList.add('hidden');
+          judgeContainer.style.display = 'none';
+        }
+        if (nonJudgeMsg) {
+          nonJudgeMsg.classList.add('hidden');
+          nonJudgeMsg.style.display = 'none';
+        }
       }
     });
 

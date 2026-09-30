@@ -927,7 +927,7 @@
 
       const nextBtn = document.getElementById('next-question-btn');
       if (nextBtn) {
-        nextBtn.classList.toggle('hidden', !['screen-reveal', 'screen-cah-reveal'].includes(screenId));
+        nextBtn.classList.toggle('hidden', screenId !== 'screen-reveal');
       }
 
       const endBtn = document.getElementById('end-game-btn');
