@@ -57,6 +57,40 @@
     .animate-glow-pulse {
       animation: glowPulse 1.5s ease-in-out infinite;
     }
+
+    /* 3D Card Flip & Impact Slam Animation */
+    .card-3d-scene {
+      perspective: 1000px;
+    }
+    @keyframes cardSlamImpact {
+      0% { transform: scale(0.3) rotateY(180deg); opacity: 0; filter: blur(8px); }
+      70% { transform: scale(1.08) rotateY(0deg); opacity: 1; filter: drop-shadow(0 0 30px rgba(16, 185, 129, 0.9)); }
+      100% { transform: scale(1.0) rotateY(0deg); opacity: 1; filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.5)); }
+    }
+    .animate-card-slam {
+      animation: cardSlamImpact 0.75s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    /* Theme Presets */
+    body.theme-midnight {
+      background: radial-gradient(ellipse at center, #0f172a 0%, #020617 60%, #000000 100%);
+    }
+    body.theme-neon {
+      background: radial-gradient(ellipse at center, #2e1065 0%, #0f0728 60%, #030014 100%);
+    }
+    body.theme-neon .glass-panel {
+      background: rgba(23, 15, 48, 0.85);
+      border-color: rgba(217, 70, 239, 0.35);
+      box-shadow: 0 0 25px rgba(168, 85, 247, 0.25);
+    }
+    body.theme-gold {
+      background: radial-gradient(ellipse at center, #451a03 0%, #1c0a00 60%, #080200 100%);
+    }
+    body.theme-gold .glass-panel {
+      background: rgba(40, 20, 10, 0.85);
+      border-color: rgba(245, 158, 11, 0.45);
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.3);
+    }
   </style>
 </head>
 <body onclick="unlockAudioHost()" class="h-full w-full flex flex-col justify-between bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black relative">
@@ -147,6 +181,19 @@
                 <div class="text-[8px] text-slate-400 font-normal">CAH prompt game</div>
               </div>
             </button>
+          </div>
+        </div>
+
+        <!-- Theme Preset Selector Option -->
+        <div class="w-full my-1 flex items-center justify-between bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+          <div class="text-left">
+            <span class="block text-[10px] font-bold text-slate-200">🎨 Visual Theme Preset</span>
+            <span class="block text-[8px] text-slate-400">Synced across TV & Phones</span>
+          </div>
+          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[9px] font-bold">
+            <button id="theme-btn-midnight" onclick="event.stopPropagation(); selectTheme('midnight');" class="px-2 py-0.5 rounded bg-indigo-600 text-white transition cursor-pointer font-black shadow">🌙 Dark</button>
+            <button id="theme-btn-neon" onclick="event.stopPropagation(); selectTheme('neon');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer">⚡ Neon</button>
+            <button id="theme-btn-gold" onclick="event.stopPropagation(); selectTheme('gold');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer">🏆 Gold</button>
           </div>
         </div>
 
@@ -397,9 +444,9 @@
       </h2>
     </div>
 
-    <div class="glass-panel p-6 sm:p-8 rounded-3xl border-2 border-emerald-500 bg-emerald-950/30 text-center max-w-4xl mx-auto w-full shadow-2xl shrink-0 my-2">
+    <div class="glass-panel p-6 sm:p-8 rounded-3xl border-2 border-emerald-500 bg-emerald-950/30 text-center max-w-4xl mx-auto w-full shadow-2xl shrink-0 my-2 card-3d-scene">
       <p id="cah-reveal-prompt" class="text-lg text-slate-300 mb-2 font-semibold"></p>
-      <div class="inline-block glass-panel px-6 py-4 rounded-2xl border-2 border-emerald-400 bg-white text-slate-950 font-black text-2xl sm:text-3xl shadow-xl my-2">
+      <div id="cah-winning-card-container" class="inline-block glass-panel px-6 py-4 rounded-2xl border-2 border-emerald-400 bg-white text-slate-950 font-black text-2xl sm:text-3xl shadow-xl my-2 animate-card-slam">
         <span id="cah-reveal-winning-card">Winning Card Text</span>
       </div>
     </div>
@@ -698,6 +745,7 @@
       updateRoster(data.players || []);
       renderCardPacks(data.availableCardPacks || []);
       setPopularVoteEnabled(false);
+      selectTheme(data.themeId || 'midnight');
     });
 
     socket.on('roster_update', (data) => {
@@ -856,6 +904,27 @@
       speakText(`All cards are in! ${data.judgeNickname} is picking the winner!`);
     });
 
+    let selectedThemeId = 'midnight';
+
+    function selectTheme(themeId) {
+      selectedThemeId = themeId || 'midnight';
+      document.body.className = `h-full w-full flex flex-col justify-between relative theme-${selectedThemeId}`;
+
+      const btnMid = document.getElementById('theme-btn-midnight');
+      const btnNeon = document.getElementById('theme-btn-neon');
+      const btnGold = document.getElementById('theme-btn-gold');
+
+      if (btnMid && btnNeon && btnGold) {
+        btnMid.className = (selectedThemeId === 'midnight') ? 'px-2 py-0.5 rounded bg-indigo-600 text-white transition cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
+        btnNeon.className = (selectedThemeId === 'neon') ? 'px-2 py-0.5 rounded bg-fuchsia-600 text-white transition cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
+        btnGold.className = (selectedThemeId === 'gold') ? 'px-2 py-0.5 rounded bg-amber-500 text-slate-950 transition cursor-pointer font-black shadow' : 'px-2 py-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer';
+      }
+
+      if (socket && roomCode) {
+        socket.emit('select_theme', { roomCode, themeId: selectedThemeId });
+      }
+    }
+
     socket.on('cah_round_reveal', (data) => {
       showScreen('screen-cah-reveal');
       document.getElementById('cah-winner-name').textContent = data.winnerNickname;
@@ -863,6 +932,13 @@
       document.getElementById('cah-reveal-winning-card').textContent = data.winningCardText;
       const judgeNameEl = document.getElementById('cah-reveal-judge-name');
       if (judgeNameEl) judgeNameEl.textContent = data.judgeNickname || 'Judge';
+
+      const cardContainer = document.getElementById('cah-winning-card-container');
+      if (cardContainer) {
+        cardContainer.classList.remove('animate-card-slam');
+        void cardContainer.offsetWidth;
+        cardContainer.classList.add('animate-card-slam');
+      }
 
       const roastBanner = document.getElementById('cah-reveal-roast-banner');
       const roastTextEl = document.getElementById('cah-roast-text');
@@ -915,6 +991,7 @@
       showScreen('screen-lobby');
       document.getElementById('mini-room-badge').classList.add('hidden');
       if (data.players) updateRoster(data.players);
+      if (data.themeId) selectTheme(data.themeId);
     });
 
     function triggerResetToLobby() {

@@ -33,6 +33,24 @@
     .btn-tactile:active {
       transform: scale(0.96);
     }
+    /* Mobile Theme Presets */
+    body.theme-midnight {
+      background-color: #020617;
+    }
+    body.theme-neon {
+      background: radial-gradient(ellipse at center, #2e1065 0%, #0f0728 60%, #030014 100%);
+    }
+    body.theme-neon .glass-panel {
+      background: rgba(23, 15, 48, 0.85);
+      border-color: rgba(217, 70, 239, 0.35);
+    }
+    body.theme-gold {
+      background: radial-gradient(ellipse at center, #451a03 0%, #1c0a00 60%, #080200 100%);
+    }
+    body.theme-gold .glass-panel {
+      background: rgba(40, 20, 10, 0.85);
+      border-color: rgba(245, 158, 11, 0.45);
+    }
   </style>
 </head>
 <body class="h-screen w-screen flex flex-col justify-between p-4 sm:p-6 bg-slate-950 overflow-hidden relative">
@@ -282,6 +300,11 @@
       }
     }
 
+    function updateMobileTheme(themeId) {
+      const tId = themeId || 'midnight';
+      document.body.className = `h-screen w-screen flex flex-col justify-between p-4 sm:p-6 overflow-hidden relative theme-${tId}`;
+    }
+
     socket.on('join_error', (data) => {
       const errEl = document.getElementById('join-error-msg');
       errEl.textContent = data.message || 'Failed to join room.';
@@ -297,6 +320,9 @@
       if (data.selectedGameId) {
         updateMobileGameModeDisplay(data.selectedGameId);
       }
+      if (data.themeId) {
+        updateMobileTheme(data.themeId);
+      }
       showScreen('screen-lobby');
     });
 
@@ -306,11 +332,20 @@
       }
     });
 
+    socket.on('theme_selected', (data) => {
+      if (data && data.themeId) {
+        updateMobileTheme(data.themeId);
+      }
+    });
+
     socket.on('controller_reset_lobby', (data) => {
       selectedHandCardIndex = null;
       selectedJudgeSubId = null;
       if (data && data.selectedGameId) {
         updateMobileGameModeDisplay(data.selectedGameId);
+      }
+      if (data && data.themeId) {
+        updateMobileTheme(data.themeId);
       }
       showScreen('screen-lobby');
     });
@@ -320,6 +355,9 @@
       selectedJudgeSubId = null;
       if (data && data.selectedGameId) {
         updateMobileGameModeDisplay(data.selectedGameId);
+      }
+      if (data && data.themeId) {
+        updateMobileTheme(data.themeId);
       }
       showScreen('screen-lobby');
     });

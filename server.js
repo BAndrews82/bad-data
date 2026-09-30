@@ -297,7 +297,8 @@ io.on('connection', (socket) => {
       availablePacks: TriviaService.getAvailablePacks(),
       availableCardPacks: cardService.getAvailablePacks(),
       availableGames: roomManager.getAvailableGames(),
-      selectedGameId: room.selectedGameId
+      selectedGameId: room.selectedGameId,
+      themeId: room.themeId || 'midnight'
     });
   });
 
@@ -308,6 +309,15 @@ io.on('connection', (socket) => {
     console.log(`[Room ${roomCode}] Selected Game: ${gameId}`);
     io.to(`host_${room.code}`).emit('game_selected', { selectedGameId: room.selectedGameId });
     io.to(`room_${room.code}`).emit('game_selected', { selectedGameId: room.selectedGameId });
+  });
+
+  socket.on('select_theme', ({ roomCode, themeId }) => {
+    const room = roomManager.selectTheme(roomCode, themeId);
+    if (!room) return;
+
+    console.log(`[Room ${roomCode}] Selected Theme: ${themeId}`);
+    io.to(`host_${room.code}`).emit('theme_selected', { themeId: room.themeId });
+    io.to(`room_${room.code}`).emit('theme_selected', { themeId: room.themeId });
   });
 
   socket.on('add_bot_players', ({ roomCode, count }) => {
@@ -339,7 +349,8 @@ io.on('connection', (socket) => {
       roomCode: room.code,
       nickname: player.nickname,
       color: player.color,
-      selectedGameId: room.selectedGameId
+      selectedGameId: room.selectedGameId,
+      themeId: room.themeId || 'midnight'
     });
 
     io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
@@ -502,11 +513,14 @@ io.on('connection', (socket) => {
       io.to(`host_${roomCode}`).emit('room_reset_lobby', {
         roomCode,
         selectedGameId: resetRoom.selectedGameId,
+        themeId: resetRoom.themeId || 'midnight',
         players: resetRoom.players
       });
 
       io.to(`room_${roomCode}`).emit('controller_reset_lobby', {
         roomCode,
+        selectedGameId: resetRoom.selectedGameId,
+        themeId: resetRoom.themeId || 'midnight',
         players: resetRoom.players
       });
     }
