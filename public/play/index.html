@@ -85,6 +85,10 @@
         Error message
       </div>
 
+      <div id="vip-active-indicator" class="hidden text-xs font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 p-2.5 rounded-xl text-center shadow flex items-center justify-center gap-1.5">
+        👑 VIP Host Mode Active
+      </div>
+
       <div>
         <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest mb-1">Room Code</label>
         <input type="text" id="input-room-code" maxlength="4" placeholder="XXXX" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center font-mono-code font-black text-3xl uppercase tracking-widest text-emerald-400 focus:outline-none focus:border-emerald-500 transition">
@@ -277,6 +281,16 @@
     let logoTapTimer = null;
     let isVipHost = false;
 
+    function checkVipStatusOnLoad() {
+      try {
+        const token = localStorage.getItem('bad_data_vip_token');
+        const badge = document.getElementById('vip-active-indicator');
+        if (token === 'VIP_AUTHENTICATED_8282' && badge) {
+          badge.classList.remove('hidden');
+        }
+      } catch(e) {}
+    }
+
     function handleLogoTap() {
       logoTapCount++;
       if (logoTapTimer) clearTimeout(logoTapTimer);
@@ -290,30 +304,54 @@
     }
 
     function submitVipPin(e) {
-      e.preventDefault();
-      const pin = document.getElementById('input-vip-pin').value.trim();
+      if (e) e.preventDefault();
+      const input = document.getElementById('input-vip-pin');
+      const msg = document.getElementById('vip-pin-msg');
+      const pin = input ? input.value.trim() : '';
+
       if (pin === '8282') {
-        localStorage.setItem('bad_data_vip_token', 'VIP_AUTHENTICATED_8282');
-        alert('👑 Device Authorized as VIP Host!');
-        const modal = document.getElementById('vip-pin-modal');
-        if (modal) modal.classList.add('hidden');
+        try {
+          localStorage.setItem('bad_data_vip_token', 'VIP_AUTHENTICATED_8282');
+        } catch(err) {}
+        if (msg) {
+          msg.textContent = '✓ Device Authorized as VIP Host!';
+          msg.className = 'text-xs font-bold text-emerald-400 my-1';
+        }
+        const badge = document.getElementById('vip-active-indicator');
+        if (badge) badge.classList.remove('hidden');
+
+        setTimeout(() => {
+          const modal = document.getElementById('vip-pin-modal');
+          if (modal) modal.classList.add('hidden');
+        }, 1200);
       } else {
-        alert('Invalid VIP PIN.');
+        if (msg) {
+          msg.textContent = 'Invalid PIN. Try 8282';
+          msg.className = 'text-xs font-bold text-rose-400 my-1';
+        }
       }
     }
 
     function handleJoinSubmit(e) {
-      e.preventDefault();
-      const code = document.getElementById('input-room-code').value.toUpperCase().trim();
-      const nickname = document.getElementById('input-nickname').value.trim();
+      if (e) e.preventDefault();
+      const codeInput = document.getElementById('input-room-code');
+      const nickInput = document.getElementById('input-nickname');
+      const code = codeInput ? codeInput.value.toUpperCase().trim() : '';
+      const nickname = nickInput ? nickInput.value.trim() : '';
 
       if (!code || !nickname) return;
       currentRoomCode = code;
       playerNickname = nickname;
 
-      const vipToken = localStorage.getItem('bad_data_vip_token') || null;
+      let vipToken = null;
+      try {
+        vipToken = localStorage.getItem('bad_data_vip_token') || null;
+      } catch(err) {}
+
       socket.emit('join_room', { roomCode: code, nickname, vipToken });
     }
+
+    checkVipStatusOnLoad();
 
     function updateMobileGameModeDisplay(gameId) {
       const nameEl = document.getElementById('mobile-game-mode-name');
@@ -794,7 +832,8 @@
     <div class="glass-panel max-w-xs w-full p-5 rounded-2xl border border-amber-500/40 shadow-2xl text-center" onclick="event.stopPropagation();">
       <div class="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 font-bold flex items-center justify-center text-xl mx-auto mb-2">👑</div>
       <h3 class="text-base font-black text-white mb-1">VIP Host Authorization</h3>
-      <p class="text-[10px] text-slate-400 mb-3">Enter 4-digit Master Host PIN</p>
+      <p class="text-[10px] text-slate-400 mb-2">Enter 4-digit Master Host PIN</p>
+      <div id="vip-pin-msg" class="text-xs font-bold text-slate-400 my-1"></div>
       <form onsubmit="submitVipPin(event)" class="space-y-3">
         <input type="password" id="input-vip-pin" maxlength="4" placeholder="••••" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-center font-mono-code font-black text-2xl text-amber-400 focus:outline-none focus:border-amber-400">
         <button type="submit" class="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg transition">
