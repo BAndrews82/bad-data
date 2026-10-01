@@ -899,7 +899,7 @@
               osc.stop(t + 0.35);
             });
             return;
-          }
+          } else if (p === 'neon') {
             [180, 186].forEach(freq => {
               const osc = this.ctx.createOscillator();
               const gain = this.ctx.createGain();
@@ -985,6 +985,7 @@
     }
 
     const sfx = new SoundFX();
+    window.sfx = sfx;
     let socket;
     let roomCode = '';
     let ttsEnabled = false;

@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node test/simulate_game.js"
+    "test": "node test/simulate_game.js && node test/browser_test.js",
+    "test:browser": "node test/browser_test.js"
   },
   "dependencies": {
     "@bestcodes/edge-tts": "^3.0.1",
@@ -18,6 +19,7 @@
     "socket.io": "^4.7.5"
   },
   "devDependencies": {
+    "puppeteer": "^24.3.0",
     "socket.io-client": "^4.7.5"
   },
   "engines": {
