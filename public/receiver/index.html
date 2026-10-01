@@ -1130,12 +1130,36 @@
       setVoiceHostEnabled(!ttsEnabled);
     }
 
-    socket = io();
+    socket = io({
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 3000
+    });
+
+    function requestCreateRoom() {
+      if (socket && socket.connected && !roomCode) {
+        console.log('[Socket] TV Host requesting room creation:', socket.id);
+        socket.emit('create_room');
+      }
+    }
 
     socket.on('connect', () => {
       console.log('[Socket] TV Host connected:', socket.id);
-      socket.emit('create_room');
+      requestCreateRoom();
     });
+
+    if (socket && socket.connected) {
+      requestCreateRoom();
+    }
+
+    const roomRetryInterval = setInterval(() => {
+      if (!roomCode) {
+        requestCreateRoom();
+      } else {
+        clearInterval(roomRetryInterval);
+      }
+    }, 2500);
 
     socket.on('room_created', (data) => {
       roomCode = data.roomCode;
