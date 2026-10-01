@@ -625,6 +625,7 @@
       playCardSwoosh() {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
+        if (['midnight', 'subtle', 'dark'].includes(this.pack)) return;
         try {
           if (this.pack === 'halloween' && this.playBufferSound('swoosh')) return;
 
@@ -660,6 +661,7 @@
       playCardSlam() {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
+        if (['midnight', 'subtle', 'dark'].includes(this.pack)) return;
         try {
           if (this.pack === 'halloween' && this.playBufferSound('slam')) return;
 
@@ -714,6 +716,7 @@
       playQuestionChime() {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
+        if (['midnight', 'subtle', 'dark'].includes(this.pack)) return;
         try {
           if (this.pack === 'halloween' && this.playBufferSound('chime')) return;
 
@@ -761,13 +764,8 @@
             filterFreq = 6000;
             filterQ = 1.0;
             duration = 0.45;
-          } else { // midnight (default epic game show)
-            chordFreqs = [130.81, 196.00, 261.63, 329.63, 392.00, 493.88, 523.25];
-            wave1 = 'sawtooth';
-            wave2 = 'sine';
-            filterFreq = 4000;
-            filterQ = 2.5;
-            duration = 0.7;
+          } else {
+            return;
           }
 
           chordFreqs.forEach((freq, idx) => {
@@ -806,6 +804,7 @@
       playCashGainChime() {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
+        if (['midnight', 'subtle', 'dark'].includes(this.pack)) return;
         try {
           if (this.pack === 'halloween' && this.playBufferSound('cash')) return;
 
@@ -849,8 +848,8 @@
             chordFreqs = [440.00, 554.37, 659.25, 880.00, 1108.73, 1318.51];
           } else if (p === 'gameshow') {
             chordFreqs = [523.25, 659.25, 783.99, 1046.50, 1318.51, 2093.00];
-          } else { // midnight (default)
-            chordFreqs = [392.00, 493.88, 587.33, 783.99, 987.77, 1174.66];
+          } else {
+            return;
           }
 
           chordFreqs.forEach((freq, idx) => {
@@ -882,6 +881,7 @@
       playBadDataBuzzer() {
         if (!this.ctx) this.init();
         if (!this.ctx) return;
+        if (['midnight', 'subtle', 'dark'].includes(this.pack)) return;
         try {
           if (this.pack === 'halloween' && this.playBufferSound('buzzer')) return;
 
