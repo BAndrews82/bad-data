@@ -316,17 +316,21 @@ io.on('connection', (socket) => {
     if (!room) return;
 
     console.log(`[Room ${roomCode}] Selected Theme: ${themeId}`);
-    io.to(`host_${room.code}`).emit('theme_selected', { themeId: room.themeId });
-    io.to(`room_${room.code}`).emit('theme_selected', { themeId: room.themeId });
+    io.to(`host_${room.code}`).emit('theme_selected', { themeId: room.themeId, sfxPack: room.sfxPack });
+    io.to(`room_${room.code}`).emit('theme_selected', { themeId: room.themeId, sfxPack: room.sfxPack });
+    io.to(`host_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack, themeId: room.themeId });
+    io.to(`room_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack, themeId: room.themeId });
   });
 
   socket.on('select_sfx_pack', ({ roomCode, sfxPack }) => {
     const room = roomManager.selectSfxPack(roomCode, sfxPack);
     if (!room) return;
 
-    console.log(`[Room ${roomCode}] Selected SFX Pack: ${sfxPack}`);
-    io.to(`host_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack });
-    io.to(`room_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack });
+    console.log(`[Room ${roomCode}] Selected SFX Pack / Theme: ${sfxPack}`);
+    io.to(`host_${room.code}`).emit('theme_selected', { themeId: room.themeId, sfxPack: room.sfxPack });
+    io.to(`room_${room.code}`).emit('theme_selected', { themeId: room.themeId, sfxPack: room.sfxPack });
+    io.to(`host_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack, themeId: room.themeId });
+    io.to(`room_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack, themeId: room.themeId });
   });
 
   socket.on('set_tts_enabled', ({ roomCode, enabled }) => {

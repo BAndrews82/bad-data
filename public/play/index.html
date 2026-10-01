@@ -75,6 +75,24 @@
       color: #00ffff !important;
       text-shadow: 0 0 8px rgba(0, 255, 255, 0.7) !important;
     }
+    body.theme-matrix #player-room-text,
+    body.theme-matrix #input-room-code {
+      color: #00ff66 !important;
+      -webkit-text-fill-color: #00ff66 !important;
+      background: none !important;
+      -webkit-background-clip: unset !important;
+      background-clip: unset !important;
+      text-shadow: 0 0 10px rgba(0, 255, 102, 0.9) !important;
+      font-weight: 900 !important;
+    }
+    body.theme-matrix .bg-clip-text {
+      background: linear-gradient(135deg, #00ff66 0%, #00ffff 100%) !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      color: transparent !important;
+      border: none !important;
+    }
     body.theme-gameshow {
       background: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #0f172a 60%, #020617 100%);
     }
@@ -173,9 +191,9 @@
           <span class="text-[9px] text-amber-400 font-bold bg-amber-500/20 px-1.5 py-0.5 rounded">VIP Host</span>
         </div>
 
-        <!-- Visual Theme Selector -->
+        <!-- Unified Visual & Audio Theme Selector -->
         <div class="flex items-center justify-between text-[10px]">
-          <span class="font-bold text-slate-300">🎨 Visual Theme</span>
+          <span class="font-bold text-slate-300">🎨 Theme & Audio</span>
           <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 font-bold flex-wrap justify-end">
             <button id="mobile-theme-midnight" onclick="event.stopPropagation(); selectThemeMobile('midnight');" class="px-2 py-0.5 rounded bg-indigo-600 text-white cursor-pointer font-black shadow">🌙 Dark</button>
             <button id="mobile-theme-neon" onclick="event.stopPropagation(); selectThemeMobile('neon');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">⚡ Neon</button>
@@ -183,17 +201,6 @@
             <button id="mobile-theme-gameshow" onclick="event.stopPropagation(); selectThemeMobile('gameshow');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">🎰 Studio</button>
             <button id="mobile-theme-halloween" onclick="event.stopPropagation(); selectThemeMobile('halloween');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">🎃 Spooky</button>
             <button id="mobile-theme-retro" onclick="event.stopPropagation(); selectThemeMobile('retro');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">🕹️ 8-Bit</button>
-          </div>
-        </div>
-
-        <!-- Sound Effects Pack Selector -->
-        <div class="flex items-center justify-between text-[10px]">
-          <span class="font-bold text-slate-300">🔊 SFX Pack</span>
-          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 font-bold">
-            <button id="mobile-sfx-gameshow" onclick="event.stopPropagation(); selectSfxPackMobile('game_show');" class="px-2 py-0.5 rounded bg-indigo-600 text-white cursor-pointer font-black shadow">🕹️ Modern</button>
-            <button id="mobile-sfx-retro" onclick="event.stopPropagation(); selectSfxPackMobile('retro');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">👾 Retro</button>
-            <button id="mobile-sfx-subtle" onclick="event.stopPropagation(); selectSfxPackMobile('subtle');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">🎵 Subtle</button>
-            <button id="mobile-sfx-halloween" onclick="event.stopPropagation(); selectSfxPackMobile('halloween');" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">🎃 Spooky</button>
           </div>
         </div>
 

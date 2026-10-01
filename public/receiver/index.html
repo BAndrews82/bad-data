@@ -157,11 +157,33 @@
       border: 1px solid #00ff66 !important;
       box-shadow: 0 0 15px rgba(0, 255, 102, 0.5) !important;
     }
-    body.theme-matrix .bg-gradient-to-tr,
-    body.theme-matrix .bg-gradient-to-r,
-    body.theme-matrix .bg-gradient-to-br {
+    body.theme-matrix .bg-gradient-to-tr:not(.bg-clip-text),
+    body.theme-matrix .bg-gradient-to-r:not(.bg-clip-text),
+    body.theme-matrix .bg-gradient-to-br:not(.bg-clip-text) {
       background: linear-gradient(135deg, rgba(0,40,15,0.95) 0%, rgba(0,20,8,0.95) 100%) !important;
       border: 1.5px solid #00ff66 !important;
+    }
+    body.theme-matrix #room-code-display,
+    body.theme-matrix #mini-code-text {
+      color: #00ff66 !important;
+      -webkit-text-fill-color: #00ff66 !important;
+      background: none !important;
+      -webkit-background-clip: unset !important;
+      background-clip: unset !important;
+      border: none !important;
+      text-shadow: 0 0 15px rgba(0, 255, 102, 0.9), 0 0 30px rgba(0, 255, 102, 0.6) !important;
+      filter: none !important;
+      font-weight: 900 !important;
+    }
+    body.theme-matrix .bg-clip-text {
+      background: linear-gradient(135deg, #00ff66 0%, #00ffff 100%) !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      color: transparent !important;
+      border: none !important;
+      text-shadow: none !important;
+      filter: drop-shadow(0 0 10px rgba(0, 255, 102, 0.5)) !important;
     }
     body.theme-gameshow {
       background: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #0f172a 50%, #020617 100%) !important;
@@ -548,7 +570,7 @@
     class SoundFX {
       constructor() {
         this.ctx = null;
-        this.pack = 'game_show'; // 'game_show', 'retro', 'subtle', 'halloween'
+        this.pack = 'midnight'; // 'midnight', 'neon', 'matrix', 'gameshow', 'halloween', 'retro'
         this.spookyBuffers = {};
       }
       init() {
@@ -594,8 +616,10 @@
         return false;
       }
       setPack(packId) {
-        if (['game_show', 'retro', 'subtle', 'halloween'].includes(packId)) {
-          this.pack = packId;
+        const aliasMap = { game_show: 'gameshow', subtle: 'midnight' };
+        const target = aliasMap[packId] || packId || 'midnight';
+        if (['midnight', 'neon', 'matrix', 'gameshow', 'halloween', 'retro'].includes(target)) {
+          this.pack = target;
         }
       }
       playCardSwoosh() {
@@ -605,24 +629,28 @@
           if (this.pack === 'halloween' && this.playBufferSound('swoosh')) return;
 
           const t = this.ctx.currentTime;
-          const bufferSize = Math.floor(this.ctx.sampleRate * 0.15);
+          const isMatrix = (this.pack === 'matrix');
+          const isNeon = (this.pack === 'neon');
+          const isRetro = (this.pack === 'retro');
+
+          const bufferSize = Math.floor(this.ctx.sampleRate * (isMatrix ? 0.18 : (isRetro ? 0.08 : 0.15)));
           const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
           const data = buffer.getChannelData(0);
           for (let i = 0; i < bufferSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * (isMatrix ? 0.2 : 0.3)));
           }
           const noise = this.ctx.createBufferSource();
           noise.buffer = buffer;
 
           const filter = this.ctx.createBiquadFilter();
           filter.type = 'bandpass';
-          filter.frequency.setValueAtTime(400, t);
-          filter.frequency.exponentialRampToValueAtTime(2200, t + 0.12);
-          filter.Q.setValueAtTime(3.0, t);
+          filter.frequency.setValueAtTime(isMatrix ? 800 : (isNeon ? 300 : 400), t);
+          filter.frequency.exponentialRampToValueAtTime(isMatrix ? 5500 : (isNeon ? 2800 : 2200), t + 0.12);
+          filter.Q.setValueAtTime(isMatrix ? 6.0 : 3.0, t);
 
           const gain = this.ctx.createGain();
-          gain.gain.setValueAtTime(0.35, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+          gain.gain.setValueAtTime(isMatrix ? 0.45 : 0.35, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + (isMatrix ? 0.18 : 0.15));
 
           noise.connect(filter);
           filter.connect(gain);
@@ -637,12 +665,15 @@
           if (this.pack === 'halloween' && this.playBufferSound('slam')) return;
 
           const t = this.ctx.currentTime;
+          const isMatrix = (this.pack === 'matrix');
+          const isNeon = (this.pack === 'neon');
+
           const subOsc = this.ctx.createOscillator();
           const subGain = this.ctx.createGain();
-          subOsc.type = 'sine';
-          subOsc.frequency.setValueAtTime(90, t);
-          subOsc.frequency.exponentialRampToValueAtTime(30, t + 0.35);
-          subGain.gain.setValueAtTime(0.6, t);
+          subOsc.type = isMatrix ? 'sawtooth' : 'sine';
+          subOsc.frequency.setValueAtTime(isMatrix ? 140 : (isNeon ? 100 : 90), t);
+          subOsc.frequency.exponentialRampToValueAtTime(isMatrix ? 20 : (isNeon ? 30 : 30), t + 0.35);
+          subGain.gain.setValueAtTime(isMatrix ? 0.7 : 0.6, t);
           subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
 
           subOsc.connect(subGain);
@@ -674,13 +705,70 @@
           if (this.pack === 'halloween' && this.playBufferSound('chime')) return;
 
           const t = this.ctx.currentTime;
-          const isRetro = (this.pack === 'retro');
-          const isSubtle = (this.pack === 'subtle');
+          const p = this.pack;
 
-          const notes = isRetro ? [261.63, 329.63, 392.00, 523.25, 659.25] : (isSubtle ? [440, 554.37, 659.25] : [523.25, 659.25, 783.99, 1046.50]);
-          const waveType = isRetro ? 'square' : 'sine';
-          const step = isRetro ? 0.05 : (isSubtle ? 0.12 : 0.08);
-          const duration = isRetro ? 0.18 : (isSubtle ? 0.45 : 0.35);
+          if (p === 'matrix') {
+            // Cyberpunk digital terminal chime
+            const notes = [523.25, 783.99, 1046.50, 1567.98, 2093.00];
+            notes.forEach((freq, idx) => {
+              const startTime = t + (idx * 0.04);
+              const osc1 = this.ctx.createOscillator();
+              const osc2 = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              const filter = this.ctx.createBiquadFilter();
+
+              osc1.type = 'sawtooth';
+              osc1.frequency.setValueAtTime(freq, startTime);
+
+              osc2.type = 'square';
+              osc2.frequency.setValueAtTime(freq * 2.01, startTime);
+
+              filter.type = 'bandpass';
+              filter.frequency.setValueAtTime(freq * 2, startTime);
+              filter.Q.setValueAtTime(5.0, startTime);
+
+              gain.gain.setValueAtTime(0.25, startTime);
+              gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15);
+
+              osc1.connect(filter);
+              osc2.connect(filter);
+              filter.connect(gain);
+              gain.connect(this.ctx.destination);
+
+              osc1.start(startTime);
+              osc2.start(startTime);
+              osc1.stop(startTime + 0.15);
+              osc2.stop(startTime + 0.15);
+            });
+            return;
+          }
+
+          let notes, waveType, step, duration, gainVal;
+          if (p === 'neon') {
+            notes = [440, 554.37, 659.25, 880];
+            waveType = 'sine';
+            step = 0.08;
+            duration = 0.4;
+            gainVal = 0.22;
+          } else if (p === 'retro') {
+            notes = [261.63, 329.63, 392.00, 523.25, 659.25];
+            waveType = 'square';
+            step = 0.05;
+            duration = 0.18;
+            gainVal = 0.2;
+          } else if (p === 'gameshow') {
+            notes = [523.25, 659.25, 783.99, 1046.50];
+            waveType = 'sine';
+            step = 0.07;
+            duration = 0.35;
+            gainVal = 0.25;
+          } else { // midnight (default)
+            notes = [440, 554.37, 659.25];
+            waveType = 'sine';
+            step = 0.12;
+            duration = 0.45;
+            gainVal = 0.18;
+          }
 
           notes.forEach((freq, idx) => {
             const startTime = t + (idx * step);
@@ -688,7 +776,7 @@
             const gain = this.ctx.createGain();
             osc.type = waveType;
             osc.frequency.setValueAtTime(freq, startTime);
-            gain.gain.setValueAtTime(isSubtle ? 0.15 : (isRetro ? 0.2 : 0.25), startTime);
+            gain.gain.setValueAtTime(gainVal, startTime);
             gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
@@ -704,12 +792,58 @@
           if (this.pack === 'halloween' && this.playBufferSound('cash')) return;
 
           const t = this.ctx.currentTime;
-          const isRetro = (this.pack === 'retro');
-          const isSubtle = (this.pack === 'subtle');
+          const p = this.pack;
 
-          const notes = isRetro ? [523.25, 659.25, 783.99, 1046.50, 1318.51] : (isSubtle ? [523.25, 659.25, 783.99] : [1046.50, 1318.51, 1567.98, 2093.00]);
-          const waveType = isRetro ? 'square' : 'sine';
-          const step = isRetro ? 0.04 : 0.06;
+          if (p === 'matrix') {
+            // Cyber hack credit payout
+            const notes = [783.99, 1046.50, 1318.51, 1567.98, 2093.00, 2637.02];
+            notes.forEach((freq, idx) => {
+              const startTime = t + (idx * 0.025);
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              const filter = this.ctx.createBiquadFilter();
+
+              osc.type = 'square';
+              osc.frequency.setValueAtTime(freq, startTime);
+
+              filter.type = 'highpass';
+              filter.frequency.setValueAtTime(1200, startTime);
+
+              gain.gain.setValueAtTime(0.22, startTime);
+              gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.18);
+
+              osc.connect(filter);
+              filter.connect(gain);
+              gain.connect(this.ctx.destination);
+
+              osc.start(startTime);
+              osc.stop(startTime + 0.18);
+            });
+            return;
+          }
+
+          let notes, waveType, step, gainVal;
+          if (p === 'neon') {
+            notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+            waveType = 'sine';
+            step = 0.05;
+            gainVal = 0.25;
+          } else if (p === 'retro') {
+            notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+            waveType = 'square';
+            step = 0.04;
+            gainVal = 0.2;
+          } else if (p === 'gameshow') {
+            notes = [1046.50, 1318.51, 1567.98, 2093.00];
+            waveType = 'sine';
+            step = 0.05;
+            gainVal = 0.28;
+          } else { // midnight (default)
+            notes = [523.25, 659.25, 783.99];
+            waveType = 'sine';
+            step = 0.06;
+            gainVal = 0.18;
+          }
 
           notes.forEach((freq, idx) => {
             const startTime = t + (idx * step);
@@ -717,7 +851,7 @@
             const gain = this.ctx.createGain();
             osc.type = waveType;
             osc.frequency.setValueAtTime(freq, startTime);
-            gain.gain.setValueAtTime(isSubtle ? 0.15 : 0.25, startTime);
+            gain.gain.setValueAtTime(gainVal, startTime);
             gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
@@ -733,10 +867,53 @@
           if (this.pack === 'halloween' && this.playBufferSound('buzzer')) return;
 
           const t = this.ctx.currentTime;
-          const isRetro = (this.pack === 'retro');
-          const isSubtle = (this.pack === 'subtle');
+          const p = this.pack;
 
-          if (isRetro) {
+          if (p === 'matrix') {
+            // Glitchy Cyber Memory Error Buzz
+            [220, 227].forEach(freq => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              const lfo = this.ctx.createOscillator();
+              const lfoGain = this.ctx.createGain();
+
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(freq, t);
+              osc.frequency.exponentialRampToValueAtTime(30, t + 0.35);
+
+              // LFO frequency modulation for cyber glitch effect
+              lfo.type = 'square';
+              lfo.frequency.setValueAtTime(45, t);
+              lfoGain.gain.setValueAtTime(80, t);
+              lfo.connect(osc.frequency);
+
+              gain.gain.setValueAtTime(0.35, t);
+              gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+
+              lfo.start(t);
+              osc.start(t);
+              lfo.stop(t + 0.35);
+              osc.stop(t + 0.35);
+            });
+            return;
+          }
+            [180, 186].forEach(freq => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(freq, t);
+              osc.frequency.exponentialRampToValueAtTime(45, t + 0.3);
+              gain.gain.setValueAtTime(0.28, t);
+              gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start(t);
+              osc.stop(t + 0.3);
+            });
+          } else if (p === 'retro') {
             [160, 120, 80].forEach((freq, idx) => {
               const osc = this.ctx.createOscillator();
               const gain = this.ctx.createGain();
@@ -749,7 +926,7 @@
               osc.start(t + (idx * 0.08));
               osc.stop(t + (idx * 0.08) + 0.1);
             });
-          } else if (isSubtle) {
+          } else if (p === 'midnight') {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
             osc.type = 'sine';
@@ -761,7 +938,7 @@
             gain.connect(this.ctx.destination);
             osc.start(t);
             osc.stop(t + 0.25);
-          } else {
+          } else { // gameshow
             [130, 138].forEach(freq => {
               const osc = this.ctx.createOscillator();
               const gain = this.ctx.createGain();
@@ -1253,6 +1430,8 @@
     function selectTheme(themeId, emitSocket = true) {
       selectedThemeId = themeId || 'midnight';
       document.body.className = `h-full w-full flex flex-col justify-between relative theme-${selectedThemeId}`;
+
+      sfx.setPack(selectedThemeId);
 
       stopMatrixRain();
       stopEerieFog();
