@@ -10,8 +10,8 @@ services:
       - .env
     environment:
       - PORT=3000
-      - HOST_IP=${HOST_IP:-}
-      - BASE_URL=${BASE_URL:-}
+      - HOST_IP=${HOST_IP:-192.168.86.36}
+      - BASE_URL=${BASE_URL:-http://192.168.86.36:3000}
       - TTS_PROVIDER=${TTS_PROVIDER:-kokoro}
       - KOKORO_TTS_URL=http://kokoro-tts:8880
       - KOKORO_VOICE=${KOKORO_VOICE:-am_michael}

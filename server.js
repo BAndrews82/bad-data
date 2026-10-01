@@ -30,11 +30,14 @@ function getLocalIp() {
   for (const name of Object.keys(interfaces)) {
     for (const net of interfaces[name]) {
       if (net.family === 'IPv4' && !net.internal) {
+        if (net.address.startsWith('172.17.') || net.address.startsWith('172.18.') || net.address.startsWith('172.19.') || net.address.startsWith('172.20.')) {
+          continue;
+        }
         return net.address;
       }
     }
   }
-  return 'localhost';
+  return '192.168.86.36';
 }
 
 const hostIp = getLocalIp();
