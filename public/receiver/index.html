@@ -564,7 +564,27 @@
         🎮 START NEW GAME ➔
       </button>
     </div>
-  </section>
+  <!-- VIP Roast TV Overlay Banner -->
+  <div id="vip-roast-overlay" class="hidden fixed top-10 left-10 right-10 z-50 glass-panel p-6 rounded-3xl border-2 border-amber-500 bg-amber-950/95 shadow-2xl text-center transform transition-all duration-500 scale-95 opacity-0">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/30 border border-amber-400 text-amber-300 font-black text-xs uppercase tracking-widest mb-2 shadow animate-pulse">
+      🔥 VIP ROAST BOMB
+    </div>
+    <h3 class="text-3xl font-black text-white mb-2">
+      Targeting: <span id="vip-roast-target-name" class="text-amber-400">Player</span>
+    </h3>
+    <p id="vip-roast-text-body" class="text-xl text-amber-100 font-bold italic max-w-3xl mx-auto">
+      "AI Roast..."
+    </p>
+  </div>
+
+  <!-- VIP CRT Glitch Overlay -->
+  <div id="vip-glitch-overlay" class="hidden fixed inset-0 z-50 pointer-events-none bg-emerald-500/20 mix-blend-difference backdrop-invert animate-pulse">
+    <div class="w-full h-full flex items-center justify-center">
+      <div class="text-5xl font-mono-code font-black text-emerald-400 tracking-widest uppercase animate-ping">
+        SYSTEM HAXXED // VIP SABOTAGE
+      </div>
+    </div>
+  </div>
 
   <script>
     class SoundFX {
@@ -1502,6 +1522,46 @@
           <span class="font-mono-code font-black text-purple-400">${p.score} pts</span>
         </div>
       `).join('');
+    });
+
+    socket.on('vip_roast_broadcast', (data) => {
+      const overlay = document.getElementById('vip-roast-overlay');
+      const nameEl = document.getElementById('vip-roast-target-name');
+      const textEl = document.getElementById('vip-roast-text-body');
+
+      if (overlay && nameEl && textEl) {
+        nameEl.textContent = data.targetNickname || 'Player';
+        textEl.textContent = `"${data.roastText || ''}"`;
+
+        overlay.classList.remove('hidden');
+        setTimeout(() => {
+          overlay.classList.remove('opacity-0', 'scale-95');
+          overlay.classList.add('opacity-100', 'scale-100');
+        }, 50);
+
+        sfx.playBadDataBuzzer();
+
+        if (data.ttsAudio && ttsToggleBtn && ttsToggleBtn.dataset.enabled === 'true') {
+          playTtsAudioStream(data.ttsAudio);
+        }
+
+        setTimeout(() => {
+          overlay.classList.remove('opacity-100', 'scale-100');
+          overlay.classList.add('opacity-0', 'scale-95');
+          setTimeout(() => overlay.classList.add('hidden'), 500);
+        }, 7000);
+      }
+    });
+
+    socket.on('vip_glitch_broadcast', (data) => {
+      const glitchOverlay = document.getElementById('vip-glitch-overlay');
+      if (glitchOverlay) {
+        glitchOverlay.classList.remove('hidden');
+        sfx.playBadDataBuzzer();
+        setTimeout(() => {
+          glitchOverlay.classList.add('hidden');
+        }, data.durationMs || 2500);
+      }
     });
 
     socket.on('game_over', (data) => {

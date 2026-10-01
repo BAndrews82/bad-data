@@ -545,6 +545,64 @@ io.on('connection', (socket) => {
     io.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
   });
 
+  socket.on('vip_roast_player', async ({ roomCode, targetNickname }) => {
+    const room = roomManager.getRoom(roomCode);
+    if (!room || !targetNickname) return;
+
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    if (!isAuth) return;
+
+    const now = Date.now();
+    if (room.lastVipRoastTime && (now - room.lastVipRoastTime < 15000)) {
+      return socket.emit('vip_action_cooldown', { message: 'Roast cannon cooling down! (15s limit)' });
+    }
+    room.lastVipRoastTime = now;
+
+    const targetPlayer = room.players ? room.players.find(p => p.nickname === targetNickname) : null;
+    const score = targetPlayer ? targetPlayer.score : 0;
+    const sorted = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
+    const rankIndex = sorted.findIndex(p => p.nickname === targetNickname);
+    const rank = (rankIndex !== -1) ? (rankIndex + 1) : 1;
+
+    console.log(`[VIP Roast] Targeted player "${targetNickname}" in room ${roomCode}`);
+
+    const roastText = await AiRoaster.generateTargetRoast({ targetNickname, score, rank });
+    let ttsAudio = '';
+    try {
+      ttsAudio = await getOrSynthesizeTts(roastText);
+    } catch(e) {}
+
+    io.to(`host_${roomCode}`).emit('vip_roast_broadcast', {
+      targetNickname,
+      roastText,
+      ttsAudio
+    });
+
+    io.to(`room_${roomCode}`).emit('vip_roast_toast', {
+      targetNickname,
+      roastText
+    });
+  });
+
+  socket.on('vip_glitch_bomb', ({ roomCode }) => {
+    const room = roomManager.getRoom(roomCode);
+    if (!room) return;
+
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    if (!isAuth) return;
+
+    const now = Date.now();
+    if (room.lastVipGlitchTime && (now - room.lastVipGlitchTime < 20000)) {
+      return socket.emit('vip_action_cooldown', { message: 'Glitch bomb cooling down! (20s limit)' });
+    }
+    room.lastVipGlitchTime = now;
+
+    console.log(`[VIP Glitch] Launched glitch bomb in room ${roomCode}`);
+
+    io.to(`host_${roomCode}`).emit('vip_glitch_broadcast', { durationMs: 2500 });
+    io.to(`room_${roomCode}`).emit('vip_glitch_toast', { durationMs: 2500 });
+  });
+
   socket.on('reset_to_lobby', ({ roomCode }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room) return;

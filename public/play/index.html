@@ -647,13 +647,58 @@
       showScreen('screen-lobby');
     });
 
+    let currentRoster = [];
+
     function addBotPlayersMobile() {
       if (!currentRoomCode) return;
       if (navigator.vibrate) navigator.vibrate(40);
       socket.emit('add_bot_players', { roomCode: currentRoomCode, count: 2 });
     }
 
+    function openVipRoastModal() {
+      if (!currentRoomCode) return;
+      const modal = document.getElementById('vip-roast-modal');
+      const listEl = document.getElementById('vip-roast-player-list');
+      if (!modal || !listEl) return;
+
+      if (!currentRoster || currentRoster.length === 0) {
+        listEl.innerHTML = `<div class="text-xs text-slate-400 py-2">No players connected yet.</div>`;
+      } else {
+        listEl.innerHTML = currentRoster.map(p => `
+          <button onclick="executeVipTargetRoast('${p.nickname.replace(/'/g, "\\'")}')" class="w-full py-2 px-3 rounded-xl bg-slate-900 border border-amber-500/30 hover:border-amber-400 flex items-center justify-between text-white font-bold text-xs transition cursor-pointer btn-tactile">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${p.color}"></span>
+              <span>${p.nickname}</span>
+            </div>
+            <span class="text-amber-400 font-black">🔥 ROAST</span>
+          </button>
+        `).join('');
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function executeVipTargetRoast(targetNickname) {
+      if (!currentRoomCode || !targetNickname) return;
+      if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+      socket.emit('vip_roast_player', { roomCode: currentRoomCode, targetNickname });
+      document.getElementById('vip-roast-modal').classList.add('hidden');
+    }
+
+    function triggerVipGlitchBomb() {
+      if (!currentRoomCode) return;
+      if (navigator.vibrate) navigator.vibrate([100, 30, 100]);
+      socket.emit('vip_glitch_bomb', { roomCode: currentRoomCode });
+    }
+
+    socket.on('vip_action_cooldown', (data) => {
+      alert(data.message || 'VIP action on cooldown!');
+    });
+
     socket.on('roster_update', (data) => {
+      if (data.players) {
+        currentRoster = data.players;
+      }
       const rosterList = document.getElementById('mobile-roster-list');
       if (rosterList && data.players) {
         rosterList.innerHTML = data.players.map(p => `
@@ -1027,15 +1072,33 @@
 
   <!-- VIP Host Controls Drawer (Visible ONLY to VIP Phone) -->
   <div id="vip-controls-drawer" class="hidden fixed bottom-2 left-2 right-2 z-50 glass-panel p-2 rounded-2xl border border-amber-500/50 shadow-2xl bg-slate-950/90 text-center">
-    <div class="flex items-center justify-between gap-1 text-[10px] font-black">
-      <button onclick="triggerMobileNextRound()" class="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow cursor-pointer btn-tactile">
-        ⏩ NEXT ROUND
+    <div class="grid grid-cols-4 gap-1 text-[10px] font-black">
+      <button onclick="triggerMobileNextRound()" class="py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow cursor-pointer btn-tactile">
+        ⏩ NEXT
       </button>
-      <button onclick="triggerMobileEndGame()" class="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white shadow cursor-pointer btn-tactile">
-        🛑 END GAME
+      <button id="vip-roast-btn" onclick="openVipRoastModal()" class="py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white shadow cursor-pointer btn-tactile">
+        🔥 ROAST
       </button>
-      <button onclick="addBotPlayersMobile()" class="flex-1 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white shadow cursor-pointer btn-tactile">
-        🤖 +2 BOTS
+      <button id="vip-glitch-btn" onclick="triggerVipGlitchBomb()" class="py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white shadow cursor-pointer btn-tactile">
+        💥 GLITCH
+      </button>
+      <button onclick="triggerMobileEndGame()" class="py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white shadow cursor-pointer btn-tactile">
+        🛑 END
+      </button>
+    </div>
+  </div>
+
+  <!-- VIP Target Player Roast Modal -->
+  <div id="vip-roast-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onclick="document.getElementById('vip-roast-modal').classList.add('hidden');">
+    <div class="glass-panel max-w-xs w-full p-5 rounded-2xl border border-amber-500/40 shadow-2xl text-center" onclick="event.stopPropagation();">
+      <div class="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 font-bold flex items-center justify-center text-xl mx-auto mb-2">🔥</div>
+      <h3 class="text-base font-black text-white mb-1">Target Player Roast Cannon</h3>
+      <p class="text-[10px] text-slate-400 mb-3">Select a player to launch a live AI roast on the TV speaker:</p>
+      <div id="vip-roast-player-list" class="space-y-1.5 max-h-48 overflow-y-auto mb-3">
+        <!-- Dynamically populated -->
+      </div>
+      <button onclick="document.getElementById('vip-roast-modal').classList.add('hidden');" class="w-full py-1.5 rounded-xl bg-slate-800 text-slate-400 text-xs font-bold hover:text-white">
+        Cancel
       </button>
     </div>
   </div>
