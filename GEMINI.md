@@ -19,6 +19,7 @@ Comprehensive guide to the architecture, infrastructure, neural TTS voice engine
 | **Google TV Device (`den tv`)** | `192.168.86.31` (ADB port `5555`) | Smart TV / Android TV OS 11+ |
 | **TV Receiver Display URL** | `http://192.168.86.36:3000/receiver/` | Main TV Game Show View |
 | **Mobile Play URL** | `http://192.168.86.36:3000/play/` | Mobile Phone Player Controller |
+| **Docker Network Config** | `HOST_IP=192.168.86.36` | Prevents QR codes from defaulting to internal `172.18.0.x` bridge subnets |
 | **GitHub Repository** | `https://github.com/BAndrews82/bad-data.git` | Main Code Base & CI/CD Pipeline |
 
 ---
@@ -62,6 +63,10 @@ All services run inside LXC 104 via Docker Compose (`docker-compose.yml`):
 * **Dual-Voice Host Personalities**:
   * **Announcer Voice (`am_michael`)**: Clear, professional game show host voice for reading trivia questions and correct options.
   * **Witty Co-Host Voice (`bm_george`)**: Articulate, sarcastic British male co-host voice specifically for smart trivia topic commentary.
+* **Unified Themes & Audio Invariants**:
+  * Visual themes and sound packs are unified 1:1 across `RoomManager.js` and `public/receiver/index.html`.
+  * **Dark / Midnight Theme (`midnight`)**: Sounds are **100% OFF / Muted** by default.
+  * **Matrix Theme (`matrix`)**: Cyberpunk synth SFX + explicit `#00ff66 !important` room code fill (`-webkit-text-fill-color: #00ff66 !important; background: none !important;`) to prevent background clipping transparency issues.
 * **No-Robotic-Fallback Protection**:
   * Neural Kokoro voices (`am_`, `bm_`, `af_`, `bf_`) are strictly synthesized via Kokoro-82M. They do NOT fall back to 22kHz Piper C++ voices to prevent robotic voice artifacts.
 * **Dynamic Audio Concatenation (`evaluateAndReveal()`)**:
