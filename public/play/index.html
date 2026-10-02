@@ -424,12 +424,16 @@
     function submitVipPin(e) {
       if (e) e.preventDefault();
       const input = document.getElementById('input-vip-pin');
-      const msg = document.getElementById('vip-pin-msg');
       const pin = input ? input.value.trim() : '';
+      if (!pin) return;
+      socket.emit('verify_vip_pin', { pin });
+    }
 
-      if (pin === '8282') {
+    socket.on('vip_pin_result', (data) => {
+      const msg = document.getElementById('vip-pin-msg');
+      if (data.success && data.vipToken) {
         try {
-          localStorage.setItem('bad_data_vip_token', 'VIP_AUTHENTICATED_8282');
+          localStorage.setItem('bad_data_vip_token', data.vipToken);
         } catch(err) {}
         if (msg) {
           msg.textContent = '✓ Device Authorized as VIP Host!';
@@ -444,11 +448,11 @@
         }, 1200);
       } else {
         if (msg) {
-          msg.textContent = 'Invalid PIN. Try 8282';
+          msg.textContent = data.message || 'Invalid PIN!';
           msg.className = 'text-xs font-bold text-rose-400 my-1';
         }
       }
-    }
+    });
 
     function handleJoinSubmit(e) {
       if (e) e.preventDefault();
@@ -468,6 +472,53 @@
 
       socket.emit('join_room', { roomCode: code, nickname, vipToken });
     }
+
+    socket.on('connect', () => {
+      try {
+        const lastRoom = localStorage.getItem('bad_data_last_room');
+        if (lastRoom) {
+          const token = localStorage.getItem(`bad_data_session_${lastRoom}`);
+          if (token && lastRoom) {
+            socket.emit('reconnect_player', { roomCode: lastRoom, sessionToken: token });
+          }
+        }
+      } catch(e) {}
+    });
+
+    socket.on('reconnected_successfully', (data) => {
+      currentRoomCode = data.roomCode;
+      playerNickname = data.nickname;
+      playerColor = data.color;
+      isVipHost = Boolean(data.isVip);
+
+      document.getElementById('mobile-header').classList.remove('hidden');
+      document.getElementById('player-avatar-badge').style.backgroundColor = playerColor;
+
+      const nickText = document.getElementById('player-nickname-text');
+      if (nickText) {
+        nickText.innerHTML = isVipHost ? `${data.nickname} <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-black border border-amber-500/40">👑 VIP HOST</span>` : data.nickname;
+      }
+
+      document.getElementById('player-room-text').textContent = data.roomCode;
+      if (data.selectedGameId) updateMobileGameModeDisplay(data.selectedGameId);
+      if (data.themeId) updateMobileTheme(data.themeId);
+
+      const vipDrawer = document.getElementById('vip-controls-drawer');
+      if (vipDrawer) vipDrawer.classList.toggle('hidden', !isVipHost);
+
+      const vipCard = document.getElementById('mobile-vip-settings-card');
+      if (vipCard) vipCard.classList.toggle('hidden', !isVipHost);
+
+      if (data.status === 'LOBBY') {
+        showScreen('screen-lobby');
+      }
+    });
+
+    socket.on('reconnect_error', () => {
+      try {
+        localStorage.removeItem('bad_data_last_room');
+      } catch(e) {}
+    });
 
     checkVipStatusOnLoad();
 
@@ -498,6 +549,14 @@
     socket.on('joined_successfully', (data) => {
       playerColor = data.color;
       isVipHost = Boolean(data.isVip);
+
+      if (data.sessionToken && data.roomCode) {
+        try {
+          localStorage.setItem(`bad_data_session_${data.roomCode}`, data.sessionToken);
+          localStorage.setItem('bad_data_last_room', data.roomCode);
+        } catch(e) {}
+      }
+
       document.getElementById('mobile-header').classList.remove('hidden');
       document.getElementById('player-avatar-badge').style.backgroundColor = playerColor;
       

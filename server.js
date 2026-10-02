@@ -357,11 +357,26 @@ io.on('connection', (socket) => {
     io.to(`room_${room.code}`).emit('popular_vote_toggled', { popularVoteEnabled: room.popularVoteEnabled });
   });
 
+  socket.on('verify_vip_pin', ({ pin }) => {
+    const targetPin = process.env.VIP_PIN || '8282';
+    const targetToken = process.env.VIP_TOKEN || 'VIP_AUTHENTICATED_8282';
+    if (String(pin).trim() === targetPin) {
+      socket.emit('vip_pin_result', { success: true, vipToken: targetToken });
+    } else {
+      socket.emit('vip_pin_result', { success: false, message: 'Invalid VIP Host PIN!' });
+    }
+  });
+
   socket.on('add_bot_players', ({ roomCode, count }) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || room.status !== 'LOBBY') return;
 
-    const numToAdd = count || 2;
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    if (!isAuth) {
+      return socket.emit('error_message', { message: 'Only host or VIP can add bot players.' });
+    }
+
+    const numToAdd = Math.min(count || 2, 8);
     for (let i = 0; i < numToAdd; i++) {
       const result = roomManager.addBotPlayer(roomCode);
       if (result) {
@@ -386,9 +401,37 @@ io.on('connection', (socket) => {
       roomCode: room.code,
       nickname: player.nickname,
       color: player.color,
+      sessionToken: player.sessionToken,
       selectedGameId: room.selectedGameId,
       themeId: room.themeId || 'midnight',
       isVip: Boolean(player.isVip)
+    });
+
+    io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
+  });
+
+  socket.on('reconnect_player', ({ roomCode, sessionToken }) => {
+    const result = roomManager.reconnectPlayer(roomCode, sessionToken, socket.id);
+    if (!result) {
+      return socket.emit('reconnect_error', { message: 'Session expired or room unavailable.' });
+    }
+
+    const { room, player } = result;
+    socket.join(`room_${room.code}`);
+
+    console.log(`[Room ${room.code}] Player '${player.nickname}' reconnected successfully.`);
+
+    socket.emit('reconnected_successfully', {
+      roomCode: room.code,
+      nickname: player.nickname,
+      color: player.color,
+      sessionToken: player.sessionToken,
+      score: player.score,
+      status: room.status,
+      selectedGameId: room.selectedGameId,
+      themeId: room.themeId || 'midnight',
+      isVip: Boolean(player.isVip),
+      hand: player.hand || []
     });
 
     io.to(`host_${room.code}`).emit('roster_update', { players: room.players });

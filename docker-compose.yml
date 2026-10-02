@@ -20,6 +20,7 @@ services:
       - PIPER_VOICE=${PIPER_VOICE:-en_US-ryan-high}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - AI_PROVIDER=${AI_PROVIDER:-gemini}
+      - VIP_PIN=${VIP_PIN:-8282}
     volumes:
       - ./data:/app/data
     restart: unless-stopped
