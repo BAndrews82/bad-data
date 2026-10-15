@@ -2087,7 +2087,8 @@
 
       const winnerEl = document.getElementById('cah-winner-name');
       if (winnerEl) {
-        winnerEl.innerHTML = `${data.winnerAvatar || '👾'} ${data.winnerNickname}`;
+        const streakTag = (data.winnerStreak >= 2) ? `<span class="ml-2 px-2.5 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/50 text-xs font-black text-amber-300 animate-pulse">🔥 ${data.winnerStreak} IN A ROW!</span>` : '';
+        winnerEl.innerHTML = `${data.winnerAvatar || '👾'} ${data.winnerNickname}${streakTag}`;
       }
 
       document.getElementById('cah-reveal-prompt').innerHTML = formatCahPrompt(data.prompt, data.winningCardText);
@@ -2139,6 +2140,7 @@
             <span class="text-sm">${p.avatar || '👾'}</span>
             <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${p.color}"></span>
             <span class="font-bold text-white">${p.nickname}</span>
+            ${p.currentStreak >= 2 ? `<span class="px-1.5 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/50 text-[10px] font-black text-amber-300">🔥 ${p.currentStreak}</span>` : ''}
           </div>
           <span class="font-mono-code font-black text-purple-400">${p.score} pts</span>
         </div>

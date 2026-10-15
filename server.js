@@ -1063,6 +1063,7 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
     hostRoast,
     leaderboard,
     isGameOver,
+    winnerStreak: winnerPlayer ? (winnerPlayer.currentStreak || 0) : 0,
     revealDurationMs,
     revealAudioUrl: finalRevealAudio ? `/api/tts/reveal?roomCode=${roomCode}&round=${room.currentRound}` : null
   });
@@ -1079,7 +1080,8 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
       isGameOver,
       winnerNickname: winnerPlayer ? winnerPlayer.nickname : 'Unknown',
       winningCardText: winningSubmission.cardText,
-      totalScore: p.score
+      totalScore: p.score,
+      currentStreak: p.currentStreak || 0
     });
   });
 

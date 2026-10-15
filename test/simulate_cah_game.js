@@ -85,6 +85,11 @@ async function testCahGameFlow() {
     throw new Error(`Expected room status CAH_REVEAL, got ${room.status}`);
   }
 
+  if (judgeRes.winnerPlayer.currentStreak !== 1) {
+    throw new Error(`Expected winner to have currentStreak === 1, got ${judgeRes.winnerPlayer.currentStreak}`);
+  }
+  console.log(`  - Verified Bad Cards winner streak tracking: ${judgeRes.winnerPlayer.nickname} currentStreak=1`);
+
   if (!judgeRes.popularWinnerPlayer) {
     throw new Error('Expected a Popular Winner to be calculated!');
   }
@@ -158,12 +163,9 @@ async function testCahGameFlow() {
   });
 
   // Pick winner to trigger game over
-  // Ensure targetWinner is a submission, or if targetWinner is judge, award winner to reached target
-  const winnerSub = room.shuffledSubmissions.find(s => s.playerSocketId === targetWinner.socketId) || room.shuffledSubmissions[0];
-  if (winnerSub.playerSocketId !== targetWinner.socketId) {
-    const actualSubPlayer = room.players.find(p => p.socketId === winnerSub.playerSocketId);
-    if (actualSubPlayer) actualSubPlayer.score = 1;
-  }
+  const winnerSub = room.shuffledSubmissions.find(s => s.socketId === targetWinner.socketId) || room.shuffledSubmissions[0];
+  const actualSubPlayer = room.players.find(p => p.socketId === winnerSub.socketId);
+  if (actualSubPlayer) actualSubPlayer.score = 1;
 
   const round3JudgeRes = roomManager.submitPlayerInput(room.code, round3.judgeSocketId, { action: 'PICK_WINNER', submissionId: winnerSub.id });
   

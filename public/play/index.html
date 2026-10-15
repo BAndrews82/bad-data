@@ -430,6 +430,9 @@
       <div id="cah-result-badge" class="w-14 h-14 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-2">👑</div>
       <h2 id="cah-result-headline" class="text-xl sm:text-2xl font-black text-white mb-1">WINNER REVEALED</h2>
       <p id="cah-result-winning-text" class="font-bold text-base sm:text-lg text-purple-300 my-2 bg-slate-900 p-3 rounded-xl border border-slate-800">Winning Card Text</p>
+      <div id="cah-result-streak" class="hidden my-2 py-1.5 px-3 rounded-2xl bg-orange-500/20 border border-orange-500/40 text-amber-300 font-extrabold text-xs flex items-center justify-center gap-1.5 animate-bounce">
+        🔥 2 WINS IN A ROW! 🔥
+      </div>
       <div class="border-t border-slate-800 my-3"></div>
       <span class="text-xs text-slate-400 uppercase tracking-widest block">Your Total Points</span>
       <span id="cah-result-total-score" class="font-mono-code font-black text-2xl sm:text-3xl text-purple-400">0 pts</span>
@@ -1431,6 +1434,20 @@
 
       totalScore.textContent = `${data.totalScore} pts`;
       winText.textContent = `"${data.winningCardText}"`;
+
+      // Update streak tracking & bragging rights badge
+      const streakCount = data.currentStreak || 0;
+      updatePlayerStreakDisplay(streakCount);
+
+      const streakCard = document.getElementById('cah-result-streak');
+      if (streakCard) {
+        if (data.isWinner && streakCount >= 2) {
+          streakCard.classList.remove('hidden');
+          streakCard.innerHTML = `🔥 ${streakCount} WINS IN A ROW! 🔥`;
+        } else {
+          streakCard.classList.add('hidden');
+        }
+      }
 
       if (data.isWinner) {
         badge.className = 'w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3 bg-amber-400 text-slate-950 animate-bounce';
