@@ -27,11 +27,11 @@ async function runSimulation() {
       socket.emit('room_created', { roomCode: room.code, players: room.players });
     });
 
-    socket.on('join_room', ({ roomCode, nickname }) => {
-      const res = roomManager.joinRoom(roomCode, nickname, socket.id);
+    socket.on('join_room', ({ roomCode, nickname, vipToken, avatar, color }) => {
+      const res = roomManager.joinRoom(roomCode, nickname, socket.id, vipToken, avatar, color);
       if (res.error) return socket.emit('join_error', { message: res.error });
       socket.join(`room_${res.room.code}`);
-      socket.emit('joined_successfully', { roomCode: res.room.code, nickname: res.player.nickname, color: res.player.color });
+      socket.emit('joined_successfully', { roomCode: res.room.code, nickname: res.player.nickname, color: res.player.color, avatar: res.player.avatar });
       ioServer.to(`host_${res.room.code}`).emit('roster_update', { players: res.room.players });
     });
 
@@ -51,7 +51,8 @@ async function runSimulation() {
         choices: q.choices,
         correctIndex: q.correctIndex,
         baseValue: q.baseValue,
-        durationMs: 15000
+        durationMs: 15000,
+        players: activeRoom.players
       });
 
       ioServer.to(`room_${roomCode}`).emit('controller_question_active', {
@@ -69,6 +70,19 @@ async function runSimulation() {
 
       if (res.allAnswered) {
         const results = roomManager.evaluateRoundResults(roomCode);
+        const choiceCounts = [0, 0, 0, 0];
+        const answeredPlayers = (results.players || []).filter(p => p.answered && typeof p.answerIndex === 'number');
+        answeredPlayers.forEach(p => {
+          if (p.answerIndex >= 0 && p.answerIndex < 4) {
+            choiceCounts[p.answerIndex]++;
+          }
+        });
+        const totalAnswered = answeredPlayers.length;
+        const choicePercentages = choiceCounts.map(count => totalAnswered > 0 ? Math.round((count / totalAnswered) * 100) : 0);
+        results.choiceCounts = choiceCounts;
+        results.choicePercentages = choicePercentages;
+        results.totalAnswered = totalAnswered;
+
         ioServer.to(`host_${roomCode}`).emit('round_reveal', results);
         results.players.forEach(p => {
           const isCorrect = p.answerIndex === results.correctIndex;
@@ -109,11 +123,12 @@ async function runSimulation() {
   const p1Socket = io(SERVER_URL);
   await new Promise((resolve) => {
     p1Socket.on('connect', () => {
-      console.log('[Test] Player 1 (Alice) connecting...');
-      p1Socket.emit('join_room', { roomCode, nickname: 'Alice' });
+      console.log('[Test] Player 1 (Alice) connecting with avatar 🚀...');
+      p1Socket.emit('join_room', { roomCode, nickname: 'Alice', avatar: '🚀', color: '#10B981' });
     });
     p1Socket.on('joined_successfully', (data) => {
-      console.log(`[Test SUCCESS] Player 1 joined room ${data.roomCode} as '${data.nickname}'`);
+      console.log(`[Test SUCCESS] Player 1 joined room ${data.roomCode} as '${data.nickname}' (Avatar: ${data.avatar}, Color: ${data.color})`);
+      if (data.avatar !== '🚀') console.error('Test Warning: Expected avatar 🚀 for Alice');
       resolve();
     });
   });
@@ -122,11 +137,12 @@ async function runSimulation() {
   const p2Socket = io(SERVER_URL);
   await new Promise((resolve) => {
     p2Socket.on('connect', () => {
-      console.log('[Test] Player 2 (Bob) connecting...');
-      p2Socket.emit('join_room', { roomCode, nickname: 'Bob' });
+      console.log('[Test] Player 2 (Bob) connecting with avatar 🍕...');
+      p2Socket.emit('join_room', { roomCode, nickname: 'Bob', avatar: '🍕', color: '#EF4444' });
     });
     p2Socket.on('joined_successfully', (data) => {
-      console.log(`[Test SUCCESS] Player 2 joined room ${data.roomCode} as '${data.nickname}'`);
+      console.log(`[Test SUCCESS] Player 2 joined room ${data.roomCode} as '${data.nickname}' (Avatar: ${data.avatar}, Color: ${data.color})`);
+      if (data.avatar !== '🍕') console.error('Test Warning: Expected avatar 🍕 for Bob');
       resolve();
     });
   });
@@ -150,22 +166,29 @@ async function runSimulation() {
       console.log('[Test SUCCESS] Round Reveal received by Host!');
       console.log('Leaderboard Standings:');
       results.leaderboard.forEach((p, idx) => {
-        console.log(`  #${idx + 1} ${p.nickname}: Score $${p.score} (Round Change: ${p.lastRoundGain >= 0 ? '+' : ''}$${p.lastRoundGain})`);
+        console.log(`  #${idx + 1} ${p.avatar || '👾'} ${p.nickname}: Score $${p.score} (Round Change: ${p.lastRoundGain >= 0 ? '+' : ''}$${p.lastRoundGain})`);
       });
 
       // Assertions
       const alice = results.leaderboard.find(p => p.nickname === 'Alice');
       const bob = results.leaderboard.find(p => p.nickname === 'Bob');
 
-      if (alice.score > 0 && bob.score < 0) {
+      const choiceCountsValid = Array.isArray(results.choiceCounts) && results.choiceCounts[correctIdx] === 1 && results.choiceCounts[wrongIdx] === 1;
+      const choicePctsValid = Array.isArray(results.choicePercentages) && results.choicePercentages[correctIdx] === 50 && results.choicePercentages[wrongIdx] === 50;
+
+      if (choiceCountsValid && choicePctsValid) {
+        console.log(`[Test SUCCESS] Verified 4-choice distribution: Option ${correctIdx} (50%), Option ${wrongIdx} (50%)`);
+      }
+
+      if (alice.score > 0 && bob.score < 0 && choiceCountsValid && choicePctsValid) {
         console.log('====================================================');
         console.log(' ALL INTEGRATION TESTS PASSED CLEANLY!              ');
-        console.log(' Alice scored positive cash for correct answer!    ');
-        console.log(' Bob lost cash penalty for wrong answer!            ');
+        console.log(' Alice scored positive cash with avatar & color!    ');
+        console.log(' Choice percentage breakdown verified!             ');
         console.log('====================================================');
         resolve(true);
       } else {
-        console.error('Test Failed: Expected Alice score > 0 and Bob score < 0');
+        console.error('Test Failed: Expected Alice score > 0, Bob score < 0, and valid choice breakdown');
         resolve(false);
       }
     });

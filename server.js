@@ -403,8 +403,8 @@ io.on('connection', (socket) => {
     io.to(`room_${room.code}`).emit('roster_update', { players: room.players });
   });
 
-  socket.on('join_room', ({ roomCode, nickname, vipToken }) => {
-    const result = roomManager.joinRoom(roomCode, nickname, socket.id, vipToken);
+  socket.on('join_room', ({ roomCode, nickname, vipToken, avatar, color }) => {
+    const result = roomManager.joinRoom(roomCode, nickname, socket.id, vipToken, avatar, color);
     if (result.error) {
       return socket.emit('join_error', { message: result.error });
     }
@@ -416,6 +416,7 @@ io.on('connection', (socket) => {
       roomCode: room.code,
       nickname: player.nickname,
       color: player.color,
+      avatar: player.avatar,
       sessionToken: player.sessionToken,
       selectedGameId: room.selectedGameId,
       themeId: room.themeId || 'midnight',
@@ -440,6 +441,7 @@ io.on('connection', (socket) => {
       roomCode: room.code,
       nickname: player.nickname,
       color: player.color,
+      avatar: player.avatar,
       sessionToken: player.sessionToken,
       score: player.score,
       status: room.status,
@@ -520,7 +522,8 @@ io.on('connection', (socket) => {
       socketId: player.socketId,
       nickname: player.nickname,
       totalAnswered: room.players.filter(p => p.answered).length,
-      totalPlayers: room.players.length
+      totalPlayers: room.players.length,
+      players: room.players
     });
 
     if (allAnswered) {
@@ -1009,6 +1012,13 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
     revealAudioStore.set(revealKey, finalRevealAudio);
   }
 
+  if (winnerPlayer) {
+    winnerPlayer.cahWins = (winnerPlayer.cahWins || 0) + 1;
+  }
+  if (popularWinnerPlayer) {
+    popularWinnerPlayer.popularWins = (popularWinnerPlayer.popularWins || 0) + 1;
+  }
+
   const leaderboard = [...room.players].sort((a,b) => b.score - a.score);
   const isGameOver = room.players.some(p => p.score >= (room.targetScore || 5));
 
@@ -1017,10 +1027,13 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
   ioInstance.to(`host_${roomCode}`).emit('cah_round_reveal', {
     prompt,
     judgeNickname: room.currentJudgeNickname || 'Judge',
+    judgeAvatar: (room.players.find(p => p.socketId === room.currentJudgeSocketId) || {}).avatar || '👑',
     winningCardText: winningSubmission.cardText,
     winnerNickname: winnerPlayer ? winnerPlayer.nickname : 'Unknown',
+    winnerAvatar: winnerPlayer ? winnerPlayer.avatar : '👾',
     winnerColor: winnerPlayer ? winnerPlayer.color : '#3B82F6',
     popularWinnerNickname: popularWinnerPlayer ? popularWinnerPlayer.nickname : null,
+    popularWinnerAvatar: popularWinnerPlayer ? popularWinnerPlayer.avatar : '👾',
     popularVoteCount: popularVoteCount || 0,
     hostRoast,
     leaderboard,
@@ -1092,7 +1105,8 @@ async function runQuestionRound(ioInstance, roomCode) {
     baseValue: currentQ.baseValue,
     question: currentQ.question,
     choices: currentQ.choices,
-    durationMs: room.roundDurationMs
+    durationMs: room.roundDurationMs,
+    players: room.players
   });
 
   ioInstance.to(`room_${roomCode}`).emit('controller_question_active', {
@@ -1117,7 +1131,8 @@ async function runQuestionRound(ioInstance, roomCode) {
             socketId: bot.socketId,
             nickname: bot.nickname,
             totalAnswered: room.players.filter(p => p.answered).length,
-            totalPlayers: room.players.length
+            totalPlayers: room.players.length,
+            players: room.players
           });
 
           if (res.allAnswered) {
@@ -1183,9 +1198,23 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     revealAudioStore.set(triviaRevealKey, finalRevealAudio);
   }
 
+  const choiceCounts = [0, 0, 0, 0];
+  const answeredPlayers = (results.players || []).filter(p => p.answered && typeof p.answerIndex === 'number');
+  answeredPlayers.forEach(p => {
+    if (p.answerIndex >= 0 && p.answerIndex < 4) {
+      choiceCounts[p.answerIndex]++;
+    }
+  });
+  const totalAnswered = answeredPlayers.length;
+  const choicePercentages = choiceCounts.map(count => totalAnswered > 0 ? Math.round((count / totalAnswered) * 100) : 0);
+
   ioInstance.to(`host_${roomCode}`).emit('round_reveal', {
     questionNum: results.room.currentQuestionIndex + 1,
     totalQuestions: results.room.questions.length,
+    choices: currentQ ? currentQ.choices : [],
+    choiceCounts,
+    choicePercentages,
+    totalAnswered,
     correctIndex: results.correctIndex,
     correctAnswerText: results.correctAnswerText,
     hostRoast,

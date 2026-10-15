@@ -114,6 +114,13 @@
       background: #12002b;
       border-color: #00f0ff;
     }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
   </style>
 </head>
 <body class="h-screen w-screen flex flex-col justify-between p-4 sm:p-6 bg-slate-950 overflow-hidden relative">
@@ -121,7 +128,7 @@
   <!-- Mobile Header Banner -->
   <header id="mobile-header" class="hidden w-full flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
     <div class="flex items-center gap-2">
-      <span id="player-avatar-badge" class="w-4 h-4 rounded-full bg-emerald-500"></span>
+      <span id="player-avatar-badge" class="w-8 h-8 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center text-base shadow">👾</span>
       <span id="player-nickname-text" class="font-extrabold text-lg text-white">Player</span>
     </div>
     <div class="flex items-center gap-3">
@@ -134,42 +141,72 @@
   </header>
 
   <!-- ==================== SCREEN 1: JOIN FORM ==================== -->
-  <main id="screen-join" class="flex-1 flex flex-col items-center justify-center w-full max-w-sm mx-auto">
-    <div class="w-full text-center mb-6">
-      <div onclick="handleLogoTap()" class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-red-600 via-purple-600 to-emerald-500 flex items-center justify-center font-black text-3xl mx-auto shadow-xl shadow-red-500/20 mb-3 cursor-pointer">
+  <main id="screen-join" class="flex-1 flex flex-col items-center justify-center w-full max-w-sm mx-auto overflow-y-auto py-2">
+    <div class="w-full text-center mb-4 shrink-0">
+      <div onclick="handleLogoTap()" class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-red-600 via-purple-600 to-emerald-500 flex items-center justify-center font-black text-2xl mx-auto shadow-xl shadow-red-500/20 mb-2 cursor-pointer">
         BD
       </div>
-      <h1 class="text-3xl font-black tracking-wider text-white">BAD DATA</h1>
-      <p class="text-xs text-slate-400 font-semibold tracking-widest uppercase mt-1">Enter Room Code & Nickname</p>
+      <h1 class="text-2xl font-black tracking-wider text-white">BAD DATA</h1>
+      <p class="text-[11px] text-slate-400 font-semibold tracking-widest uppercase mt-0.5">Enter Room Code & Pick Avatar</p>
     </div>
 
-    <form onsubmit="handleJoinSubmit(event)" class="w-full glass-panel p-6 rounded-3xl space-y-4 border border-slate-700 shadow-2xl">
-      <div id="join-error-msg" class="hidden text-xs font-bold text-red-400 bg-red-500/10 border border-red-500/30 p-3 rounded-xl text-center">
+    <form onsubmit="handleJoinSubmit(event)" class="w-full glass-panel p-5 rounded-3xl space-y-3.5 border border-slate-700 shadow-2xl shrink-0">
+      <div id="join-error-msg" class="hidden text-xs font-bold text-red-400 bg-red-500/10 border border-red-500/30 p-2.5 rounded-xl text-center">
         Error message
       </div>
 
-      <div id="vip-active-indicator" class="hidden text-xs font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 p-2.5 rounded-xl text-center shadow flex items-center justify-center gap-1.5">
+      <div id="vip-active-indicator" class="hidden text-xs font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 p-2 rounded-xl text-center shadow flex items-center justify-center gap-1.5">
         👑 VIP Host Mode Active
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest mb-1">Room Code</label>
-        <input type="text" id="input-room-code" maxlength="4" placeholder="XXXX" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center font-mono-code font-black text-3xl uppercase tracking-widest text-emerald-400 focus:outline-none focus:border-emerald-500 transition">
+        <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-1">Room Code</label>
+        <input type="text" id="input-room-code" maxlength="4" placeholder="XXXX" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-center font-mono-code font-black text-2xl uppercase tracking-widest text-emerald-400 focus:outline-none focus:border-emerald-500 transition">
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest mb-1">Nickname</label>
-        <input type="text" id="input-nickname" maxlength="12" placeholder="Your Name" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center font-bold text-xl text-white focus:outline-none focus:border-emerald-500 transition">
+        <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-1">Nickname</label>
+        <input type="text" id="input-nickname" maxlength="12" placeholder="Your Name" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-center font-bold text-lg text-white focus:outline-none focus:border-emerald-500 transition">
       </div>
 
-      <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xl tracking-wider shadow-lg shadow-emerald-500/20 btn-tactile transition">
+      <!-- Avatar Picker -->
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Choose Avatar</label>
+          <span id="selected-avatar-label" class="text-sm font-black">👾</span>
+        </div>
+        <div id="avatar-selector-grid" class="grid grid-cols-5 gap-1.5 p-1.5 rounded-xl bg-slate-900/90 border border-slate-800">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Accent Color Swatches -->
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Accent Color</label>
+          <span id="selected-color-label" class="w-3 h-3 rounded-full bg-emerald-500"></span>
+        </div>
+        <div id="color-selector-row" class="flex items-center justify-between p-1.5 rounded-xl bg-slate-900/90 border border-slate-800">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-lg tracking-wider shadow-lg shadow-emerald-500/20 btn-tactile transition cursor-pointer">
         JOIN GAME
       </button>
     </form>
   </main>
 
   <!-- ==================== SCREEN 2: LOBBY SCREEN ==================== -->
-  <main id="screen-lobby" class="hidden flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto">
+  <main id="screen-lobby" class="hidden flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto overflow-y-auto py-2">
+    <!-- Personalized Post-Game Recap Banner (Visible after a game finishes) -->
+    <div id="mobile-gameover-recap" class="hidden glass-panel p-4 rounded-3xl border-2 border-amber-400/80 bg-amber-950/30 text-center w-full mb-3 shadow-xl">
+      <div id="recap-medal-icon" class="text-3xl mb-1">🏆</div>
+      <h3 id="recap-rank-text" class="text-xl font-black text-amber-300">#1 GRAND CHAMPION</h3>
+      <div id="recap-score-text" class="font-mono-code font-black text-2xl text-emerald-400 my-1">$1,000</div>
+      <p id="recap-substats-text" class="text-xs text-slate-300 font-semibold">Correct: 8/10 (80%)</p>
+    </div>
+
     <div class="glass-panel p-6 rounded-3xl border border-slate-700 shadow-2xl w-full">
       <div class="w-14 h-14 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-3xl mx-auto mb-3 animate-pulse">
         ✓
@@ -316,9 +353,15 @@
       </button>
     </div>
 
-    <!-- Hand Cards Carousel / Grid -->
-    <div id="cah-hand-grid" class="flex-1 min-h-0 overflow-y-auto space-y-2 py-1 pr-1 pb-16">
-      <!-- 7 White Cards rendered via JS -->
+    <!-- Hand Cards Carousel (Horizontal Swipe with Card Peek & Momentum) -->
+    <div class="flex-1 min-h-0 flex flex-col justify-center py-1 relative">
+      <div class="flex items-center justify-between px-2 pb-1 text-[11px] font-bold text-slate-400 shrink-0">
+        <span id="cah-carousel-counter">Card 1 of 7</span>
+        <span class="text-purple-400 font-extrabold flex items-center gap-1">Swipe cards or Flick Up 👆</span>
+      </div>
+      <div id="cah-hand-grid" class="flex-1 min-h-0 flex items-stretch gap-3 overflow-x-auto overflow-y-hidden px-3 py-2 snap-x snap-mandatory scroll-smooth no-scrollbar">
+        <!-- 7 White Cards rendered via JS -->
+      </div>
     </div>
 
     <!-- Sticky Prominent Bottom Submit Bar -->
@@ -400,6 +443,79 @@
     let selectedHandCardIndex = null;
     let selectedJudgeSubId = null;
 
+    const AVATARS = ['👾', '🍕', '🤖', '👻', '🤠', '🦊', '⚡', '🥑', '🚀', '💎'];
+    const COLORS = [
+      { hex: '#EF4444', name: 'RED' },
+      { hex: '#3B82F6', name: 'BLUE' },
+      { hex: '#F59E0B', name: 'AMBER' },
+      { hex: '#10B981', name: 'EMERALD' },
+      { hex: '#8B5CF6', name: 'PURPLE' },
+      { hex: '#EC4899', name: 'PINK' },
+      { hex: '#06B6D4', name: 'CYAN' },
+      { hex: '#F97316', name: 'ORANGE' }
+    ];
+
+    let selectedAvatar = '👾';
+    let selectedColor = '#10B981';
+    let playerAvatar = '👾';
+
+    function initAvatarColorPickers() {
+      try {
+        const savedAvatar = localStorage.getItem('bad_data_avatar');
+        if (savedAvatar && AVATARS.includes(savedAvatar)) selectedAvatar = savedAvatar;
+        const savedColor = localStorage.getItem('bad_data_color');
+        if (savedColor && COLORS.some(c => c.hex.toLowerCase() === savedColor.toLowerCase())) selectedColor = savedColor;
+      } catch(e) {}
+
+      renderAvatarPicker();
+      renderColorPicker();
+    }
+
+    function renderAvatarPicker() {
+      const grid = document.getElementById('avatar-selector-grid');
+      const label = document.getElementById('selected-avatar-label');
+      if (label) label.textContent = selectedAvatar;
+      if (!grid) return;
+
+      grid.innerHTML = AVATARS.map(av => {
+        const isSel = av === selectedAvatar;
+        return `
+          <button type="button" onclick="selectAvatar('${av}')" class="h-9 rounded-xl flex items-center justify-center text-lg transition transform active:scale-95 cursor-pointer ${isSel ? 'ring-2 ring-emerald-400 bg-emerald-500/30 scale-105 shadow-md' : 'bg-slate-800/80 hover:bg-slate-800 opacity-75'}">
+            ${av}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectAvatar(av) {
+      selectedAvatar = av;
+      try { localStorage.setItem('bad_data_avatar', av); } catch(e) {}
+      if (navigator.vibrate) navigator.vibrate(20);
+      renderAvatarPicker();
+    }
+
+    function renderColorPicker() {
+      const row = document.getElementById('color-selector-row');
+      const label = document.getElementById('selected-color-label');
+      if (label) label.style.backgroundColor = selectedColor;
+      if (!row) return;
+
+      row.innerHTML = COLORS.map(c => {
+        const isSel = c.hex.toLowerCase() === selectedColor.toLowerCase();
+        return `
+          <button type="button" onclick="selectColor('${c.hex}')" title="${c.name}" class="w-6 h-6 rounded-full transition transform active:scale-90 cursor-pointer ${isSel ? 'ring-2 ring-white scale-110 shadow-lg' : 'opacity-70 hover:opacity-100'}" style="background-color: ${c.hex};">
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectColor(hex) {
+      selectedColor = hex;
+      try { localStorage.setItem('bad_data_color', hex); } catch(e) {}
+      if (navigator.vibrate) navigator.vibrate(20);
+      renderColorPicker();
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const codeParam = urlParams.get('code');
     if (codeParam) {
@@ -418,6 +534,7 @@
           badge.classList.remove('hidden');
         }
       } catch(e) {}
+      initAvatarColorPickers();
     }
 
     function handleLogoTap() {
@@ -481,7 +598,7 @@
         vipToken = localStorage.getItem('bad_data_vip_token') || null;
       } catch(err) {}
 
-      socket.emit('join_room', { roomCode: code, nickname, vipToken });
+      socket.emit('join_room', { roomCode: code, nickname, vipToken, avatar: selectedAvatar, color: selectedColor });
     }
 
     socket.on('connect', () => {
@@ -499,11 +616,17 @@
     socket.on('reconnected_successfully', (data) => {
       currentRoomCode = data.roomCode;
       playerNickname = data.nickname;
-      playerColor = data.color;
+      playerColor = data.color || selectedColor;
+      playerAvatar = data.avatar || selectedAvatar || '👾';
       isVipHost = Boolean(data.isVip);
 
       document.getElementById('mobile-header').classList.remove('hidden');
-      document.getElementById('player-avatar-badge').style.backgroundColor = playerColor;
+      const badge = document.getElementById('player-avatar-badge');
+      if (badge) {
+        badge.textContent = playerAvatar;
+        badge.style.backgroundColor = `${playerColor}33`;
+        badge.style.borderColor = playerColor;
+      }
 
       const nickText = document.getElementById('player-nickname-text');
       if (nickText) {
@@ -654,7 +777,8 @@
     });
 
     socket.on('joined_successfully', (data) => {
-      playerColor = data.color;
+      playerColor = data.color || selectedColor;
+      playerAvatar = data.avatar || selectedAvatar || '👾';
       isVipHost = Boolean(data.isVip);
 
       if (data.sessionToken && data.roomCode) {
@@ -665,7 +789,12 @@
       }
 
       document.getElementById('mobile-header').classList.remove('hidden');
-      document.getElementById('player-avatar-badge').style.backgroundColor = playerColor;
+      const badge = document.getElementById('player-avatar-badge');
+      if (badge) {
+        badge.textContent = playerAvatar;
+        badge.style.backgroundColor = `${playerColor}33`;
+        badge.style.borderColor = playerColor;
+      }
       
       const nickText = document.getElementById('player-nickname-text');
       if (nickText) {
@@ -792,6 +921,8 @@
     socket.on('controller_reset_lobby', (data) => {
       selectedHandCardIndex = null;
       selectedJudgeSubId = null;
+      const recap = document.getElementById('mobile-gameover-recap');
+      if (recap) recap.classList.add('hidden');
       if (data && data.selectedGameId) {
         updateMobileGameModeDisplay(data.selectedGameId);
       }
@@ -810,6 +941,46 @@
       if (data && data.themeId) {
         updateMobileTheme(data.themeId);
       }
+
+      // Populate Personalized Post-Game Performance Recap
+      if (data && Array.isArray(data.leaderboard)) {
+        const myIndex = data.leaderboard.findIndex(p => p.socketId === socket.id || p.nickname === playerNickname);
+        const recapBox = document.getElementById('mobile-gameover-recap');
+        if (myIndex !== -1 && recapBox) {
+          const myPlayer = data.leaderboard[myIndex];
+          const rank = myIndex + 1;
+          const total = data.leaderboard.length;
+          const medalIcon = document.getElementById('recap-medal-icon');
+          const rankText = document.getElementById('recap-rank-text');
+          const scoreText = document.getElementById('recap-score-text');
+          const substatsText = document.getElementById('recap-substats-text');
+
+          if (rank === 1) {
+            if (medalIcon) medalIcon.textContent = '🏆';
+            if (rankText) rankText.textContent = '#1 GRAND CHAMPION!';
+          } else if (rank === 2) {
+            if (medalIcon) medalIcon.textContent = '🥈';
+            if (rankText) rankText.textContent = `#2 of ${total} Players`;
+          } else if (rank === 3) {
+            if (medalIcon) medalIcon.textContent = '🥉';
+            if (rankText) rankText.textContent = `#3 of ${total} Players`;
+          } else {
+            if (medalIcon) medalIcon.textContent = '🎖️';
+            if (rankText) rankText.textContent = `Rank #${rank} of ${total}`;
+          }
+
+          if (data.selectedGameId === 'cah') {
+            if (scoreText) scoreText.textContent = `${myPlayer.score || 0} pts`;
+            if (substatsText) substatsText.textContent = `Rounds Won: ${myPlayer.cahWins || myPlayer.score || 0} • Popular Votes: ${myPlayer.popularWins || 0}`;
+          } else {
+            if (scoreText) scoreText.textContent = `$${(myPlayer.score || 0).toLocaleString()}`;
+            if (substatsText) substatsText.textContent = `Correct: ${myPlayer.correctCount || 0} Questions`;
+          }
+
+          recapBox.classList.remove('hidden');
+        }
+      }
+
       showScreen('screen-lobby');
     });
 
@@ -869,6 +1040,7 @@
       if (rosterList && data.players) {
         rosterList.innerHTML = data.players.map(p => `
           <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-bold text-xs">
+            <span class="text-xs">${p.avatar || '👾'}</span>
             <span class="w-2 h-2 rounded-full" style="background-color: ${p.color}"></span>
             <span>${p.nickname}</span>
           </div>
@@ -878,6 +1050,8 @@
 
     // ================= TRIVIA HANDLERS =================
     socket.on('controller_question_active', (data) => {
+      const recap = document.getElementById('mobile-gameover-recap');
+      if (recap) recap.classList.add('hidden');
       showScreen('screen-answer');
       document.getElementById('buttons-grid').classList.remove('hidden');
       document.getElementById('locked-banner').classList.add('hidden');
@@ -949,6 +1123,8 @@
     let selectedPopularVoteSubId = null;
 
     socket.on('cah_controller_round', (data) => {
+      const recap = document.getElementById('mobile-gameover-recap');
+      if (recap) recap.classList.add('hidden');
       selectedHandCardIndex = null;
       hasUsedRedraw = Boolean(data.usedRedraw);
 
@@ -1012,8 +1188,42 @@
       alert(data ? data.message : 'Could not redraw cards');
     });
 
+    let handCardTextList = [];
+    let cardTouchStartY = 0;
+    let cardTouchStartX = 0;
+    let touchingCardIdx = null;
+
+    function handleCardTouchStart(e, idx) {
+      touchingCardIdx = idx;
+      const touch = e.touches[0];
+      cardTouchStartY = touch.clientY;
+      cardTouchStartX = touch.clientX;
+    }
+
+    function handleCardTouchEnd(e, idx) {
+      if (touchingCardIdx !== idx) return;
+      const touch = e.changedTouches[0];
+      const deltaY = touch.clientY - cardTouchStartY;
+      const deltaX = touch.clientX - cardTouchStartX;
+
+      // Upward flick gesture: vertical delta < -50px with vertical dominating
+      if (deltaY < -50 && Math.abs(deltaY) > Math.abs(deltaX) * 1.2) {
+        if (navigator.vibrate) navigator.vibrate([20, 50]);
+        selectedHandCardIndex = idx;
+        const cardEl = document.getElementById(`hand-card-${idx}`);
+        if (cardEl) {
+          cardEl.style.transition = 'transform 260ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms ease';
+          cardEl.style.transform = 'translateY(-140px) scale(0.9)';
+          cardEl.style.opacity = '0';
+        }
+        setTimeout(() => {
+          submitCahCard();
+        }, 150);
+      }
+    }
+
     function selectHandCard(idx) {
-      if (navigator.vibrate) navigator.vibrate(30);
+      if (navigator.vibrate) navigator.vibrate(25);
 
       // Double-tap on already selected card submits immediately!
       if (selectedHandCardIndex === idx) {
@@ -1022,17 +1232,21 @@
       }
 
       selectedHandCardIndex = idx;
-      
-      const cards = document.querySelectorAll('#cah-hand-grid button');
+
+      const cards = document.querySelectorAll('#cah-hand-grid > div');
       cards.forEach((c, i) => {
         if (i === idx) {
-          c.className = 'w-full p-3.5 rounded-2xl bg-purple-600 text-white font-extrabold text-sm text-left shadow-xl border-4 border-purple-400 scale-[1.02] transition';
-          c.innerHTML = `${handCardTextList[i] || ''} <span class="block text-[10px] text-purple-200 mt-1 uppercase font-bold tracking-wider">Tap again to play ➔</span>`;
+          c.className = 'snap-center shrink-0 w-[80vw] max-w-[290px] h-full max-h-[320px] p-5 rounded-2xl bg-white text-slate-950 flex flex-col justify-between shadow-2xl ring-4 ring-purple-500 border-2 border-purple-500 scale-[1.02] -translate-y-2 transition-all duration-200 select-none cursor-pointer';
+          c.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         } else {
-          c.className = 'w-full p-3.5 rounded-2xl bg-white/70 text-slate-900 font-extrabold text-sm text-left shadow-md border-2 border-slate-300 opacity-60 transition';
-          c.innerHTML = handCardTextList[i] || '';
+          c.className = 'snap-center shrink-0 w-[80vw] max-w-[290px] h-full max-h-[320px] p-5 rounded-2xl bg-white text-slate-950 flex flex-col justify-between shadow-lg border-2 border-slate-300 opacity-60 scale-95 transition-all duration-200 select-none cursor-pointer';
         }
       });
+
+      const counter = document.getElementById('cah-carousel-counter');
+      if (counter) {
+        counter.textContent = `Card ${idx + 1} of ${handCardTextList.length} (Selected)`;
+      }
 
       const submitBtn = document.getElementById('cah-submit-btn');
       if (submitBtn) {
@@ -1041,7 +1255,6 @@
       }
     }
 
-    let handCardTextList = [];
     function renderHandCards(hand) {
       selectedHandCardIndex = null;
       handCardTextList = hand || [];
@@ -1054,10 +1267,25 @@
         submitBtn.innerHTML = 'SELECT A CARD ABOVE 👆';
       }
 
+      const counter = document.getElementById('cah-carousel-counter');
+      if (counter) {
+        counter.textContent = `Card 1 of ${handCardTextList.length}`;
+      }
+
       grid.innerHTML = handCardTextList.map((cardText, idx) => `
-        <button onclick="selectHandCard(${idx})" id="hand-card-${idx}" class="w-full p-3.5 rounded-2xl bg-white text-slate-950 font-extrabold text-sm text-left shadow-lg border-2 border-slate-300 transition btn-tactile">
-          ${cardText}
-        </button>
+        <div id="hand-card-${idx}"
+             onclick="selectHandCard(${idx})"
+             ontouchstart="handleCardTouchStart(event, ${idx})"
+             ontouchend="handleCardTouchEnd(event, ${idx})"
+             class="snap-center shrink-0 w-[80vw] max-w-[290px] h-full max-h-[320px] p-5 rounded-2xl bg-white text-slate-950 flex flex-col justify-between shadow-xl border-2 border-slate-300 transition-all duration-200 select-none cursor-pointer transform active:scale-95">
+          <div class="font-extrabold text-base sm:text-lg leading-snug tracking-tight text-slate-950">
+            ${cardText}
+          </div>
+          <div class="pt-4 border-t border-slate-200/80 flex items-center justify-between text-[10px] font-black uppercase text-slate-400 tracking-wider">
+            <span>BAD DATA</span>
+            <span class="text-purple-600 font-extrabold">${idx + 1} / ${handCardTextList.length}</span>
+          </div>
+        </div>
       `).join('');
     }
 
