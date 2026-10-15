@@ -231,6 +231,17 @@
           </div>
         </div>
 
+        <!-- Bad Cards Target Score Selector for VIP Host -->
+        <div id="mobile-cah-target-score-row" class="flex items-center justify-between text-[10px]">
+          <span class="font-bold text-slate-300">🎯 Target Score</span>
+          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 font-bold">
+            <button id="mobile-score-3" onclick="event.stopPropagation(); setMobileTargetScore(3);" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">3</button>
+            <button id="mobile-score-5" onclick="event.stopPropagation(); setMobileTargetScore(5);" class="px-2 py-0.5 rounded bg-amber-500 text-slate-950 font-black cursor-pointer shadow">5</button>
+            <button id="mobile-score-7" onclick="event.stopPropagation(); setMobileTargetScore(7);" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">7</button>
+            <button id="mobile-score-10" onclick="event.stopPropagation(); setMobileTargetScore(10);" class="px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">10</button>
+          </div>
+        </div>
+
         <!-- Start New Game Button for VIP Host -->
         <div class="pt-2 border-t border-amber-500/30">
           <button onclick="triggerMobileResetToLobby()" class="w-full py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs shadow-lg transition flex items-center justify-center gap-1.5 cursor-pointer btn-tactile">
@@ -511,6 +522,68 @@
 
       if (data.status === 'LOBBY') {
         showScreen('screen-lobby');
+      } else if (data.selectedGameId === 'cah') {
+        if (data.status === 'CAH_SUBMIT') {
+          if (data.isJudge) {
+            showScreen('screen-cah-judge-waiting');
+          } else if (data.hasSubmitted) {
+            showScreen('screen-cah-waiting-judge');
+            const judgeName = document.getElementById('cah-judge-waiting-name');
+            if (judgeName) judgeName.textContent = data.judgeNickname || 'Judge';
+          } else {
+            showScreen('screen-cah-player');
+            const promptEl = document.getElementById('cah-player-prompt-text');
+            if (promptEl) promptEl.innerHTML = formatCahPrompt(data.prompt || 'Black card prompt...');
+            renderHandCards(data.hand || []);
+          }
+        } else if (data.status === 'CAH_JUDGE') {
+          if (data.isJudge) {
+            selectedJudgeSubId = null;
+            judgeSubmissionsList = data.submissions || [];
+            showScreen('screen-cah-judge-pick');
+            const promptHeader = document.getElementById('cah-judge-prompt-header');
+            if (promptHeader) promptHeader.innerHTML = formatCahPrompt(data.prompt || '');
+            const confirmBtn = document.getElementById('cah-confirm-winner-btn');
+            if (confirmBtn) confirmBtn.disabled = true;
+            const grid = document.getElementById('cah-judge-options-grid');
+            if (grid) {
+              grid.innerHTML = judgeSubmissionsList.map(sub => `
+                <button onclick="selectJudgeOption('${sub.id}')" id="judge-opt-${sub.id}" class="w-full p-4 rounded-2xl bg-white text-slate-950 font-black text-base text-left shadow-xl border-2 border-slate-300 transition btn-tactile">
+                  ${sub.cardText}
+                </button>
+              `).join('');
+            }
+          } else {
+            const judgeName = document.getElementById('cah-judge-waiting-name');
+            if (judgeName) judgeName.textContent = data.judgeNickname || 'Judge';
+            showScreen('screen-cah-waiting-judge');
+            const popContainer = document.getElementById('cah-popular-vote-container');
+            const popGrid = document.getElementById('cah-popular-vote-grid');
+            if (data.enablePopularVote && data.submissions && data.submissions.length > 0 && popContainer && popGrid) {
+              popContainer.style.display = 'flex';
+              popGrid.innerHTML = data.submissions.map(sub => `
+                <button onclick="submitPopularVote('${sub.id}')" id="pop-vote-${sub.id}" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-bold text-xs text-left shadow hover:border-emerald-500 transition">
+                  ${sub.cardText}
+                </button>
+              `).join('');
+            }
+          }
+        } else if (data.status === 'CAH_REVEAL') {
+          showScreen('screen-cah-result');
+          const totalScore = document.getElementById('cah-result-total-score');
+          const winText = document.getElementById('cah-result-winning-text');
+          if (totalScore) totalScore.textContent = `${data.score || 0} pts`;
+          if (winText && data.lastWinner) winText.textContent = `"${data.lastWinner.cardText || ''}"`;
+          const judgeContainer = document.getElementById('cah-judge-advance-container');
+          if (judgeContainer) {
+            judgeContainer.classList.remove('hidden');
+            judgeContainer.style.display = 'block';
+          }
+          const advanceBtn = document.getElementById('cah-judge-advance-btn');
+          if (advanceBtn) {
+            advanceBtn.textContent = data.isJudge ? 'START NEXT ROUND ➔ 👑' : 'START NEXT ROUND ➔';
+          }
+        }
       }
     });
 
@@ -533,6 +606,40 @@
           nameEl.className = 'font-black text-emerald-400';
         }
       }
+      const targetRow = document.getElementById('mobile-cah-target-score-row');
+      if (targetRow) {
+        targetRow.classList.toggle('hidden', gameId !== 'cah');
+      }
+    }
+
+    let mobileTargetScore = 5;
+    function setMobileTargetScore(score, emitSocket = true) {
+      mobileTargetScore = Number(score) || 5;
+      [3, 5, 7, 10].forEach(s => {
+        const btn = document.getElementById(`mobile-score-${s}`);
+        if (btn) {
+          if (s === mobileTargetScore) {
+            btn.className = 'px-2 py-0.5 rounded bg-amber-500 text-slate-950 font-black cursor-pointer shadow';
+          } else {
+            btn.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+          }
+        }
+      });
+      if (emitSocket && socket && currentRoomCode) {
+        socket.emit('select_target_score', { roomCode: currentRoomCode, targetScore: mobileTargetScore });
+      }
+    }
+
+    socket.on('target_score_updated', (data) => {
+      if (data && data.targetScore) setMobileTargetScore(data.targetScore, false);
+    });
+
+    function formatCahPrompt(promptText) {
+      if (!promptText) return '';
+      if (/_{2,}/.test(promptText)) {
+        return promptText.replace(/_{2,}/g, '<span class="inline-block border-b-2 border-purple-400 min-w-[50px] px-1 text-center text-purple-300 font-bold opacity-80">_____</span>');
+      }
+      return promptText;
     }
 
     function updateMobileTheme(themeId) {
@@ -850,7 +957,7 @@
         document.getElementById('cah-judge-progress-text').textContent = `0 / ${data.totalRequired} Submitted`;
       } else {
         showScreen('screen-cah-player');
-        document.getElementById('cah-player-prompt-text').textContent = data.prompt;
+        document.getElementById('cah-player-prompt-text').innerHTML = formatCahPrompt(data.prompt);
         document.getElementById('cah-submit-btn').disabled = true;
 
         const redrawBtn = document.getElementById('cah-redraw-btn');
@@ -866,9 +973,25 @@
 
     function triggerDiscardRedraw() {
       if (hasUsedRedraw || !currentRoomCode) return;
-      if (confirm("Swap your first 3 cards for fresh replacements? (Allowed once per game)")) {
+      
+      let toDiscard = [0, 1, 2];
+      let promptMsg = "Swap 3 cards from your hand for fresh replacements? (Allowed once per game)";
+      
+      if (selectedHandCardIndex !== null && handCardTextList.length > 0) {
+        const idx = selectedHandCardIndex;
+        const total = handCardTextList.length;
+        const chosen = [idx];
+        for (let offset = 1; offset < total && chosen.length < 3; offset++) {
+          const nextIdx = (idx + offset) % total;
+          if (!chosen.includes(nextIdx)) chosen.push(nextIdx);
+        }
+        toDiscard = chosen;
+        promptMsg = "Swap your selected card and 2 others for fresh replacements? (Allowed once per game)";
+      }
+
+      if (confirm(promptMsg)) {
         if (navigator.vibrate) navigator.vibrate(40);
-        socket.emit('discard_redraw', { roomCode: currentRoomCode, cardIndices: [0, 1, 2] });
+        socket.emit('discard_redraw', { roomCode: currentRoomCode, cardIndices: toDiscard });
       }
     }
 
@@ -958,7 +1081,7 @@
       selectedJudgeSubId = null;
       judgeSubmissionsList = data.submissions || [];
       showScreen('screen-cah-judge-pick');
-      document.getElementById('cah-judge-prompt-header').textContent = data.prompt;
+      document.getElementById('cah-judge-prompt-header').innerHTML = formatCahPrompt(data.prompt);
       document.getElementById('cah-confirm-winner-btn').disabled = true;
 
       const grid = document.getElementById('cah-judge-options-grid');

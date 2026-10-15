@@ -85,6 +85,95 @@ async function testCahGameFlow() {
     throw new Error(`Expected room status CAH_REVEAL, got ${room.status}`);
   }
 
+  if (!judgeRes.popularWinnerPlayer) {
+    throw new Error('Expected a Popular Winner to be calculated!');
+  }
+
+  // 7. Test Judge Reconnection Socket ID Update
+  console.log('\n[Test] Testing Judge Reconnection...');
+  const reconnectRes = roomManager.reconnectPlayer(room.code, p1.player.sessionToken, 'p1_new_socket');
+  if (room.currentJudgeSocketId !== 'p1_new_socket') {
+    throw new Error(`Expected room.currentJudgeSocketId to be updated to p1_new_socket, got ${room.currentJudgeSocketId}`);
+  }
+  console.log('  - Reconnection updated judgeSocketId successfully:', room.currentJudgeSocketId);
+
+  // 8. Test Auto-Submission & Auto-Pick (Timeout resilience)
+  console.log('\n[Test] Testing Auto-Submission & Auto-Pick resilience...');
+  roomManager.advanceNextRound(room.code);
+  const round2 = roomManager.startRound(room.code);
+  console.log(`[Round 2] Prompt: "${round2.prompt}". Judge: ${round2.judgeNickname}`);
+  
+  // Simulate only 1 player submitting, then auto-submitting remaining
+  const nonJudgesR2 = room.players.filter(p => p.socketId !== round2.judgeSocketId);
+  roomManager.submitPlayerInput(room.code, nonJudgesR2[0].socketId, { action: 'SUBMIT_CARD', cardIndex: 0 });
+  
+  // Call autoSubmitRemaining
+  room.gameEngine.autoSubmitRemaining(room);
+  if (room.status !== 'CAH_JUDGE') {
+    throw new Error(`Expected room status CAH_JUDGE after autoSubmitRemaining, got ${room.status}`);
+  }
+  console.log('  - Auto-submit completed successfully. Shuffled submissions count:', room.shuffledSubmissions.length);
+
+  // Auto-pick winner
+  const autoPickRes = room.gameEngine.autoPickWinner(room);
+  if (!autoPickRes || room.status !== 'CAH_REVEAL' || !autoPickRes.winningSubmission) {
+    throw new Error('Expected autoPickWinner to transition to CAH_REVEAL and pick a winner!');
+  }
+  console.log(`  - Auto-pick completed successfully: "${autoPickRes.winningSubmission.cardText}" (Winner: ${autoPickRes.winnerPlayer.nickname})`);
+
+  // 9. Test White Deck Replenishment
+  console.log('\n[Test] Testing Deck Replenishment...');
+  room.whiteDeck = []; // artificially empty deck
+  const drawn = room.gameEngine.drawWhiteCard(room);
+  if (!drawn || typeof drawn !== 'string') {
+    throw new Error('Expected drawWhiteCard to replenish from discard pile or packs!');
+  }
+  console.log(`  - Successfully drew from replenished deck: "${drawn}"`);
+
+  // 10. Test Round 3 with Configurable Target Score (Target: 2) & Targeted Discard Redraw
+  console.log('\n[Test] Testing Round 3 with Configurable Target Score (Target: 2)...');
+  room.targetScore = 2;
+  const targetWinner = room.players[0];
+  targetWinner.score = 1; // 1 pt away from target
+
+  roomManager.advanceNextRound(room.code);
+  const round3 = roomManager.startRound(room.code);
+  console.log(`[Round 3] Prompt: "${round3.prompt}". Judge: ${round3.judgeNickname}`);
+
+  // Test Targeted Discard Redraw with Deduplication during CAH_SUBMIT
+  const nonJudgesR3 = room.players.filter(p => p.socketId !== round3.judgeSocketId);
+  const redrawPlayer = nonJudgesR3.find(p => !p.usedRedraw);
+  if (redrawPlayer) {
+    console.log(`\n[Test] Testing Targeted Discard Redraw with Deduplication for ${redrawPlayer.nickname}...`);
+    const redrawRes3 = roomManager.submitPlayerInput(room.code, redrawPlayer.socketId, { action: 'DISCARD_REDRAW', cardIndices: [4, 4, 1] });
+    if (!redrawRes3.success || redrawRes3.hand.length !== 7) {
+      throw new Error(`Targeted Discard Redraw failed! Expected 7 cards, got ${redrawRes3.hand?.length}`);
+    }
+    console.log('  - Targeted discard & redraw handled deduplicated indices cleanly.');
+  }
+
+  // Submit cards
+  nonJudgesR3.forEach(p => {
+    roomManager.submitPlayerInput(room.code, p.socketId, { action: 'SUBMIT_CARD', cardIndex: 0 });
+  });
+
+  // Pick winner to trigger game over
+  // Ensure targetWinner is a submission, or if targetWinner is judge, award winner to reached target
+  const winnerSub = room.shuffledSubmissions.find(s => s.playerSocketId === targetWinner.socketId) || room.shuffledSubmissions[0];
+  if (winnerSub.playerSocketId !== targetWinner.socketId) {
+    const actualSubPlayer = room.players.find(p => p.socketId === winnerSub.playerSocketId);
+    if (actualSubPlayer) actualSubPlayer.score = 1;
+  }
+
+  const round3JudgeRes = roomManager.submitPlayerInput(room.code, round3.judgeSocketId, { action: 'PICK_WINNER', submissionId: winnerSub.id });
+  
+  console.log(`  - Round 3 Winner: ${round3JudgeRes.winnerPlayer.nickname} with ${round3JudgeRes.winnerPlayer.score} pts.`);
+  console.log(`  - isGameOver flag: ${round3JudgeRes.isGameOver} (Target: ${room.targetScore})`);
+
+  if (!round3JudgeRes.isGameOver) {
+    throw new Error(`Expected isGameOver to be true when player reached targetScore ${room.targetScore}!`);
+  }
+
   console.log('\n✅ Bad Cards Engine & Extended Features Test Passed Successfully!');
   process.exit(0);
 }

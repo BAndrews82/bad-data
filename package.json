@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node test/simulate_game.js"
+    "test": "node test/simulate_game.js && node test/simulate_cah_game.js",
+    "test:cah": "node test/simulate_cah_game.js",
+    "test:trivia": "node test/simulate_game.js"
   },
   "dependencies": {
     "@bestcodes/edge-tts": "^3.0.1",

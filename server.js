@@ -130,6 +130,7 @@ function preprocessTtsText(rawText) {
     .replace(/%/g, ' percent ')
     .replace(/Question (\d+)!/gi, 'Question $1... ')
     .replace(/Question (\d+):/gi, 'Question $1... ')
+    .replace(/_{2,}/g, ' blank ')
     .replace(/\.{2,}/g, '... ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -275,7 +276,21 @@ app.get('/api/tts', async (req, res) => {
   });
 });
 
-// Socket.io Handlers
+const revealAudioStore = new Map();
+
+app.get('/api/tts/reveal', (req, res) => {
+  const roomCode = (req.query.roomCode || '').toUpperCase().trim();
+  const round = req.query.round || '';
+  const key = `${roomCode}_${round}`;
+
+  const audio = revealAudioStore.get(key);
+  if (audio && audio.buffer) {
+    res.setHeader('Content-Type', audio.contentType || 'audio/mpeg');
+    return res.send(audio.buffer);
+  }
+  return res.status(404).send('Reveal audio not found or expired.');
+});
+
 io.on('connection', (socket) => {
   console.log(`[Socket] Connected: ${socket.id}`);
 
@@ -431,7 +446,18 @@ io.on('connection', (socket) => {
       selectedGameId: room.selectedGameId,
       themeId: room.themeId || 'midnight',
       isVip: Boolean(player.isVip),
-      hand: player.hand || []
+      hand: player.hand || [],
+      // Bad Cards specific state
+      isJudge: room.selectedGameId === 'cah' && room.currentJudgeSocketId === player.socketId,
+      judgeNickname: room.currentJudgeNickname,
+      prompt: room.currentPrompt ? room.currentPrompt.text : null,
+      hasSubmitted: Boolean(player.submittedCard || (room.roundSubmissions && room.roundSubmissions.has(player.socketId))),
+      submissions: room.shuffledSubmissions ? room.shuffledSubmissions.map(s => ({ id: s.id, cardText: s.cardText })) : [],
+      enablePopularVote: Boolean(room.enablePopularVote),
+      roundNum: (room.currentRound || 0) + 1,
+      totalRounds: room.totalRounds || 99,
+      lastWinner: room.lastWinner ? { nickname: room.lastWinner.nickname, cardText: room.winningSubmission ? room.winningSubmission.cardText : '' } : null,
+      popularWinnerNickname: room.popularWinnerPlayer ? room.popularWinnerPlayer.nickname : null
     });
 
     io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
@@ -447,9 +473,25 @@ io.on('connection', (socket) => {
       return socket.emit('error_message', { message: 'Need at least 1 player to start!' });
     }
 
+    // Auto-populate AI bots if Bad Cards is started with fewer than 3 players
+    if (room.selectedGameId === 'cah' && room.players.length < 3) {
+      const botsNeeded = 3 - room.players.length;
+      console.log(`[Room ${roomCode}] Bad Cards started with ${room.players.length} player(s). Auto-adding ${botsNeeded} AI bot(s).`);
+      for (let b = 0; b < botsNeeded; b++) {
+        roomManager.addBotPlayer(roomCode);
+      }
+      io.to(`host_${roomCode}`).emit('roster_update', { players: room.players });
+    }
+
     room.enableRoaster = Boolean(enableRoaster);
 
-    await roomManager.setupGame(roomCode, { sourceMode, selectedPacks, selectedCardPacks, enablePopularVote });
+    await roomManager.setupGame(roomCode, {
+      sourceMode,
+      selectedPacks,
+      selectedCardPacks: selectedCardPacks || room.selectedCardPacks || [],
+      enablePopularVote,
+      targetScore: room.targetScore || 5
+    });
 
     io.to(`room_${roomCode}`).emit('game_starting_notice', { selectedGameId: room.selectedGameId });
 
@@ -514,6 +556,7 @@ io.on('connection', (socket) => {
     });
 
     if (allSubmitted) {
+      roomManager.clearRoomTimer(room);
       console.log(`[Room ${room.code}] All players submitted cards! Transitioning to judging phase.`);
       startCahJudgingPhase(io, room.code);
     }
@@ -533,10 +576,46 @@ io.on('connection', (socket) => {
     if (res.error) return socket.emit('vote_error', { message: res.error });
 
     socket.emit('popular_vote_confirm', { success: true, submissionId: res.submissionId });
+    io.to(`host_${roomCode}`).emit('cah_popular_vote_update', { totalVotesCast: res.totalVotesCast || 0 });
+  });
+
+  // Target score socket handler
+  socket.on('select_target_score', ({ roomCode, targetScore }) => {
+    const room = roomManager.getRoom(roomCode);
+    if (!room) return;
+
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    if (!isAuth) return;
+
+    const validScores = [3, 5, 7, 10];
+    const score = validScores.includes(Number(targetScore)) ? Number(targetScore) : 5;
+    room.targetScore = score;
+
+    io.to(`host_${roomCode}`).emit('target_score_updated', { targetScore: score });
+    io.to(`room_${roomCode}`).emit('target_score_updated', { targetScore: score });
+  });
+
+  // Card packs socket handler
+  socket.on('select_card_packs', ({ roomCode, selectedCardPacks }) => {
+    const room = roomManager.getRoom(roomCode);
+    if (!room) return;
+
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    if (!isAuth) return;
+
+    if (Array.isArray(selectedCardPacks)) {
+      room.selectedCardPacks = selectedCardPacks;
+      io.to(`host_${roomCode}`).emit('card_packs_updated', { selectedCardPacks });
+      io.to(`room_${roomCode}`).emit('card_packs_updated', { selectedCardPacks });
+    }
   });
 
   // Bad Cards Judge winner pick
   socket.on('pick_winner', ({ roomCode, submissionId }) => {
+    const room = roomManager.getRoom(roomCode);
+    if (!room || room.status !== 'CAH_JUDGE') return;
+    roomManager.clearRoomTimer(room);
+
     const res = roomManager.submitPlayerInput(roomCode, socket.id, { action: 'PICK_WINNER', submissionId });
     if (res.error) return socket.emit('pick_error', { message: res.error });
 
@@ -547,7 +626,11 @@ io.on('connection', (socket) => {
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
 
-    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    const isAuth = (
+      room.hostSocketId === socket.id ||
+      roomManager.isVipPlayer(roomCode, socket.id) ||
+      (room.selectedGameId === 'cah' && room.currentJudgeSocketId === socket.id)
+    );
     if (!isAuth) return;
 
     if (room.selectedGameId === 'cah') {
@@ -658,7 +741,10 @@ io.on('connection', (socket) => {
         roomCode,
         selectedGameId: resetRoom.selectedGameId,
         themeId: resetRoom.themeId || 'midnight',
-        players: resetRoom.players
+        players: resetRoom.players,
+        availableCardPacks: cardService.getAvailablePacks(),
+        targetScore: resetRoom.targetScore || 5,
+        selectedCardPacks: resetRoom.selectedCardPacks || []
       });
 
       io.to(`room_${roomCode}`).emit('controller_reset_lobby', {
@@ -677,6 +763,44 @@ io.on('connection', (socket) => {
         io.to(`room_${room.code}`).emit('host_disconnected', { message: 'The TV host disconnected. Room closed.' });
       } else if (player) {
         io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
+
+        if (room.selectedGameId === 'cah') {
+          if (room.status === 'CAH_SUBMIT') {
+            if (room.gameEngine && room.gameEngine.checkAllSubmitted && room.gameEngine.checkAllSubmitted(room)) {
+              roomManager.clearRoomTimer(room);
+              room.gameEngine.transitionToJudging(room);
+              startCahJudgingPhase(io, room.code);
+            } else {
+              const nonJudgePlayers = room.players.filter(p => !p.isDisconnected && p.socketId !== room.currentJudgeSocketId);
+              io.to(`host_${room.code}`).emit('cah_submission_update', {
+                submittedCount: room.roundSubmissions ? room.roundSubmissions.size : 0,
+                totalRequired: nonJudgePlayers.length,
+                players: room.players.map(p => ({
+                  nickname: p.nickname,
+                  submitted: Boolean(p.submittedCard || p.socketId === room.currentJudgeSocketId),
+                  isJudge: p.socketId === room.currentJudgeSocketId
+                }))
+              });
+            }
+          } else if (room.status === 'CAH_JUDGE') {
+            if (room.currentJudgeSocketId === socket.id) {
+              console.log(`[Room ${room.code}] Judge disconnected during judging phase. Starting 12s auto-pick fallback.`);
+              setTimeout(() => {
+                const curRoom = roomManager.getRoom(room.code);
+                if (curRoom && curRoom.status === 'CAH_JUDGE') {
+                  const jPlayer = curRoom.players.find(p => p.socketId === curRoom.currentJudgeSocketId);
+                  if (!jPlayer || jPlayer.isDisconnected) {
+                    console.log(`[Room ${curRoom.code}] Auto-picking winner due to disconnected judge.`);
+                    const autoRes = curRoom.gameEngine.autoPickWinner(curRoom);
+                    if (autoRes) {
+                      evaluateAndRevealCah(io, curRoom.code, autoRes);
+                    }
+                  }
+                }
+              }, 12000);
+            }
+          }
+        }
       }
     }
   });
@@ -689,13 +813,16 @@ async function runCahRound(ioInstance, roomCode) {
   const { room, roundNum, totalRounds, prompt, judgeSocketId, judgeNickname } = roundData;
   console.log(`[Room ${roomCode}] CAH Round ${roundNum}/${totalRounds}. Judge: ${judgeNickname}. Prompt: "${prompt}"`);
 
-  getOrSynthesizeTts(prompt, true, process.env.ROASTER_VOICE || 'bm_george');
+  const promptTtsText = `Round ${roundNum}! Prompt: ${prompt}`;
+  getOrSynthesizeTts(promptTtsText, true, process.env.ROASTER_VOICE || 'bm_george');
 
   ioInstance.to(`host_${roomCode}`).emit('cah_round_start', {
     roundNum,
     totalRounds,
     prompt,
     judgeNickname,
+    targetScore: room.targetScore || 5,
+    durationMs: submissionDurationMs,
     players: room.players.map(p => ({
       nickname: p.nickname,
       score: p.score,
@@ -703,7 +830,7 @@ async function runCahRound(ioInstance, roomCode) {
     }))
   });
 
-  const nonJudgePlayers = room.players.filter(p => p.socketId !== judgeSocketId);
+  const nonJudgePlayers = room.players.filter(p => !p.isDisconnected && p.socketId !== judgeSocketId);
   room.players.forEach(p => {
     const isJudge = p.socketId === judgeSocketId;
     ioInstance.to(p.socketId).emit('cah_controller_round', {
@@ -714,9 +841,25 @@ async function runCahRound(ioInstance, roomCode) {
       judgeNickname,
       hand: p.hand,
       usedRedraw: p.usedRedraw,
+      durationMs: submissionDurationMs,
+      targetScore: room.targetScore || 5,
       totalRequired: nonJudgePlayers.length
     });
   });
+
+  // 60-second submission timeout to prevent deadlocks from AFK/lagged players
+  const submissionDurationMs = 60000;
+  const subTimer = setTimeout(() => {
+    const curRoom = roomManager.getRoom(roomCode);
+    if (curRoom && curRoom.status === 'CAH_SUBMIT') {
+      console.log(`[Room ${roomCode}] CAH submission timeout expired! Auto-submitting for remaining players.`);
+      if (curRoom.gameEngine && curRoom.gameEngine.autoSubmitRemaining) {
+        curRoom.gameEngine.autoSubmitRemaining(curRoom);
+        startCahJudgingPhase(ioInstance, roomCode);
+      }
+    }
+  }, submissionDurationMs);
+  roomManager.setRoomTimer(room, subTimer);
 
   const botPlayers = room.players.filter(p => p.isBot && p.socketId !== judgeSocketId);
   botPlayers.forEach(bot => {
@@ -737,6 +880,7 @@ async function runCahRound(ioInstance, roomCode) {
           });
 
           if (res.allSubmitted) {
+            roomManager.clearRoomTimer(room);
             startCahJudgingPhase(ioInstance, roomCode);
           }
         }
@@ -751,14 +895,18 @@ function startCahJudgingPhase(ioInstance, roomCode) {
 
   console.log(`[Room ${roomCode}] CAH Judging Phase. Broadcast anonymous choices.`);
 
+  const judgingDurationMs = 45000;
+
   ioInstance.to(`host_${roomCode}`).emit('cah_judging_phase', {
-    prompt: room.currentPrompt.text,
+    prompt: room.currentPrompt ? room.currentPrompt.text : '',
     judgeNickname: room.currentJudgeNickname,
+    durationMs: judgingDurationMs,
     submissions: room.shuffledSubmissions.map(s => ({ id: s.id, cardText: s.cardText }))
   });
 
   ioInstance.to(room.currentJudgeSocketId).emit('cah_judge_pick_options', {
-    prompt: room.currentPrompt.text,
+    prompt: room.currentPrompt ? room.currentPrompt.text : '',
+    durationMs: judgingDurationMs,
     submissions: room.shuffledSubmissions.map(s => ({ id: s.id, cardText: s.cardText }))
   });
 
@@ -766,9 +914,43 @@ function startCahJudgingPhase(ioInstance, roomCode) {
     ioInstance.to(p.socketId).emit('cah_waiting_for_judge', {
       judgeNickname: room.currentJudgeNickname,
       enablePopularVote: room.enablePopularVote,
+      durationMs: judgingDurationMs,
       submissions: room.shuffledSubmissions.map(s => ({ id: s.id, cardText: s.cardText }))
     });
   });
+
+  // Automated bot popular voting if popular voting is active
+  if (room.enablePopularVote) {
+    const botNonJudges = room.players.filter(p => p.isBot && p.socketId !== room.currentJudgeSocketId);
+    botNonJudges.forEach(bot => {
+      const delayMs = Math.floor(Math.random() * 3500) + 1500;
+      setTimeout(() => {
+        const cur = roomManager.getRoom(roomCode);
+        if (cur && cur.status === 'CAH_JUDGE' && cur.shuffledSubmissions && cur.shuffledSubmissions.length > 0) {
+          const randSub = cur.shuffledSubmissions[Math.floor(Math.random() * cur.shuffledSubmissions.length)];
+          const vRes = roomManager.submitPlayerInput(roomCode, bot.socketId, { action: 'POPULAR_VOTE', submissionId: randSub.id });
+          if (vRes && vRes.success) {
+            ioInstance.to(`host_${roomCode}`).emit('cah_popular_vote_update', { totalVotesCast: vRes.totalVotesCast });
+          }
+        }
+      }, delayMs);
+    });
+  }
+
+  // 45-second judging timeout so game advances even if Judge walks away
+  const judgeTimer = setTimeout(() => {
+    const curRoom = roomManager.getRoom(roomCode);
+    if (curRoom && curRoom.status === 'CAH_JUDGE') {
+      console.log(`[Room ${roomCode}] CAH judging timeout expired! Auto-picking winner.`);
+      if (curRoom.gameEngine && curRoom.gameEngine.autoPickWinner) {
+        const autoRes = curRoom.gameEngine.autoPickWinner(curRoom);
+        if (autoRes) {
+          evaluateAndRevealCah(ioInstance, roomCode, autoRes);
+        }
+      }
+    }
+  }, judgingDurationMs);
+  roomManager.setRoomTimer(room, judgeTimer);
 
   const judgePlayer = room.players.find(p => p.socketId === room.currentJudgeSocketId);
   if (judgePlayer && judgePlayer.isBot) {
@@ -777,6 +959,7 @@ function startCahJudgingPhase(ioInstance, roomCode) {
         const randomSub = room.shuffledSubmissions[Math.floor(Math.random() * room.shuffledSubmissions.length)];
         const res = roomManager.submitPlayerInput(roomCode, judgePlayer.socketId, { action: 'PICK_WINNER', submissionId: randomSub.id });
         if (res && res.success) {
+          roomManager.clearRoomTimer(room);
           evaluateAndRevealCah(ioInstance, roomCode, res);
         }
       }
@@ -786,6 +969,8 @@ function startCahJudgingPhase(ioInstance, roomCode) {
 
 async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
   const { winningSubmission, winnerPlayer, popularWinnerPlayer, popularVoteCount, prompt, room } = resultData;
+
+  roomManager.clearRoomTimer(room);
 
   let hostRoast = '';
   if (room.enableRoaster) {
@@ -800,7 +985,8 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
   const announcerVoice = britishVoice;
   const roasterVoice = britishVoice;
 
-  const revealSpeech = `Winning card... ${winningSubmission.cardText}!`;
+  const cleanWinningCard = winningSubmission.cardText.replace(/[.!?]+$/, '').trim();
+  const revealSpeech = `Winning card... ${cleanWinningCard}!`;
   const announcerAudio = await getOrSynthesizeTts(revealSpeech, false, announcerVoice);
   let finalRevealAudio = announcerAudio;
 
@@ -812,8 +998,19 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
     }
   }
 
+  let revealDurationMs = 7000;
+  if (finalRevealAudio && finalRevealAudio.buffer) {
+    const audioSecs = finalRevealAudio.buffer.length / 16000;
+    revealDurationMs = Math.max(7000, Math.min(11000, Math.ceil((audioSecs + 1.5) * 1000)));
+  }
+
+  const revealKey = `${roomCode}_${room.currentRound}`;
+  if (finalRevealAudio) {
+    revealAudioStore.set(revealKey, finalRevealAudio);
+  }
+
   const leaderboard = [...room.players].sort((a,b) => b.score - a.score);
-  const isGameOver = room.players.some(p => p.score >= 5);
+  const isGameOver = room.players.some(p => p.score >= (room.targetScore || 5));
 
   console.log(`[Room ${roomCode}] CAH Winner: ${winnerPlayer ? winnerPlayer.nickname : 'Unknown'} with "${winningSubmission.cardText}". Popular Vote Winner: ${popularWinnerPlayer ? popularWinnerPlayer.nickname : 'None'}`);
 
@@ -827,7 +1024,9 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
     popularVoteCount: popularVoteCount || 0,
     hostRoast,
     leaderboard,
-    isGameOver
+    isGameOver,
+    revealDurationMs,
+    revealAudioUrl: finalRevealAudio ? `/api/tts/reveal?roomCode=${roomCode}&round=${room.currentRound}` : null
   });
 
   const currentJudgePlayer = room.players.find(p => p.socketId === room.currentJudgeSocketId);
@@ -847,14 +1046,14 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
   });
 
   if (isGameOver) {
-    ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
-  } else if (currentJudgePlayer && currentJudgePlayer.isBot) {
-    // If Judge is a bot player, automatically advance after reveal audio
-    let revealDurationMs = 7000;
-    if (finalRevealAudio && finalRevealAudio.buffer) {
-      const audioSecs = finalRevealAudio.buffer.length / 16000;
-      revealDurationMs = Math.max(7000, Math.min(10000, Math.ceil((audioSecs + 1.5) * 1000)));
-    }
+    const overTimer = setTimeout(() => {
+      ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
+    }, revealDurationMs);
+    roomManager.setRoomTimer(room, overTimer);
+  } else {
+    // If Judge is a bot player, automatically advance after reveal audio.
+    // If Judge is a human player, allow them to tap advance or auto-advance after 10s grace.
+    const autoAdvanceMs = (currentJudgePlayer && currentJudgePlayer.isBot) ? revealDurationMs : (revealDurationMs + 10000);
     const timerHandle = setTimeout(async () => {
       const currentR = roomManager.getRoom(roomCode);
       if (currentR && currentR.status === 'CAH_REVEAL') {
@@ -865,7 +1064,7 @@ async function evaluateAndRevealCah(ioInstance, roomCode, resultData) {
           ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: currentR.selectedGameId });
         }
       }
-    }, revealDurationMs);
+    }, autoAdvanceMs);
     roomManager.setRoomTimer(room, timerHandle);
   }
 }
@@ -979,6 +1178,11 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     revealDurationMs = Math.max(6500, Math.min(9500, Math.ceil((audioSecs + 1.5) * 1000)));
   }
 
+  const triviaRevealKey = `${roomCode}_trivia_${results.room.currentQuestionIndex}`;
+  if (finalRevealAudio) {
+    revealAudioStore.set(triviaRevealKey, finalRevealAudio);
+  }
+
   ioInstance.to(`host_${roomCode}`).emit('round_reveal', {
     questionNum: results.room.currentQuestionIndex + 1,
     totalQuestions: results.room.questions.length,
@@ -988,7 +1192,8 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     players: results.players,
     leaderboard: results.leaderboard,
     isLastQuestion: results.isLastQuestion,
-    revealDurationMs
+    revealDurationMs,
+    revealAudioUrl: finalRevealAudio ? `/api/tts/reveal?roomCode=${roomCode}&round=trivia_${results.room.currentQuestionIndex}` : null
   });
 
   results.players.forEach(player => {
@@ -1017,7 +1222,9 @@ async function evaluateAndReveal(ioInstance, roomCode) {
     }, revealDurationMs);
     roomManager.setRoomTimer(results.room, autoAdvanceHandle);
   } else {
-    ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard: results.leaderboard, selectedGameId: results.room ? results.room.selectedGameId : 'trivia' });
+    setTimeout(() => {
+      ioInstance.to(`room_${roomCode}`).emit('game_over', { leaderboard: results.leaderboard, selectedGameId: results.room ? results.room.selectedGameId : 'trivia' });
+    }, revealDurationMs);
   }
 }
 

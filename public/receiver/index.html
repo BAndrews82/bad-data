@@ -307,9 +307,26 @@
           </div>
         </div>
 
-        <!-- Card Packs Selector (Shown for Trivia mode) -->
-        <div id="card-packs-selector-container" style="display: none;" class="hidden w-full text-left bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 my-1">
-          <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Available Card Packs</span>
+        <!-- Target Score Selector (Shown for Bad Cards mode) -->
+        <div id="target-score-container" style="display: none;" class="hidden w-full text-left bg-slate-900/90 p-2.5 rounded-xl border border-purple-500/30 my-1">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Winning Target Score</span>
+            <span id="target-score-label" class="text-[10px] font-black text-amber-400">First to 5 Points</span>
+          </div>
+          <div class="grid grid-cols-4 gap-1.5">
+            <button type="button" onclick="event.stopPropagation(); setTargetScore(3);" id="score-btn-3" class="py-1 px-2 rounded-lg bg-slate-800 text-slate-300 font-bold text-xs hover:border-amber-400 border border-slate-700 transition cursor-pointer">3 Pts</button>
+            <button type="button" onclick="event.stopPropagation(); setTargetScore(5);" id="score-btn-5" class="py-1 px-2 rounded-lg bg-amber-500 text-slate-950 font-black text-xs border border-amber-300 shadow transition cursor-pointer">5 Pts</button>
+            <button type="button" onclick="event.stopPropagation(); setTargetScore(7);" id="score-btn-7" class="py-1 px-2 rounded-lg bg-slate-800 text-slate-300 font-bold text-xs hover:border-amber-400 border border-slate-700 transition cursor-pointer">7 Pts</button>
+            <button type="button" onclick="event.stopPropagation(); setTargetScore(10);" id="score-btn-10" class="py-1 px-2 rounded-lg bg-slate-800 text-slate-300 font-bold text-xs hover:border-amber-400 border border-slate-700 transition cursor-pointer">10 Pts</button>
+          </div>
+        </div>
+
+        <!-- Card Packs Selector (Shown for Bad Cards mode) -->
+        <div id="card-packs-selector-container" style="display: none;" class="hidden w-full text-left bg-slate-900/90 p-2.5 rounded-xl border border-purple-500/30 my-1">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Available Card Packs</span>
+            <span class="text-[8px] text-purple-400 font-bold">Click to toggle</span>
+          </div>
           <div id="card-packs-grid" class="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
             <!-- Rendered via JS -->
           </div>
@@ -479,6 +496,11 @@
       </h2>
     </div>
 
+    <!-- Countdown Timer Bar for Bad Cards Prompt -->
+    <div class="w-full max-w-4xl mx-auto bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800 my-1 relative shrink-0">
+      <div id="cah-prompt-timer-bar" class="bg-gradient-to-r from-purple-500 via-indigo-500 to-pink-500 h-full w-full transition-all duration-100 ease-linear"></div>
+    </div>
+
     <div id="cah-submissions-roster" class="flex flex-wrap items-center justify-center gap-3 py-2 shrink-0"></div>
   </section>
 
@@ -491,6 +513,9 @@
       <h2 class="text-2xl sm:text-3xl font-black text-white mt-1">
         👑 <span id="cah-judging-name" class="text-amber-400">Judge</span> is picking the winning card!
       </h2>
+      <div id="cah-judging-votes-badge" class="hidden inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs mt-1 shadow">
+        <span>⭐ Audience Votes:</span> <span id="cah-judging-votes-count" class="font-black text-white">0</span>
+      </div>
     </div>
 
     <!-- Black Card Prompt Banner -->
@@ -499,6 +524,11 @@
       <p id="cah-judging-prompt-text" class="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-snug">
         Prompt text...
       </p>
+    </div>
+
+    <!-- Countdown Timer Bar for Bad Cards Judging -->
+    <div class="w-full max-w-4xl mx-auto bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800 my-1 relative shrink-0">
+      <div id="cah-judging-timer-bar" class="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-600 h-full w-full transition-all duration-100 ease-linear"></div>
     </div>
 
     <!-- Submitted White Cards Grid -->
@@ -528,6 +558,14 @@
     <div id="cah-reveal-roast-banner" class="glass-panel p-3 rounded-xl border border-amber-500/40 bg-amber-950/30 text-center max-w-3xl mx-auto w-full my-1 flex items-center justify-center gap-3 shrink-0">
       <span class="text-xl">🤖</span>
       <p id="cah-roast-text" class="text-amber-200 font-bold italic text-sm">"Gemini Roast..."</p>
+    </div>
+
+    <!-- People's Choice Popular Winner Banner -->
+    <div id="cah-popular-winner-banner" class="hidden glass-panel px-4 py-1.5 rounded-full border border-emerald-500/50 bg-emerald-950/50 text-center max-w-md mx-auto my-1 flex items-center justify-center gap-2 shrink-0 shadow-lg">
+      <span class="text-base">🌟</span>
+      <span class="text-xs font-black text-emerald-300 uppercase tracking-wider">People's Choice:</span>
+      <span id="cah-popular-winner-name" class="text-xs font-black text-white">Player</span>
+      <span id="cah-popular-winner-votes" class="text-[10px] text-emerald-400 font-bold">(0 votes)</span>
     </div>
 
     <div id="cah-reveal-judge-status" class="text-center py-1 text-amber-300 font-extrabold text-xs uppercase tracking-widest shrink-0 animate-pulse">
@@ -1030,18 +1068,39 @@
       document.getElementById('game-card-cah').className = (gameId === 'cah') ? 'p-2 rounded-xl bg-slate-900 border-2 border-purple-500 text-white font-extrabold transition shadow flex items-center gap-2 cursor-pointer' : 'p-2 rounded-xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold transition shadow flex items-center gap-2 cursor-pointer';
       
       const packOpts = document.getElementById('card-packs-selector-container');
-      if (packOpts) {
-        if (gameId === 'cah') {
-          packOpts.classList.add('hidden');
-          packOpts.style.display = 'none';
-        } else {
-          packOpts.classList.remove('hidden');
-          packOpts.style.display = 'block';
-        }
+      const scoreOpts = document.getElementById('target-score-container');
+      if (gameId === 'cah') {
+        if (packOpts) { packOpts.classList.remove('hidden'); packOpts.style.display = 'block'; }
+        if (scoreOpts) { scoreOpts.classList.remove('hidden'); scoreOpts.style.display = 'block'; }
+      } else {
+        if (packOpts) { packOpts.classList.add('hidden'); packOpts.style.display = 'none'; }
+        if (scoreOpts) { scoreOpts.classList.add('hidden'); scoreOpts.style.display = 'none'; }
       }
 
       if (emitSocket && socket && roomCode) {
         socket.emit('select_game', { roomCode, gameId });
+      }
+    }
+
+    let currentTargetScore = 5;
+
+    function setTargetScore(score, emitSocket = true) {
+      currentTargetScore = Number(score) || 5;
+      [3, 5, 7, 10].forEach(s => {
+        const btn = document.getElementById(`score-btn-${s}`);
+        if (btn) {
+          if (s === currentTargetScore) {
+            btn.className = 'py-1 px-2 rounded-lg bg-amber-500 text-slate-950 font-black text-xs border border-amber-300 shadow transition cursor-pointer';
+          } else {
+            btn.className = 'py-1 px-2 rounded-lg bg-slate-800 text-slate-300 font-bold text-xs hover:border-amber-400 border border-slate-700 transition cursor-pointer';
+          }
+        }
+      });
+      const label = document.getElementById('target-score-label');
+      if (label) label.textContent = `First to ${currentTargetScore} Points`;
+
+      if (emitSocket && socket && roomCode) {
+        socket.emit('select_target_score', { roomCode, targetScore: currentTargetScore });
       }
     }
 
@@ -1065,17 +1124,97 @@
       }
     }
 
+    function toggleCardPack(packId) {
+      if (!availableCardPacks || availableCardPacks.length === 0) return;
+      const idx = selectedCardPackIds.indexOf(packId);
+      if (idx !== -1) {
+        if (selectedCardPackIds.length > 1) {
+          selectedCardPackIds.splice(idx, 1);
+        }
+      } else {
+        selectedCardPackIds.push(packId);
+      }
+
+      renderCardPacks(availableCardPacks);
+
+      if (socket && roomCode) {
+        socket.emit('select_card_packs', { roomCode, selectedCardPacks: selectedCardPackIds });
+      }
+    }
+
     function renderCardPacks(packs) {
       availableCardPacks = packs || [];
       const grid = document.getElementById('card-packs-grid');
       if (!grid) return;
 
-      selectedCardPackIds = availableCardPacks.map(p => p.id);
-      grid.innerHTML = availableCardPacks.map(p => `
-        <span class="px-2 py-0.5 rounded bg-purple-600/40 border border-purple-500/60 text-purple-200 text-[9px] font-bold">
-          ✓ ${p.name} (${p.blackCount}B / ${p.whiteCount}W)
-        </span>
-      `).join('');
+      if (selectedCardPackIds.length === 0 && availableCardPacks.length > 0) {
+        selectedCardPackIds = availableCardPacks.map(p => p.id);
+      }
+
+      grid.innerHTML = availableCardPacks.map(p => {
+        const isSelected = selectedCardPackIds.includes(p.id);
+        return `
+          <button type="button" onclick="event.stopPropagation(); toggleCardPack('${p.id}');" id="pack-btn-${p.id}" class="px-2 py-0.5 rounded-lg ${isSelected ? 'bg-purple-600 text-white border-purple-400 font-bold shadow' : 'bg-slate-800 text-slate-400 border-slate-700 font-medium'} border text-[9px] transition cursor-pointer flex items-center gap-1">
+            <span>${isSelected ? '✓' : '+'}</span>
+            <span>${p.name}</span>
+            <span class="text-[8px] opacity-75">(${p.blackCount}B/${p.whiteCount}W)</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function formatCahPrompt(promptText, winningCardText = null) {
+      if (!promptText) return '';
+      const hasBlanks = /_{2,}/.test(promptText);
+
+      if (!winningCardText) {
+        if (hasBlanks) {
+          return promptText.replace(/_{2,}/g, '<span class="inline-block border-b-4 border-purple-400 min-w-[70px] sm:min-w-[110px] px-2 text-center text-purple-300 font-bold opacity-80 mx-1">_____</span>');
+        }
+        return promptText;
+      }
+
+      const cleanWinningCard = winningCardText.trim();
+      const cardWithoutDot = cleanWinningCard.replace(/\.+$/, '');
+
+      if (hasBlanks) {
+        let replacedOnce = false;
+        return promptText.replace(/_{2,}/g, (match, offset, fullStr) => {
+          if (!replacedOnce) {
+            replacedOnce = true;
+            const isEnd = (offset + match.length >= fullStr.trim().length);
+            const cardToUse = isEnd ? cleanWinningCard : cardWithoutDot;
+            return `<span class="inline-block px-3 py-1 rounded-xl bg-amber-400 text-slate-950 font-black shadow-lg border border-amber-300 transform -rotate-1 mx-1.5 align-baseline">${cardToUse}</span>`;
+          }
+          return '<span class="inline-block border-b-4 border-purple-400 min-w-[70px] px-2 text-center text-purple-300 font-bold opacity-80 mx-1">_____</span>';
+        });
+      } else {
+        return `${promptText} <span class="block mt-2"><span class="inline-block px-4 py-1.5 rounded-2xl bg-amber-400 text-slate-950 font-black text-xl sm:text-2xl shadow-xl border-2 border-amber-300 transform -rotate-1">${cleanWinningCard}</span></span>`;
+      }
+    }
+
+    let cahTimerInterval = null;
+    function startCahTimer(barId, durationMs) {
+      stopCahTimer();
+      const bar = document.getElementById(barId);
+      if (!bar) return;
+      bar.style.width = '100%';
+      const startTime = Date.now();
+      cahTimerInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, 1 - (elapsed / durationMs));
+        bar.style.width = `${(remaining * 100).toFixed(1)}%`;
+        if (remaining <= 0) {
+          stopCahTimer();
+        }
+      }, 100);
+    }
+
+    function stopCahTimer() {
+      if (cahTimerInterval) {
+        clearInterval(cahTimerInterval);
+        cahTimerInterval = null;
+      }
     }
 
     function addBotPlayers() {
@@ -1117,6 +1256,25 @@
       currentAudio.volume = 1.0;
       sfx.enhanceAudioElement(currentAudio);
       currentAudio.play().catch(() => {});
+    }
+
+    function playTtsAudioUrl(url, fallbackText) {
+      sfx.init();
+      if (!ttsEnabled) return;
+      if (currentAudio) {
+        try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(e) {}
+      }
+
+      if (url) {
+        currentAudio = new Audio(url);
+        currentAudio.volume = 1.0;
+        sfx.enhanceAudioElement(currentAudio);
+        currentAudio.play().catch(() => {
+          if (fallbackText) speakText(fallbackText);
+        });
+      } else if (fallbackText) {
+        speakText(fallbackText);
+      }
     }
 
     function toggleTTS() {
@@ -1252,7 +1410,7 @@
         roastBanner.classList.add('hidden');
       }
 
-      speakText(`The correct answer was... option ${labels[data.correctIndex]}! ... ${data.correctAnswerText}`);
+      playTtsAudioUrl(data.revealAudioUrl, `The correct answer was... option ${labels[data.correctIndex]}! ... ${data.correctAnswerText}`);
 
       const listContainer = document.getElementById('reveal-leaderboard-list');
       listContainer.innerHTML = data.leaderboard.map((p, rank) => `
@@ -1268,13 +1426,18 @@
     });
 
     // ================= BAD CARDS EVENTS =================
+    let lastCahSubmittedCount = 0;
     socket.on('cah_round_start', (data) => {
       document.getElementById('mini-room-badge').classList.remove('hidden');
       showScreen('screen-cah-prompt');
+      stopCahTimer();
+      lastCahSubmittedCount = 0;
+      sfx.playQuestionChime();
+      startCahTimer('cah-prompt-timer-bar', data.durationMs || 60000);
 
-      document.getElementById('cah-round-badge').textContent = `Bad Cards • Round ${data.roundNum} (First to 5 Pts)`;
+      document.getElementById('cah-round-badge').textContent = `Bad Cards • Round ${data.roundNum} (First to ${data.targetScore || currentTargetScore || 5} Pts)`;
       document.getElementById('cah-judge-nickname-text').textContent = data.judgeNickname;
-      document.getElementById('cah-prompt-text').textContent = data.prompt;
+      document.getElementById('cah-prompt-text').innerHTML = formatCahPrompt(data.prompt);
       document.getElementById('cah-submitted-counter').textContent = `0 / ${data.players.filter(p => !p.isJudge).length}`;
 
       const roster = document.getElementById('cah-submissions-roster');
@@ -1288,6 +1451,10 @@
     });
 
     socket.on('cah_submission_update', (data) => {
+      if (data.submittedCount > lastCahSubmittedCount) {
+        sfx.playCardSwoosh();
+      }
+      lastCahSubmittedCount = data.submittedCount;
       document.getElementById('cah-submitted-counter').textContent = `${data.submittedCount} / ${data.totalRequired}`;
       const roster = document.getElementById('cah-submissions-roster');
       if (roster) {
@@ -1300,11 +1467,20 @@
     });
 
     socket.on('cah_judging_phase', (data) => {
+      stopCahTimer();
       showScreen('screen-cah-judging');
+      startCahTimer('cah-judging-timer-bar', data.durationMs || 45000);
       document.getElementById('cah-judging-name').textContent = data.judgeNickname;
 
+      const voteBadge = document.getElementById('cah-judging-votes-badge');
+      const voteCount = document.getElementById('cah-judging-votes-count');
+      if (voteBadge && voteCount) {
+        voteCount.textContent = '0';
+        voteBadge.classList.add('hidden');
+      }
+
       const promptEl = document.getElementById('cah-judging-prompt-text');
-      if (promptEl) promptEl.textContent = data.prompt;
+      if (promptEl) promptEl.innerHTML = formatCahPrompt(data.prompt);
 
       const grid = document.getElementById('cah-cards-grid');
       grid.innerHTML = data.submissions.map((sub, idx) => `
@@ -1322,6 +1498,17 @@
 
       sfx.playCardSwoosh();
       speakText(`All cards are in! ${data.judgeNickname} is picking the winner!`);
+    });
+
+    socket.on('cah_popular_vote_update', (data) => {
+      const voteBadge = document.getElementById('cah-judging-votes-badge');
+      const voteCount = document.getElementById('cah-judging-votes-count');
+      if (voteBadge && voteCount) {
+        voteCount.textContent = data.totalVotesCast || 0;
+        voteBadge.classList.remove('hidden');
+        voteBadge.classList.add('animate-pulse');
+        setTimeout(() => voteBadge.classList.remove('animate-pulse'), 500);
+      }
     });
 
     let matrixInterval = null;
@@ -1484,9 +1671,10 @@
     }
 
     socket.on('cah_round_reveal', (data) => {
+      stopCahTimer();
       showScreen('screen-cah-reveal');
       document.getElementById('cah-winner-name').textContent = data.winnerNickname;
-      document.getElementById('cah-reveal-prompt').textContent = data.prompt;
+      document.getElementById('cah-reveal-prompt').innerHTML = formatCahPrompt(data.prompt, data.winningCardText);
       document.getElementById('cah-reveal-winning-card').textContent = data.winningCardText;
       const judgeNameEl = document.getElementById('cah-reveal-judge-name');
       if (judgeNameEl) judgeNameEl.textContent = data.judgeNickname || 'Judge';
@@ -1507,9 +1695,21 @@
         roastBanner.classList.add('hidden');
       }
 
+      // Populate People's Choice Popular Winner Banner
+      const popBanner = document.getElementById('cah-popular-winner-banner');
+      const popName = document.getElementById('cah-popular-winner-name');
+      const popVotes = document.getElementById('cah-popular-winner-votes');
+      if (data.popularWinnerNickname && popBanner && popName && popVotes) {
+        popName.textContent = data.popularWinnerNickname;
+        popVotes.textContent = `(${data.popularVoteCount} vote${data.popularVoteCount === 1 ? '' : 's'})`;
+        popBanner.classList.remove('hidden');
+      } else if (popBanner) {
+        popBanner.classList.add('hidden');
+      }
+
       sfx.playCardSlam();
       setTimeout(() => sfx.playCashGainChime(), 300);
-      speakText(`The winner is ${data.winnerNickname}! ... Winning card: ${data.winningCardText}`);
+      playTtsAudioUrl(data.revealAudioUrl, `The winner is ${data.winnerNickname}! ... Winning card: ${data.winningCardText}`);
 
       const leaderboardGrid = document.getElementById('cah-reveal-leaderboard');
       leaderboardGrid.innerHTML = data.leaderboard.map((p, rank) => `
@@ -1565,6 +1765,7 @@
     });
 
     socket.on('game_over', (data) => {
+      stopCahTimer();
       showScreen('screen-gameover');
       const winner = data.leaderboard[0];
       if (winner) {
@@ -1587,10 +1788,13 @@
     });
 
     socket.on('room_reset_lobby', (data) => {
+      stopCahTimer();
       showScreen('screen-lobby');
       document.getElementById('mini-room-badge').classList.add('hidden');
       if (data.players) updateRoster(data.players);
       if (data.themeId) selectTheme(data.themeId);
+      if (data.availableCardPacks) renderCardPacks(data.availableCardPacks);
+      if (data.targetScore) setTargetScore(data.targetScore, false);
     });
 
     function triggerResetToLobby() {
@@ -1621,7 +1825,7 @@
 
       const nextBtn = document.getElementById('next-question-btn');
       if (nextBtn) {
-        nextBtn.classList.toggle('hidden', screenId !== 'screen-reveal');
+        nextBtn.classList.toggle('hidden', screenId !== 'screen-reveal' && screenId !== 'screen-cah-reveal');
       }
 
 
@@ -1660,6 +1864,17 @@
 
     socket.on('popular_vote_toggled', (data) => {
       if (data) setPopularVoteEnabled(Boolean(data.popularVoteEnabled));
+    });
+
+    socket.on('target_score_updated', (data) => {
+      if (data && data.targetScore) setTargetScore(data.targetScore, false);
+    });
+
+    socket.on('card_packs_updated', (data) => {
+      if (data && Array.isArray(data.selectedCardPacks)) {
+        selectedCardPackIds = data.selectedCardPacks;
+        renderCardPacks(availableCardPacks);
+      }
     });
   </script>
 
