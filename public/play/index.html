@@ -130,6 +130,10 @@
     <div class="flex items-center gap-2">
       <span id="player-avatar-badge" class="w-8 h-8 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center text-base shadow">👾</span>
       <span id="player-nickname-text" class="font-extrabold text-lg text-white">Player</span>
+      <div id="player-streak-badge" class="hidden flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/50 text-[11px] font-black text-amber-300 shadow animate-pulse">
+        <span>🔥</span>
+        <span id="player-streak-count">0</span>
+      </div>
     </div>
     <div class="flex items-center gap-3">
       <button id="mobile-end-btn" onclick="triggerMobileEndGame()" class="hidden px-2.5 py-1 rounded-lg bg-rose-600/80 hover:bg-rose-500 text-white font-bold text-[10px] border border-rose-500/40 cursor-pointer">
@@ -335,6 +339,11 @@
       <div id="result-badge" class="w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3">+</div>
       <h2 id="result-headline" class="text-3xl font-black text-white mb-1">CORRECT!</h2>
       <div id="result-gain-text" class="font-mono-code font-black text-4xl my-2">+$850</div>
+      <div id="result-streak-container" class="hidden mt-2 py-2 px-3 rounded-2xl bg-orange-500/20 border border-orange-500/40 text-amber-300 font-extrabold text-sm flex items-center justify-center gap-2 animate-bounce">
+        <span>🔥</span>
+        <span><span id="result-streak-count">2</span> IN A ROW!</span>
+        <span class="text-xs text-orange-200 font-bold bg-orange-500/30 px-2 py-0.5 rounded-full">(+<span id="result-streak-bonus">$100</span> BONUS)</span>
+      </div>
       <div class="border-t border-slate-800 my-4"></div>
       <span class="text-xs text-slate-400 uppercase tracking-widest block">Total Score</span>
       <span id="result-total-score" class="font-mono-code font-black text-3xl text-white">$1,250</span>
@@ -1084,6 +1093,8 @@
       document.getElementById('buttons-grid').classList.add('hidden');
       document.getElementById('locked-banner').classList.remove('hidden');
       if (timerInterval) clearInterval(timerInterval);
+      const reactionBar = document.getElementById('mobile-reaction-bar');
+      if (reactionBar) reactionBar.classList.remove('hidden');
     });
 
     socket.on('round_result_controller', (data) => {
@@ -1096,6 +1107,22 @@
       const totalScore = document.getElementById('result-total-score');
 
       totalScore.textContent = `$${data.totalScore.toLocaleString()}`;
+
+      // Update streak tracking & bonus display
+      const streakCount = data.currentStreak || 0;
+      const streakBonus = data.streakBonus || 0;
+      updatePlayerStreakDisplay(streakCount);
+
+      const streakCard = document.getElementById('result-streak-container');
+      if (streakCard) {
+        if (data.isCorrect && streakCount >= 2) {
+          streakCard.classList.remove('hidden');
+          document.getElementById('result-streak-count').textContent = streakCount;
+          document.getElementById('result-streak-bonus').textContent = `$${streakBonus.toLocaleString()}`;
+        } else {
+          streakCard.classList.add('hidden');
+        }
+      }
 
       if (!data.answered) {
         badge.className = 'w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-3 bg-slate-800 text-slate-400';
@@ -1462,6 +1489,43 @@
       socket.emit('next_question_request', { roomCode: currentRoomCode });
     }
 
+    let lastReactionTime = 0;
+    function sendReaction(emoji) {
+      const now = Date.now();
+      if (now - lastReactionTime < 300) return;
+      lastReactionTime = now;
+
+      if (navigator.vibrate) {
+        try { navigator.vibrate(15); } catch(e) {}
+      }
+
+      if (socket && currentRoomCode) {
+        socket.emit('player_reaction', { roomCode: currentRoomCode, emoji });
+      }
+
+      const bar = document.getElementById('mobile-reaction-bar');
+      if (bar) {
+        const btn = Array.from(bar.querySelectorAll('button')).find(b => b.textContent.includes(emoji));
+        if (btn) {
+          btn.classList.add('scale-125', 'bg-purple-600/60');
+          setTimeout(() => btn.classList.remove('scale-125', 'bg-purple-600/60'), 250);
+        }
+      }
+    }
+
+    function updatePlayerStreakDisplay(streakCount) {
+      const badge = document.getElementById('player-streak-badge');
+      const countEl = document.getElementById('player-streak-count');
+      if (badge && countEl) {
+        if (streakCount >= 2) {
+          badge.classList.remove('hidden');
+          countEl.textContent = `${streakCount}x`;
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    }
+
     function showScreen(screenId) {
       const screens = [
         'screen-join', 'screen-lobby', 'screen-answer', 'screen-result',
@@ -1477,8 +1541,33 @@
       if (endBtn) {
         endBtn.classList.toggle('hidden', !isVipHost || ['screen-join', 'screen-lobby'].includes(screenId));
       }
+
+      const reactionBar = document.getElementById('mobile-reaction-bar');
+      if (reactionBar) {
+        const showReactions = currentRoomCode && [
+          'screen-lobby', 'screen-result', 'screen-cah-waiting-judge',
+          'screen-cah-judge-waiting', 'screen-cah-result'
+        ].includes(screenId);
+        reactionBar.classList.toggle('hidden', !showReactions);
+        if (isVipHost) {
+          reactionBar.classList.remove('bottom-3');
+          reactionBar.classList.add('bottom-16');
+        } else {
+          reactionBar.classList.remove('bottom-16');
+          reactionBar.classList.add('bottom-3');
+        }
+      }
     }
   </script>
+
+  <!-- Interactive Spectator Reaction Bar -->
+  <div id="mobile-reaction-bar" class="hidden fixed bottom-3 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 p-1.5 rounded-full glass-panel border border-slate-700/80 bg-slate-950/90 shadow-2xl backdrop-blur-xl transition-all">
+    <button type="button" onclick="sendReaction('🔥')" class="w-10 h-10 rounded-full bg-slate-900/90 hover:bg-slate-800 active:scale-90 transition flex items-center justify-center text-xl cursor-pointer">🔥</button>
+    <button type="button" onclick="sendReaction('💩')" class="w-10 h-10 rounded-full bg-slate-900/90 hover:bg-slate-800 active:scale-90 transition flex items-center justify-center text-xl cursor-pointer">💩</button>
+    <button type="button" onclick="sendReaction('💀')" class="w-10 h-10 rounded-full bg-slate-900/90 hover:bg-slate-800 active:scale-90 transition flex items-center justify-center text-xl cursor-pointer">💀</button>
+    <button type="button" onclick="sendReaction('👏')" class="w-10 h-10 rounded-full bg-slate-900/90 hover:bg-slate-800 active:scale-90 transition flex items-center justify-center text-xl cursor-pointer">👏</button>
+    <button type="button" onclick="sendReaction('🚀')" class="w-10 h-10 rounded-full bg-slate-900/90 hover:bg-slate-800 active:scale-90 transition flex items-center justify-center text-xl cursor-pointer">🚀</button>
+  </div>
 
   <!-- VIP Host Controls Drawer (Visible ONLY to VIP Phone) -->
   <div id="vip-controls-drawer" class="hidden fixed bottom-2 left-2 right-2 z-50 glass-panel p-2 rounded-2xl border border-amber-500/50 shadow-2xl bg-slate-950/90 text-center">

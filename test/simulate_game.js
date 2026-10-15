@@ -89,10 +89,25 @@ async function runSimulation() {
           ioServer.to(p.socketId).emit('round_result_controller', {
             isCorrect,
             cashChange: p.lastRoundGain,
-            totalScore: p.score
+            totalScore: p.score,
+            currentStreak: p.currentStreak || 0,
+            streakBonus: p.streakBonus || 0
           });
         });
       }
+    });
+
+    socket.on('player_reaction', ({ roomCode, emoji }) => {
+      const room = roomManager.getRoom(roomCode);
+      if (!room) return;
+      const player = room.players.find(p => p.socketId === socket.id);
+      if (!player) return;
+      ioServer.to(`host_${roomCode}`).emit('room_reaction', {
+        emoji,
+        nickname: player.nickname,
+        avatar: player.avatar || '👾',
+        color: player.color || '#3B82F6'
+      });
     });
   });
 
@@ -180,19 +195,38 @@ async function runSimulation() {
         console.log(`[Test SUCCESS] Verified 4-choice distribution: Option ${correctIdx} (50%), Option ${wrongIdx} (50%)`);
       }
 
-      if (alice.score > 0 && bob.score < 0 && choiceCountsValid && choicePctsValid) {
+      const streakValid = alice.currentStreak === 1 && bob.currentStreak === 0;
+      if (streakValid) {
+        console.log(`[Test SUCCESS] Verified streak tracking: Alice (1 streak), Bob (0 streak)`);
+      }
+
+      if (alice.score > 0 && bob.score < 0 && choiceCountsValid && choicePctsValid && streakValid) {
         console.log('====================================================');
         console.log(' ALL INTEGRATION TESTS PASSED CLEANLY!              ');
         console.log(' Alice scored positive cash with avatar & color!    ');
         console.log(' Choice percentage breakdown verified!             ');
+        console.log(' Real-time streaks & reaction system verified!      ');
         console.log('====================================================');
         resolve(true);
       } else {
-        console.error('Test Failed: Expected Alice score > 0, Bob score < 0, and valid choice breakdown');
+        console.error('Test Failed: Expected Alice score > 0, Bob score < 0, valid choice breakdown, and streak tracking');
         resolve(false);
       }
     });
   });
+
+  // Test player reaction socket
+  const reactionPromise = new Promise((resolve) => {
+    hostSocket.on('room_reaction', (data) => {
+      if (data.emoji === '🔥' && data.nickname === 'Alice') {
+        console.log(`[Test SUCCESS] Host received emoji reaction from Alice: ${data.emoji} (Avatar: ${data.avatar})`);
+        resolve(true);
+      }
+    });
+  });
+
+  p1Socket.emit('player_reaction', { roomCode, emoji: '🔥' });
+  await reactionPromise;
 
   p1Socket.emit('submit_answer', { roomCode, answerIndex: correctIdx });
   p2Socket.emit('submit_answer', { roomCode, answerIndex: wrongIdx });

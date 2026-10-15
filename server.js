@@ -582,6 +582,31 @@ io.on('connection', (socket) => {
     io.to(`host_${roomCode}`).emit('cah_popular_vote_update', { totalVotesCast: res.totalVotesCast || 0 });
   });
 
+  // Live player reaction emoji handler
+  socket.on('player_reaction', ({ roomCode, emoji }) => {
+    if (!roomCode || !emoji) return;
+    const room = roomManager.getRoom(roomCode);
+    if (!room) return;
+    const player = room.players.find(p => p.socketId === socket.id);
+    if (!player) return;
+
+    const allowed = ['🔥', '💩', '💀', '👏', '🚀'];
+    if (!allowed.includes(emoji)) return;
+
+    const now = Date.now();
+    if (socket.lastReactionTime && now - socket.lastReactionTime < 250) {
+      return;
+    }
+    socket.lastReactionTime = now;
+
+    io.to(`host_${roomCode}`).emit('room_reaction', {
+      emoji,
+      nickname: player.nickname,
+      avatar: player.avatar || '👾',
+      color: player.color || '#3B82F6'
+    });
+  });
+
   // Target score socket handler
   socket.on('select_target_score', ({ roomCode, targetScore }) => {
     const room = roomManager.getRoom(roomCode);
@@ -1232,7 +1257,10 @@ async function evaluateAndReveal(ioInstance, roomCode) {
       isCorrect,
       cashChange: player.lastRoundGain,
       totalScore: player.score,
-      correctIndex: results.correctIndex
+      correctIndex: results.correctIndex,
+      currentStreak: player.currentStreak || 0,
+      streakBonus: player.streakBonus || 0,
+      bestStreak: player.bestStreak || 0
     });
   });
 
