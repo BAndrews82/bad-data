@@ -304,9 +304,14 @@
       <span>⏩ NEXT ROUND</span>
     </button>
 
-    <button id="sound-toggle-btn" onclick="event.stopPropagation(); toggleSound();" class="flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-bold text-emerald-300 border border-emerald-500/50 shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition">
-      <span id="sound-icon" class="text-sm">🔊</span>
-      <span id="sound-status-text">Sound: ON</span>
+    <button id="music-toggle-btn" onclick="event.stopPropagation(); toggleMusic();" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-panel text-xs font-bold text-emerald-300 border border-emerald-500/50 shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition">
+      <span id="music-icon" class="text-sm">🎵</span>
+      <span id="music-status-text">Music: ON</span>
+    </button>
+
+    <button id="sfx-toggle-btn" onclick="event.stopPropagation(); toggleSfx();" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-panel text-xs font-bold text-emerald-300 border border-emerald-500/50 shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition">
+      <span id="sfx-icon" class="text-sm">🔊</span>
+      <span id="sfx-status-text">SFX: ON</span>
     </button>
 
     <button id="tts-toggle-btn" onclick="event.stopPropagation(); toggleTTS();" class="hidden flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-semibold text-slate-300 hover:text-white transition border border-slate-700 shadow-lg cursor-pointer">
@@ -341,9 +346,13 @@
   <!-- ==================== SCREEN 1: LOBBY SCREEN ==================== -->
   <section id="screen-lobby" class="flex-1 flex flex-col items-center justify-center gap-3 z-10 py-1 min-h-0">
     <div class="flex items-center justify-center gap-3 shrink-0 my-1">
-      <button id="lobby-sound-btn" onclick="event.stopPropagation(); toggleSound();" class="flex items-center gap-2 px-5 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-black shadow-lg hover:bg-emerald-500/30 transition cursor-pointer">
-        <span id="lobby-sound-icon">🔊</span>
-        <span id="lobby-sound-text">Music & SFX: ON</span>
+      <button id="lobby-music-btn" onclick="event.stopPropagation(); toggleMusic();" class="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-black shadow-lg hover:bg-emerald-500/30 transition cursor-pointer">
+        <span id="lobby-music-icon">🎵</span>
+        <span id="lobby-music-text">Music: ON</span>
+      </button>
+      <button id="lobby-sfx-btn" onclick="event.stopPropagation(); toggleSfx();" class="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-black shadow-lg hover:bg-emerald-500/30 transition cursor-pointer">
+        <span id="lobby-sfx-icon">🔊</span>
+        <span id="lobby-sfx-text">SFX: ON</span>
       </button>
       <button onclick="event.stopPropagation(); testSoundAndVoice();" id="audio-prompt-badge" class="px-4 py-2 rounded-full bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 text-xs font-bold uppercase tracking-wider hover:bg-indigo-500/40 transition cursor-pointer shadow">
         🎵 Test Sound
@@ -760,12 +769,16 @@
       constructor() {
         this.ctx = null;
         this.masterGain = null;
-        this.bgmGain = null;
+        this.musicGain = null;
+        this.sfxGain = null;
         this.bgmSource = null;
         this.bgmPlaying = false;
         this.bgmBufferPromise = null;
-        const saved = localStorage.getItem('baddata_sound_enabled');
-        this.soundEnabled = (saved !== null) ? (saved === 'true') : true;
+        const savedMusic = localStorage.getItem('baddata_music_enabled');
+        this.musicEnabled = (savedMusic !== null) ? (savedMusic === 'true') : true;
+        const savedSfx = localStorage.getItem('baddata_sfx_enabled');
+        this.sfxEnabled = (savedSfx !== null) ? (savedSfx === 'true') : true;
+        this.soundEnabled = this.musicEnabled || this.sfxEnabled;
         this.pack = 'midnight'; // 'midnight', 'neon', 'matrix', 'gameshow', 'halloween', 'retro'
         this.spookyBuffers = {};
       }
@@ -775,31 +788,46 @@
           if (AudioCtx) {
             this.ctx = new AudioCtx();
             this.masterGain = this.ctx.createGain();
-            this.masterGain.gain.setValueAtTime(this.soundEnabled ? 1.0 : 0.0001, this.ctx.currentTime);
+            this.masterGain.gain.setValueAtTime(1.0, this.ctx.currentTime);
             this.masterGain.connect(this.ctx.destination);
+
+            this.musicGain = this.ctx.createGain();
+            this.musicGain.gain.setValueAtTime(this.musicEnabled ? 0.18 : 0.0001, this.ctx.currentTime);
+            this.musicGain.connect(this.masterGain);
+
+            this.sfxGain = this.ctx.createGain();
+            this.sfxGain.gain.setValueAtTime(this.sfxEnabled ? 1.0 : 0.0001, this.ctx.currentTime);
+            this.sfxGain.connect(this.masterGain);
           }
         }
         if (this.ctx && this.ctx.state === 'suspended') {
           this.ctx.resume();
         }
         this.preloadSpookyPacks();
-        if (this.soundEnabled && !this.bgmPlaying) {
+        if (this.musicEnabled && !this.bgmPlaying) {
           this.startBgm();
         }
       }
       getDestination() {
-        return this.masterGain || (this.ctx ? this.ctx.destination : null);
+        return this.getSfxDestination();
       }
-      setSoundEnabled(enabled) {
-        this.soundEnabled = Boolean(enabled);
-        localStorage.setItem('baddata_sound_enabled', this.soundEnabled ? 'true' : 'false');
+      getSfxDestination() {
+        return this.sfxGain || this.masterGain || (this.ctx ? this.ctx.destination : null);
+      }
+      getMusicDestination() {
+        return this.musicGain || this.masterGain || (this.ctx ? this.ctx.destination : null);
+      }
+      setMusicEnabled(enabled) {
+        this.musicEnabled = Boolean(enabled);
+        localStorage.setItem('baddata_music_enabled', this.musicEnabled ? 'true' : 'false');
+        this.soundEnabled = this.musicEnabled || this.sfxEnabled;
         if (!this.ctx) this.init();
-        if (this.masterGain && this.ctx) {
+        if (this.musicGain && this.ctx) {
           const t = this.ctx.currentTime;
-          this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t);
-          this.masterGain.gain.linearRampToValueAtTime(this.soundEnabled ? 1.0 : 0.0001, t + 0.15);
+          this.musicGain.gain.setValueAtTime(this.musicGain.gain.value, t);
+          this.musicGain.gain.linearRampToValueAtTime(this.musicEnabled ? 0.18 : 0.0001, t + 0.15);
         }
-        if (this.soundEnabled) {
+        if (this.musicEnabled) {
           if (this.ctx && this.ctx.state === 'suspended') {
             this.ctx.resume();
           }
@@ -807,6 +835,21 @@
         } else {
           this.stopBgm();
         }
+      }
+      setSfxEnabled(enabled) {
+        this.sfxEnabled = Boolean(enabled);
+        localStorage.setItem('baddata_sfx_enabled', this.sfxEnabled ? 'true' : 'false');
+        this.soundEnabled = this.musicEnabled || this.sfxEnabled;
+        if (!this.ctx) this.init();
+        if (this.sfxGain && this.ctx) {
+          const t = this.ctx.currentTime;
+          this.sfxGain.gain.setValueAtTime(this.sfxGain.gain.value, t);
+          this.sfxGain.gain.linearRampToValueAtTime(this.sfxEnabled ? 1.0 : 0.0001, t + 0.1);
+        }
+      }
+      setSoundEnabled(enabled) {
+        this.setMusicEnabled(enabled);
+        this.setSfxEnabled(enabled);
       }
       async createBgmBuffer() {
         const sampleRate = 44100;
@@ -880,7 +923,7 @@
         return await offlineCtx.startRendering();
       }
       async startBgm() {
-        if (!this.soundEnabled || this.bgmPlaying) return;
+        if (!this.musicEnabled || this.bgmPlaying) return;
         if (!this.ctx) this.init();
         if (!this.ctx) return;
 
@@ -889,7 +932,7 @@
             this.bgmBufferPromise = this.createBgmBuffer();
           }
           const buffer = await this.bgmBufferPromise;
-          if (!buffer || !this.soundEnabled) return;
+          if (!buffer || !this.musicEnabled) return;
 
           this.stopBgm();
 
@@ -897,15 +940,16 @@
           this.bgmSource.buffer = buffer;
           this.bgmSource.loop = true;
 
-          if (!this.bgmGain) {
-            this.bgmGain = this.ctx.createGain();
-            this.bgmGain.connect(this.getDestination());
+          if (!this.musicGain) {
+            this.musicGain = this.ctx.createGain();
+            this.musicGain.gain.setValueAtTime(this.musicEnabled ? 0.18 : 0.0001, this.ctx.currentTime);
+            this.musicGain.connect(this.masterGain || this.ctx.destination);
           }
 
-          this.bgmGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
-          this.bgmGain.gain.linearRampToValueAtTime(0.18, this.ctx.currentTime + 1.2);
+          this.musicGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+          this.musicGain.gain.linearRampToValueAtTime(0.18, this.ctx.currentTime + 1.2);
 
-          this.bgmSource.connect(this.bgmGain);
+          this.bgmSource.connect(this.musicGain);
           this.bgmSource.start(0);
           this.bgmPlaying = true;
         } catch(e) {}
@@ -913,10 +957,10 @@
       stopBgm() {
         if (this.bgmSource) {
           try {
-            if (this.bgmGain && this.ctx) {
+            if (this.musicGain && this.ctx) {
               const t = this.ctx.currentTime;
-              this.bgmGain.gain.setValueAtTime(this.bgmGain.gain.value, t);
-              this.bgmGain.gain.linearRampToValueAtTime(0.0001, t + 0.25);
+              this.musicGain.gain.setValueAtTime(this.musicGain.gain.value, t);
+              this.musicGain.gain.linearRampToValueAtTime(0.0001, t + 0.25);
             }
             setTimeout(() => {
               if (this.bgmSource) {
@@ -931,11 +975,11 @@
         this.bgmPlaying = false;
       }
       duckBgm(duck = true) {
-        if (!this.bgmGain || !this.ctx) return;
+        if (!this.musicGain || !this.ctx || !this.musicEnabled) return;
         try {
           const t = this.ctx.currentTime;
           const targetVol = duck ? 0.03 : 0.18;
-          this.bgmGain.gain.setTargetAtTime(targetVol, t, duck ? 0.2 : 0.6);
+          this.musicGain.gain.setTargetAtTime(targetVol, t, duck ? 0.2 : 0.6);
         } catch(e) {}
       }
       preloadSpookyPacks() {
@@ -957,12 +1001,12 @@
         });
       }
       playBufferSound(key) {
-        if (!this.soundEnabled) return false;
+        if (!this.sfxEnabled) return false;
         if (this.ctx && this.spookyBuffers && this.spookyBuffers[key]) {
           try {
             const source = this.ctx.createBufferSource();
             source.buffer = this.spookyBuffers[key];
-            source.connect(this.getDestination());
+            source.connect(this.getSfxDestination());
             source.start(0);
             return true;
           } catch(e) {}
@@ -977,7 +1021,7 @@
         }
       }
       playCardSwoosh() {
-        if (!this.soundEnabled) return;
+        if (!this.sfxEnabled) return;
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
@@ -1008,12 +1052,12 @@
 
           noise.connect(filter);
           filter.connect(gain);
-          gain.connect(this.getDestination());
+          gain.connect(this.getSfxDestination());
           noise.start(t);
         } catch(e) {}
       }
       playCardSlam() {
-        if (!this.soundEnabled) return;
+        if (!this.sfxEnabled) return;
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
@@ -1032,7 +1076,7 @@
           subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
 
           subOsc.connect(subGain);
-          subGain.connect(this.ctx.destination);
+          subGain.connect(this.getSfxDestination());
           subOsc.start(t);
           subOsc.stop(t + 0.45);
 
@@ -1046,7 +1090,7 @@
           midGain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
 
           midOsc.connect(midGain);
-          midGain.connect(this.ctx.destination);
+          midGain.connect(this.getSfxDestination());
           midOsc.start(t);
           midOsc.stop(t + 0.15);
 
@@ -1063,12 +1107,12 @@
           noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
 
           noise.connect(noiseGain);
-          noiseGain.connect(this.ctx.destination);
+          noiseGain.connect(this.getSfxDestination());
           noise.start(t);
         } catch(e) {}
       }
       playQuestionChime() {
-        if (!this.soundEnabled) return;
+        if (!this.sfxEnabled) return;
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
@@ -1085,7 +1129,7 @@
           subGain.gain.setValueAtTime(0.8, t);
           subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
           sub.connect(subGain);
-          subGain.connect(this.getDestination());
+          subGain.connect(this.getSfxDestination());
           sub.start(t);
           sub.stop(t + 0.6);
 
@@ -1152,7 +1196,7 @@
 
               osc.connect(filter);
               filter.connect(gain);
-              gain.connect(this.getDestination());
+              gain.connect(this.getSfxDestination());
 
               osc.start(startTime);
               osc.stop(startTime + duration);
@@ -1161,7 +1205,7 @@
         } catch(e) {}
       }
       playCashGainChime() {
-        if (!this.soundEnabled) return;
+        if (!this.sfxEnabled) return;
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
@@ -1178,7 +1222,7 @@
           subGain.gain.setValueAtTime(0.65, t);
           subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
           sub.connect(subGain);
-          subGain.connect(this.getDestination());
+          subGain.connect(this.getSfxDestination());
           sub.start(t);
           sub.stop(t + 0.45);
 
@@ -1197,7 +1241,7 @@
           noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
           noise.connect(noiseFilter);
           noiseFilter.connect(noiseGain);
-          noiseGain.connect(this.getDestination());
+          noiseGain.connect(this.getSfxDestination());
           noise.start(t);
 
           let chordFreqs;
@@ -1230,7 +1274,7 @@
 
             osc.connect(filter);
             filter.connect(gain);
-            gain.connect(this.getDestination());
+            gain.connect(this.getSfxDestination());
 
             osc.start(startTime);
             osc.stop(startTime + 0.45);
@@ -1238,7 +1282,7 @@
         } catch(e) {}
       }
       playBadDataBuzzer() {
-        if (!this.soundEnabled) return;
+        if (!this.sfxEnabled) return;
         if (!this.ctx) this.init();
         if (!this.ctx) return;
         try {
@@ -1759,46 +1803,102 @@
       setVoiceHostEnabled(!ttsEnabled);
     }
 
-    function toggleSound(forceState) {
+    function toggleMusic(forceState) {
       unlockAudioHost();
-      const newState = (forceState !== undefined) ? !!forceState : !sfx.soundEnabled;
-      sfx.setSoundEnabled(newState);
-      updateSoundUI(newState);
+      const newState = (forceState !== undefined) ? !!forceState : !sfx.musicEnabled;
+      sfx.setMusicEnabled(newState);
+      updateMusicUI(newState);
       if (socket && roomCode) {
-        socket.emit('set_sound_enabled', { roomCode, enabled: newState });
+        socket.emit('set_music_enabled', { roomCode, enabled: newState });
+      }
+    }
+
+    function toggleSfx(forceState) {
+      unlockAudioHost();
+      const newState = (forceState !== undefined) ? !!forceState : !sfx.sfxEnabled;
+      sfx.setSfxEnabled(newState);
+      updateSfxUI(newState);
+      if (socket && roomCode) {
+        socket.emit('set_sfx_enabled', { roomCode, enabled: newState });
+      }
+      if (newState) {
+        sfx.playCardSwoosh();
+      }
+    }
+
+    function toggleSound(forceState) {
+      const target = (forceState !== undefined) ? !!forceState : !(sfx.musicEnabled || sfx.sfxEnabled);
+      toggleMusic(target);
+      toggleSfx(target);
+    }
+
+    function updateMusicUI(enabled) {
+      const musicBtn = document.getElementById('music-toggle-btn');
+      const musicIcon = document.getElementById('music-icon');
+      const musicStatusText = document.getElementById('music-status-text');
+      if (musicBtn && musicIcon && musicStatusText) {
+        if (enabled) {
+          musicBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-panel text-xs font-bold text-emerald-300 border border-emerald-500/50 shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition';
+          musicIcon.textContent = '🎵';
+          musicStatusText.textContent = 'Music: ON';
+        } else {
+          musicBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-panel text-xs font-bold text-rose-300 border border-rose-500/50 shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition';
+          musicIcon.textContent = '🔇';
+          musicStatusText.textContent = 'Music: OFF';
+        }
+      }
+
+      const lobbyMusicBtn = document.getElementById('lobby-music-btn');
+      const lobbyMusicIcon = document.getElementById('lobby-music-icon');
+      const lobbyMusicText = document.getElementById('lobby-music-text');
+      if (lobbyMusicBtn && lobbyMusicIcon && lobbyMusicText) {
+        if (enabled) {
+          lobbyMusicBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-black shadow-lg hover:bg-emerald-500/30 transition cursor-pointer';
+          lobbyMusicIcon.textContent = '🎵';
+          lobbyMusicText.textContent = 'Music: ON';
+        } else {
+          lobbyMusicBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs font-black shadow-lg hover:bg-rose-500/30 transition cursor-pointer';
+          lobbyMusicIcon.textContent = '🔇';
+          lobbyMusicText.textContent = 'Music: OFF';
+        }
+      }
+    }
+
+    function updateSfxUI(enabled) {
+      const sfxBtn = document.getElementById('sfx-toggle-btn');
+      const sfxIcon = document.getElementById('sfx-icon');
+      const sfxStatusText = document.getElementById('sfx-status-text');
+      if (sfxBtn && sfxIcon && sfxStatusText) {
+        if (enabled) {
+          sfxBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-panel text-xs font-bold text-emerald-300 border border-emerald-500/50 shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition';
+          sfxIcon.textContent = '🔊';
+          sfxStatusText.textContent = 'SFX: ON';
+        } else {
+          sfxBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-panel text-xs font-bold text-rose-300 border border-rose-500/50 shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition';
+          sfxIcon.textContent = '🔇';
+          sfxStatusText.textContent = 'SFX: OFF';
+        }
+      }
+
+      const lobbySfxBtn = document.getElementById('lobby-sfx-btn');
+      const lobbySfxIcon = document.getElementById('lobby-sfx-icon');
+      const lobbySfxText = document.getElementById('lobby-sfx-text');
+      if (lobbySfxBtn && lobbySfxIcon && lobbySfxText) {
+        if (enabled) {
+          lobbySfxBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-black shadow-lg hover:bg-emerald-500/30 transition cursor-pointer';
+          lobbySfxIcon.textContent = '🔊';
+          lobbySfxText.textContent = 'SFX: ON';
+        } else {
+          lobbySfxBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs font-black shadow-lg hover:bg-rose-500/30 transition cursor-pointer';
+          lobbySfxIcon.textContent = '🔇';
+          lobbySfxText.textContent = 'SFX: OFF';
+        }
       }
     }
 
     function updateSoundUI(enabled) {
-      const soundBtn = document.getElementById('sound-toggle-btn');
-      const soundIcon = document.getElementById('sound-icon');
-      const soundStatusText = document.getElementById('sound-status-text');
-      if (soundBtn && soundIcon && soundStatusText) {
-        if (enabled) {
-          soundBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-bold text-emerald-300 border border-emerald-500/50 shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition';
-          soundIcon.textContent = '🔊';
-          soundStatusText.textContent = 'Sound: ON';
-        } else {
-          soundBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-bold text-rose-300 border border-rose-500/50 shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition';
-          soundIcon.textContent = '🔇';
-          soundStatusText.textContent = 'Sound: OFF';
-        }
-      }
-
-      const lobbyBtn = document.getElementById('lobby-sound-btn');
-      const lobbySoundIcon = document.getElementById('lobby-sound-icon');
-      const lobbySoundStatus = document.getElementById('lobby-sound-status');
-      if (lobbyBtn && lobbySoundIcon && lobbySoundStatus) {
-        if (enabled) {
-          lobbyBtn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 transition text-xs font-bold cursor-pointer';
-          lobbySoundIcon.textContent = '🔊';
-          lobbySoundStatus.textContent = 'Music & SFX: ON';
-        } else {
-          lobbyBtn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 transition text-xs font-bold cursor-pointer';
-          lobbySoundIcon.textContent = '🔇';
-          lobbySoundStatus.textContent = 'Music & SFX: OFF';
-        }
-      }
+      updateMusicUI(enabled);
+      updateSfxUI(enabled);
     }
 
     socket = io({
@@ -1843,9 +1943,13 @@
       document.getElementById('mini-code-text').textContent = roomCode;
       document.getElementById('qr-code-img').src = data.qrCodeDataUrl;
       document.getElementById('play-url-text').textContent = data.playUrl;
-      if (data.soundEnabled !== undefined) {
-        sfx.setSoundEnabled(data.soundEnabled);
-        updateSoundUI(data.soundEnabled);
+      if (data.musicEnabled !== undefined) {
+        sfx.setMusicEnabled(data.musicEnabled);
+        updateMusicUI(data.musicEnabled);
+      }
+      if (data.sfxEnabled !== undefined) {
+        sfx.setSfxEnabled(data.sfxEnabled);
+        updateSfxUI(data.sfxEnabled);
       }
       updateRoster(data.players || []);
       renderCardPacks(data.availableCardPacks || []);
@@ -2613,13 +2717,18 @@
         ttsBtn.classList.toggle('hidden', screenId !== 'screen-lobby');
       }
 
-      const soundBtn = document.getElementById('sound-toggle-btn');
-      if (soundBtn) {
-        soundBtn.classList.toggle('hidden', screenId !== 'screen-lobby');
+      const musicBtn = document.getElementById('music-toggle-btn');
+      if (musicBtn) {
+        musicBtn.classList.toggle('hidden', screenId !== 'screen-lobby');
+      }
+
+      const sfxBtn = document.getElementById('sfx-toggle-btn');
+      if (sfxBtn) {
+        sfxBtn.classList.toggle('hidden', screenId !== 'screen-lobby');
       }
 
       if (screenId === 'screen-lobby') {
-        if (sfx.soundEnabled && sfx.ctx && sfx.ctx.state === 'running') {
+        if (sfx.musicEnabled && sfx.ctx && sfx.ctx.state === 'running') {
           sfx.startBgm();
         }
       } else {
@@ -2649,10 +2758,24 @@
       if (data) setVoiceHostEnabled(Boolean(data.ttsEnabled));
     });
 
+    socket.on('music_toggled', (data) => {
+      if (data && data.musicEnabled !== undefined) {
+        sfx.setMusicEnabled(data.musicEnabled);
+        updateMusicUI(data.musicEnabled);
+      }
+    });
+
+    socket.on('sfx_toggled', (data) => {
+      if (data && data.sfxEnabled !== undefined) {
+        sfx.setSfxEnabled(data.sfxEnabled);
+        updateSfxUI(data.sfxEnabled);
+      }
+    });
+
     socket.on('sound_toggled', (data) => {
-      if (data && data.enabled !== undefined) {
-        sfx.setSoundEnabled(data.enabled);
-        updateSoundUI(data.enabled);
+      if (data && data.soundEnabled !== undefined) {
+        sfx.setSoundEnabled(data.soundEnabled);
+        updateSoundUI(data.soundEnabled);
       }
     });
 
@@ -2677,11 +2800,13 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       ConfettiFX = new ConfettiEngine('confetti-canvas');
-      updateSoundUI(sfx.soundEnabled);
+      updateMusicUI(sfx.musicEnabled);
+      updateSfxUI(sfx.sfxEnabled);
     });
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
       ConfettiFX = new ConfettiEngine('confetti-canvas');
-      updateSoundUI(sfx.soundEnabled);
+      updateMusicUI(sfx.musicEnabled);
+      updateSfxUI(sfx.sfxEnabled);
     }
   </script>
 
