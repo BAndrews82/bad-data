@@ -298,13 +298,16 @@
     </div>
   </div>
 
-  <!-- Voice Control & Game Control (Top Right) -->
+  <!-- Voice & Sound Controls & Game Control (Top Right) -->
   <div class="absolute top-4 right-6 z-50 flex items-center gap-3">
     <button id="next-question-btn" onclick="event.stopPropagation(); triggerNextQuestion();" class="hidden flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-xs font-black text-white transition border border-emerald-400/40 shadow-lg cursor-pointer hover:scale-105 active:scale-95 animate-pulse">
       <span>⏩ NEXT ROUND</span>
     </button>
 
-
+    <button id="sound-toggle-btn" onclick="event.stopPropagation(); toggleSound();" class="flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-bold text-emerald-300 border border-emerald-500/50 shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition">
+      <span id="sound-icon" class="text-sm">🔊</span>
+      <span id="sound-status-text">Sound: ON</span>
+    </button>
 
     <button id="tts-toggle-btn" onclick="event.stopPropagation(); toggleTTS();" class="hidden flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-semibold text-slate-300 hover:text-white transition border border-slate-700 shadow-lg cursor-pointer">
       <svg id="tts-icon-on" class="w-4 h-4 text-emerald-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -337,9 +340,13 @@
 
   <!-- ==================== SCREEN 1: LOBBY SCREEN ==================== -->
   <section id="screen-lobby" class="flex-1 flex flex-col items-center justify-center gap-3 z-10 py-1 min-h-0">
-    <div class="text-center max-w-2xl shrink-0">
-      <button onclick="event.stopPropagation(); testSoundAndVoice();" id="audio-prompt-badge" class="px-3.5 py-1 rounded-full bg-indigo-500/30 border border-indigo-400/50 text-indigo-200 text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-500/50 transition cursor-pointer shadow-lg animate-pulse">
-        🔊 Click Here to Enable & Test Sound/Voice
+    <div class="flex items-center justify-center gap-3 shrink-0 my-1">
+      <button id="lobby-sound-btn" onclick="event.stopPropagation(); toggleSound();" class="flex items-center gap-2 px-5 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-black shadow-lg hover:bg-emerald-500/30 transition cursor-pointer">
+        <span id="lobby-sound-icon">🔊</span>
+        <span id="lobby-sound-text">Music & SFX: ON</span>
+      </button>
+      <button onclick="event.stopPropagation(); testSoundAndVoice();" id="audio-prompt-badge" class="px-4 py-2 rounded-full bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 text-xs font-bold uppercase tracking-wider hover:bg-indigo-500/40 transition cursor-pointer shadow">
+        🎵 Test Sound
       </button>
     </div>
 
@@ -752,6 +759,13 @@
     class SoundFX {
       constructor() {
         this.ctx = null;
+        this.masterGain = null;
+        this.bgmGain = null;
+        this.bgmSource = null;
+        this.bgmPlaying = false;
+        this.bgmBufferPromise = null;
+        const saved = localStorage.getItem('baddata_sound_enabled');
+        this.soundEnabled = (saved !== null) ? (saved === 'true') : true;
         this.pack = 'midnight'; // 'midnight', 'neon', 'matrix', 'gameshow', 'halloween', 'retro'
         this.spookyBuffers = {};
       }
@@ -760,12 +774,169 @@
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
           if (AudioCtx) {
             this.ctx = new AudioCtx();
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.gain.setValueAtTime(this.soundEnabled ? 1.0 : 0.0001, this.ctx.currentTime);
+            this.masterGain.connect(this.ctx.destination);
           }
         }
         if (this.ctx && this.ctx.state === 'suspended') {
           this.ctx.resume();
         }
         this.preloadSpookyPacks();
+        if (this.soundEnabled && !this.bgmPlaying) {
+          this.startBgm();
+        }
+      }
+      getDestination() {
+        return this.masterGain || (this.ctx ? this.ctx.destination : null);
+      }
+      setSoundEnabled(enabled) {
+        this.soundEnabled = Boolean(enabled);
+        localStorage.setItem('baddata_sound_enabled', this.soundEnabled ? 'true' : 'false');
+        if (!this.ctx) this.init();
+        if (this.masterGain && this.ctx) {
+          const t = this.ctx.currentTime;
+          this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t);
+          this.masterGain.gain.linearRampToValueAtTime(this.soundEnabled ? 1.0 : 0.0001, t + 0.15);
+        }
+        if (this.soundEnabled) {
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+          }
+          this.startBgm();
+        } else {
+          this.stopBgm();
+        }
+      }
+      async createBgmBuffer() {
+        const sampleRate = 44100;
+        const totalDuration = 16.0;
+        const totalSamples = Math.floor(sampleRate * totalDuration);
+
+        let offlineCtx;
+        try {
+          const OfflineCtxClass = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+          offlineCtx = new OfflineCtxClass(2, totalSamples, sampleRate);
+        } catch(e) {
+          return null;
+        }
+
+        const chords = [
+          { time: 0, notes: [82.41, 123.47, 196.00, 293.66, 369.99] },   // Em9
+          { time: 4, notes: [65.41, 98.00, 164.81, 246.94, 293.66] },   // Cmaj7
+          { time: 8, notes: [98.00, 146.83, 185.00, 246.94, 329.63] },  // Gmaj7
+          { time: 12, notes: [73.42, 110.00, 146.83, 196.00, 220.00] }   // Dsus4
+        ];
+
+        const masterOfflineGain = offlineCtx.createGain();
+        masterOfflineGain.gain.setValueAtTime(0.28, 0);
+
+        const filter = offlineCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(680, 0);
+        filter.Q.setValueAtTime(1.2, 0);
+
+        masterOfflineGain.connect(filter);
+        filter.connect(offlineCtx.destination);
+
+        chords.forEach(({ time, notes }) => {
+          notes.forEach((freq, nIdx) => {
+            const osc = offlineCtx.createOscillator();
+            const gain = offlineCtx.createGain();
+            const panner = offlineCtx.createStereoPanner ? offlineCtx.createStereoPanner() : null;
+
+            osc.type = (nIdx === 0) ? 'sine' : ((nIdx % 2 === 0) ? 'triangle' : 'sine');
+            osc.frequency.setValueAtTime(freq, time);
+
+            if (panner) {
+              const panVal = ((nIdx / notes.length) * 1.0) - 0.5;
+              panner.pan.setValueAtTime(panVal, time);
+            }
+
+            const attack = 0.9;
+            const sustainTime = 2.2;
+            const release = 0.9;
+            const peakVol = (nIdx === 0 ? 0.35 : 0.14) / notes.length;
+
+            gain.gain.setValueAtTime(0.0001, time);
+            gain.gain.linearRampToValueAtTime(peakVol, time + attack);
+            gain.gain.setValueAtTime(peakVol, time + attack + sustainTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, time + attack + sustainTime + release);
+
+            if (panner) {
+              osc.connect(gain);
+              gain.connect(panner);
+              panner.connect(masterOfflineGain);
+            } else {
+              osc.connect(gain);
+              gain.connect(masterOfflineGain);
+            }
+
+            osc.start(time);
+            osc.stop(time + 4.0);
+          });
+        });
+
+        return await offlineCtx.startRendering();
+      }
+      async startBgm() {
+        if (!this.soundEnabled || this.bgmPlaying) return;
+        if (!this.ctx) this.init();
+        if (!this.ctx) return;
+
+        try {
+          if (!this.bgmBufferPromise) {
+            this.bgmBufferPromise = this.createBgmBuffer();
+          }
+          const buffer = await this.bgmBufferPromise;
+          if (!buffer || !this.soundEnabled) return;
+
+          this.stopBgm();
+
+          this.bgmSource = this.ctx.createBufferSource();
+          this.bgmSource.buffer = buffer;
+          this.bgmSource.loop = true;
+
+          if (!this.bgmGain) {
+            this.bgmGain = this.ctx.createGain();
+            this.bgmGain.connect(this.getDestination());
+          }
+
+          this.bgmGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+          this.bgmGain.gain.linearRampToValueAtTime(0.18, this.ctx.currentTime + 1.2);
+
+          this.bgmSource.connect(this.bgmGain);
+          this.bgmSource.start(0);
+          this.bgmPlaying = true;
+        } catch(e) {}
+      }
+      stopBgm() {
+        if (this.bgmSource) {
+          try {
+            if (this.bgmGain && this.ctx) {
+              const t = this.ctx.currentTime;
+              this.bgmGain.gain.setValueAtTime(this.bgmGain.gain.value, t);
+              this.bgmGain.gain.linearRampToValueAtTime(0.0001, t + 0.25);
+            }
+            setTimeout(() => {
+              if (this.bgmSource) {
+                try { this.bgmSource.stop(); this.bgmSource.disconnect(); } catch(e) {}
+                this.bgmSource = null;
+              }
+            }, 300);
+          } catch(e) {
+            this.bgmSource = null;
+          }
+        }
+        this.bgmPlaying = false;
+      }
+      duckBgm(duck = true) {
+        if (!this.bgmGain || !this.ctx) return;
+        try {
+          const t = this.ctx.currentTime;
+          const targetVol = duck ? 0.03 : 0.18;
+          this.bgmGain.gain.setTargetAtTime(targetVol, t, duck ? 0.2 : 0.6);
+        } catch(e) {}
       }
       preloadSpookyPacks() {
         if (!this.ctx || this.isPreloaded) return;
@@ -786,11 +957,12 @@
         });
       }
       playBufferSound(key) {
+        if (!this.soundEnabled) return false;
         if (this.ctx && this.spookyBuffers && this.spookyBuffers[key]) {
           try {
             const source = this.ctx.createBufferSource();
             source.buffer = this.spookyBuffers[key];
-            source.connect(this.ctx.destination);
+            source.connect(this.getDestination());
             source.start(0);
             return true;
           } catch(e) {}
@@ -805,9 +977,9 @@
         }
       }
       playCardSwoosh() {
+        if (!this.soundEnabled) return;
         if (!this.ctx) this.init();
         if (!this.ctx) return;
-        if (['midnight', 'subtle', 'dark'].includes(this.pack)) return;
         try {
           if (this.pack === 'halloween' && this.playBufferSound('swoosh')) return;
 
@@ -836,14 +1008,14 @@
 
           noise.connect(filter);
           filter.connect(gain);
-          gain.connect(this.ctx.destination);
+          gain.connect(this.getDestination());
           noise.start(t);
         } catch(e) {}
       }
       playCardSlam() {
+        if (!this.soundEnabled) return;
         if (!this.ctx) this.init();
         if (!this.ctx) return;
-        if (['midnight', 'subtle', 'dark'].includes(this.pack)) return;
         try {
           if (this.pack === 'halloween' && this.playBufferSound('slam')) return;
 
@@ -896,9 +1068,9 @@
         } catch(e) {}
       }
       playQuestionChime() {
+        if (!this.soundEnabled) return;
         if (!this.ctx) this.init();
         if (!this.ctx) return;
-        if (['midnight', 'subtle', 'dark'].includes(this.pack)) return;
         try {
           if (this.pack === 'halloween' && this.playBufferSound('chime')) return;
 
@@ -913,7 +1085,7 @@
           subGain.gain.setValueAtTime(0.8, t);
           subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
           sub.connect(subGain);
-          subGain.connect(this.ctx.destination);
+          subGain.connect(this.getDestination());
           sub.start(t);
           sub.stop(t + 0.6);
 
@@ -947,7 +1119,12 @@
             filterQ = 1.0;
             duration = 0.45;
           } else {
-            return;
+            chordFreqs = [261.63, 329.63, 392.00, 523.25];
+            wave1 = 'sine';
+            wave2 = 'triangle';
+            filterFreq = 3000;
+            filterQ = 1.0;
+            duration = 0.4;
           }
 
           chordFreqs.forEach((freq, idx) => {
@@ -975,7 +1152,7 @@
 
               osc.connect(filter);
               filter.connect(gain);
-              gain.connect(this.ctx.destination);
+              gain.connect(this.getDestination());
 
               osc.start(startTime);
               osc.stop(startTime + duration);
@@ -984,9 +1161,9 @@
         } catch(e) {}
       }
       playCashGainChime() {
+        if (!this.soundEnabled) return;
         if (!this.ctx) this.init();
         if (!this.ctx) return;
-        if (['midnight', 'subtle', 'dark'].includes(this.pack)) return;
         try {
           if (this.pack === 'halloween' && this.playBufferSound('cash')) return;
 
@@ -1001,7 +1178,7 @@
           subGain.gain.setValueAtTime(0.65, t);
           subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
           sub.connect(subGain);
-          subGain.connect(this.ctx.destination);
+          subGain.connect(this.getDestination());
           sub.start(t);
           sub.stop(t + 0.45);
 
@@ -1020,7 +1197,7 @@
           noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
           noise.connect(noiseFilter);
           noiseFilter.connect(noiseGain);
-          noiseGain.connect(this.ctx.destination);
+          noiseGain.connect(this.getDestination());
           noise.start(t);
 
           let chordFreqs;
@@ -1031,7 +1208,7 @@
           } else if (p === 'gameshow') {
             chordFreqs = [523.25, 659.25, 783.99, 1046.50, 1318.51, 2093.00];
           } else {
-            return;
+            chordFreqs = [523.25, 659.25, 783.99, 1046.50];
           }
 
           chordFreqs.forEach((freq, idx) => {
@@ -1053,7 +1230,7 @@
 
             osc.connect(filter);
             filter.connect(gain);
-            gain.connect(this.ctx.destination);
+            gain.connect(this.getDestination());
 
             osc.start(startTime);
             osc.stop(startTime + 0.45);
@@ -1061,9 +1238,9 @@
         } catch(e) {}
       }
       playBadDataBuzzer() {
+        if (!this.soundEnabled) return;
         if (!this.ctx) this.init();
         if (!this.ctx) return;
-        if (['midnight', 'subtle', 'dark'].includes(this.pack)) return;
         try {
           if (this.pack === 'halloween' && this.playBufferSound('buzzer')) return;
 
@@ -1078,7 +1255,7 @@
           subGain.gain.setValueAtTime(0.9, t);
           subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
           sub.connect(subGain);
-          subGain.connect(this.ctx.destination);
+          subGain.connect(this.getDestination());
           sub.start(t);
           sub.stop(t + 0.5);
 
@@ -1102,7 +1279,7 @@
 
             osc.connect(filter);
             filter.connect(gain);
-            gain.connect(this.ctx.destination);
+            gain.connect(this.getDestination());
 
             osc.start(t);
             osc.stop(t + 0.45);
@@ -1466,6 +1643,9 @@
 
     function unlockAudioHost() {
       sfx.init();
+      if (sfx.soundEnabled) {
+        sfx.startBgm();
+      }
       if (audioUnlocked) return;
       audioUnlocked = true;
       const badge = document.getElementById('audio-prompt-badge');
@@ -1483,6 +1663,7 @@
 
     let hostSpeechHideTimeout = null;
     function showHostSpeech(text, isBritish = false) {
+      if (sfx) sfx.duckBgm(true);
       const pill = document.getElementById('host-speech-pill');
       const textEl = document.getElementById('host-speech-text');
       const iconEl = document.getElementById('host-pill-icon');
@@ -1513,6 +1694,7 @@
     }
 
     function hideHostSpeech() {
+      if (sfx) sfx.duckBgm(false);
       const pill = document.getElementById('host-speech-pill');
       if (pill) {
         pill.classList.remove('translate-y-0', 'opacity-100');
@@ -1577,6 +1759,48 @@
       setVoiceHostEnabled(!ttsEnabled);
     }
 
+    function toggleSound(forceState) {
+      unlockAudioHost();
+      const newState = (forceState !== undefined) ? !!forceState : !sfx.soundEnabled;
+      sfx.setSoundEnabled(newState);
+      updateSoundUI(newState);
+      if (socket && roomCode) {
+        socket.emit('set_sound_enabled', { roomCode, enabled: newState });
+      }
+    }
+
+    function updateSoundUI(enabled) {
+      const soundBtn = document.getElementById('sound-toggle-btn');
+      const soundIcon = document.getElementById('sound-icon');
+      const soundStatusText = document.getElementById('sound-status-text');
+      if (soundBtn && soundIcon && soundStatusText) {
+        if (enabled) {
+          soundBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-bold text-emerald-300 border border-emerald-500/50 shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition';
+          soundIcon.textContent = '🔊';
+          soundStatusText.textContent = 'Sound: ON';
+        } else {
+          soundBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs font-bold text-rose-300 border border-rose-500/50 shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition';
+          soundIcon.textContent = '🔇';
+          soundStatusText.textContent = 'Sound: OFF';
+        }
+      }
+
+      const lobbyBtn = document.getElementById('lobby-sound-btn');
+      const lobbySoundIcon = document.getElementById('lobby-sound-icon');
+      const lobbySoundStatus = document.getElementById('lobby-sound-status');
+      if (lobbyBtn && lobbySoundIcon && lobbySoundStatus) {
+        if (enabled) {
+          lobbyBtn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 transition text-xs font-bold cursor-pointer';
+          lobbySoundIcon.textContent = '🔊';
+          lobbySoundStatus.textContent = 'Music & SFX: ON';
+        } else {
+          lobbyBtn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 transition text-xs font-bold cursor-pointer';
+          lobbySoundIcon.textContent = '🔇';
+          lobbySoundStatus.textContent = 'Music & SFX: OFF';
+        }
+      }
+    }
+
     socket = io({
       reconnection: true,
       reconnectionAttempts: Infinity,
@@ -1619,6 +1843,10 @@
       document.getElementById('mini-code-text').textContent = roomCode;
       document.getElementById('qr-code-img').src = data.qrCodeDataUrl;
       document.getElementById('play-url-text').textContent = data.playUrl;
+      if (data.soundEnabled !== undefined) {
+        sfx.setSoundEnabled(data.soundEnabled);
+        updateSoundUI(data.soundEnabled);
+      }
       updateRoster(data.players || []);
       renderCardPacks(data.availableCardPacks || []);
       setPopularVoteEnabled(false);
@@ -2384,6 +2612,19 @@
       if (ttsBtn) {
         ttsBtn.classList.toggle('hidden', screenId !== 'screen-lobby');
       }
+
+      const soundBtn = document.getElementById('sound-toggle-btn');
+      if (soundBtn) {
+        soundBtn.classList.toggle('hidden', screenId !== 'screen-lobby');
+      }
+
+      if (screenId === 'screen-lobby') {
+        if (sfx.soundEnabled && sfx.ctx && sfx.ctx.state === 'running') {
+          sfx.startBgm();
+        }
+      } else {
+        sfx.stopBgm();
+      }
     }
 
     socket.on('sfx_pack_selected', (data) => {
@@ -2408,6 +2649,13 @@
       if (data) setVoiceHostEnabled(Boolean(data.ttsEnabled));
     });
 
+    socket.on('sound_toggled', (data) => {
+      if (data && data.enabled !== undefined) {
+        sfx.setSoundEnabled(data.enabled);
+        updateSoundUI(data.enabled);
+      }
+    });
+
     socket.on('roaster_toggled', (data) => {
       if (data) setRoasterEnabled(Boolean(data.roasterEnabled));
     });
@@ -2429,9 +2677,11 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       ConfettiFX = new ConfettiEngine('confetti-canvas');
+      updateSoundUI(sfx.soundEnabled);
     });
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
       ConfettiFX = new ConfettiEngine('confetti-canvas');
+      updateSoundUI(sfx.soundEnabled);
     }
   </script>
 

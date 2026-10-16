@@ -319,7 +319,8 @@ io.on('connection', (socket) => {
       availableCardPacks: cardService.getAvailablePacks(),
       availableGames: roomManager.getAvailableGames(),
       selectedGameId: room.selectedGameId,
-      themeId: room.themeId || 'midnight'
+      themeId: room.themeId || 'midnight',
+      soundEnabled: (room.soundEnabled !== false)
     });
   });
 
@@ -359,6 +360,14 @@ io.on('connection', (socket) => {
     if (!room) return;
     io.to(`host_${room.code}`).emit('tts_toggled', { ttsEnabled: room.ttsEnabled });
     io.to(`room_${room.code}`).emit('tts_toggled', { ttsEnabled: room.ttsEnabled });
+  });
+
+  socket.on('set_sound_enabled', ({ roomCode, enabled }) => {
+    const room = roomManager.setRoomSetting(roomCode, 'soundEnabled', enabled);
+    if (!room) return;
+    console.log(`[Room ${roomCode}] Sound & Music toggled: ${room.soundEnabled}`);
+    io.to(`host_${room.code}`).emit('sound_toggled', { soundEnabled: room.soundEnabled });
+    io.to(`room_${room.code}`).emit('sound_toggled', { soundEnabled: room.soundEnabled });
   });
 
   socket.on('set_roaster_enabled', ({ roomCode, enabled }) => {
@@ -423,6 +432,7 @@ io.on('connection', (socket) => {
       sessionToken: player.sessionToken,
       selectedGameId: room.selectedGameId,
       themeId: room.themeId || 'midnight',
+      soundEnabled: (room.soundEnabled !== false),
       isVip: Boolean(player.isVip)
     });
 
@@ -450,6 +460,7 @@ io.on('connection', (socket) => {
       status: room.status,
       selectedGameId: room.selectedGameId,
       themeId: room.themeId || 'midnight',
+      soundEnabled: (room.soundEnabled !== false),
       isVip: Boolean(player.isVip),
       hand: player.hand || [],
       // Bad Cards specific state

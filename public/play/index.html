@@ -263,6 +263,15 @@
           </div>
         </div>
 
+        <!-- TV Music & SFX Toggle -->
+        <div class="flex items-center justify-between text-[10px]">
+          <span class="font-bold text-slate-300">🔊 TV Music & SFX</span>
+          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 font-bold">
+            <button id="mobile-sound-off" onclick="event.stopPropagation(); setSoundEnabledMobile(false);" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer">OFF</button>
+            <button id="mobile-sound-on" onclick="event.stopPropagation(); setSoundEnabledMobile(true);" class="px-2.5 py-0.5 rounded bg-emerald-600 text-white cursor-pointer font-black shadow">ON</button>
+          </div>
+        </div>
+
         <!-- AI Co-Host Roaster Toggle -->
         <div class="flex items-center justify-between text-[10px]">
           <span class="font-bold text-slate-300">🤖 AI Co-Host Roaster</span>
@@ -657,6 +666,7 @@
       document.getElementById('player-room-text').textContent = data.roomCode;
       if (data.selectedGameId) updateMobileGameModeDisplay(data.selectedGameId);
       if (data.themeId) updateMobileTheme(data.themeId);
+      if (data.soundEnabled !== undefined) updateMobileSoundUI(data.soundEnabled);
 
       const vipDrawer = document.getElementById('vip-controls-drawer');
       if (vipDrawer) vipDrawer.classList.toggle('hidden', !isVipHost);
@@ -829,6 +839,9 @@
       if (data.themeId) {
         updateMobileTheme(data.themeId);
       }
+      if (data.soundEnabled !== undefined) {
+        updateMobileSoundUI(data.soundEnabled);
+      }
 
       const vipDrawer = document.getElementById('vip-controls-drawer');
       if (vipDrawer) {
@@ -860,6 +873,26 @@
       if (navigator.vibrate) navigator.vibrate(30);
       socket.emit('set_tts_enabled', { roomCode: currentRoomCode, enabled });
     }
+
+    function updateMobileSoundUI(enabled) {
+      const offBtn = document.getElementById('mobile-sound-off');
+      const onBtn = document.getElementById('mobile-sound-on');
+      if (offBtn && onBtn) {
+        offBtn.className = enabled ? 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer' : 'px-2.5 py-0.5 rounded bg-rose-600 text-white cursor-pointer font-black shadow';
+        onBtn.className = enabled ? 'px-2.5 py-0.5 rounded bg-emerald-600 text-white cursor-pointer font-black shadow' : 'px-2.5 py-0.5 rounded text-slate-400 hover:text-white cursor-pointer';
+      }
+    }
+
+    function setSoundEnabledMobile(enabled) {
+      if (!currentRoomCode) return;
+      if (navigator.vibrate) navigator.vibrate(30);
+      socket.emit('set_sound_enabled', { roomCode: currentRoomCode, enabled });
+    }
+
+    socket.on('sound_toggled', (data) => {
+      const enabled = data ? (data.enabled !== false) : true;
+      updateMobileSoundUI(enabled);
+    });
 
     function setRoasterEnabledMobile(enabled) {
       if (!currentRoomCode) return;
