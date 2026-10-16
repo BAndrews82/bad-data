@@ -299,7 +299,10 @@ io.on('connection', (socket) => {
     socket.join(`room_${room.code}`);
     socket.join(`host_${room.code}`);
 
-    const playUrl = `${baseUrl}/play/index.html?code=${room.code}`;
+    // Dynamically match the connecting client host to prevent cross-server room mismatches
+    const clientHost = (socket.handshake && socket.handshake.headers && socket.handshake.headers.host) ? socket.handshake.headers.host : null;
+    const effectiveBaseUrl = clientHost ? `http://${clientHost}` : baseUrl;
+    const playUrl = `${effectiveBaseUrl}/play/index.html?code=${room.code}`;
     let qrCodeDataUrl = '';
     try {
       qrCodeDataUrl = await QRCode.toDataURL(playUrl, { margin: 1, color: { dark: '#000000', light: '#FFFFFF' } });
@@ -467,22 +470,18 @@ io.on('connection', (socket) => {
 
   socket.on('start_game', async ({ roomCode, sourceMode, selectedPacks, selectedCardPacks, enableRoaster, enablePopularVote }) => {
     const room = roomManager.getRoom(roomCode);
-    if (!room || room.hostSocketId !== socket.id) {
-      return socket.emit('error_message', { message: 'Only room host can start game.' });
+    const isAuth = room && (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    if (!isAuth) {
+      return socket.emit('error_message', { message: 'Only room host or VIP can start game.' });
     }
 
     if (room.players.length === 0) {
       return socket.emit('error_message', { message: 'Need at least 1 player to start!' });
     }
 
-    // Auto-populate AI bots if Bad Cards is started with fewer than 3 players
+    // Enforce 3-player minimum for Bad Cards (bots are strictly manual test helpers)
     if (room.selectedGameId === 'cah' && room.players.length < 3) {
-      const botsNeeded = 3 - room.players.length;
-      console.log(`[Room ${roomCode}] Bad Cards started with ${room.players.length} player(s). Auto-adding ${botsNeeded} AI bot(s).`);
-      for (let b = 0; b < botsNeeded; b++) {
-        roomManager.addBotPlayer(roomCode);
-      }
-      io.to(`host_${roomCode}`).emit('roster_update', { players: room.players });
+      return socket.emit('error_message', { message: 'Bad Cards requires at least 3 players to start! (Use "Add AI Bots" for solo testing)' });
     }
 
     room.enableRoaster = Boolean(enableRoaster);
@@ -495,18 +494,25 @@ io.on('connection', (socket) => {
       targetScore: room.targetScore || 5
     });
 
+    io.to(`host_${roomCode}`).emit('game_starting_notice', { selectedGameId: room.selectedGameId });
     io.to(`room_${roomCode}`).emit('game_starting_notice', { selectedGameId: room.selectedGameId });
 
-    if (room.selectedGameId === 'cah') {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      await runCahRound(io, roomCode);
-    } else {
-      preSynthesizeQuestions(room.questions);
-      if (room.questions && room.questions.length > 0) {
-        await getOrSynthesizeTts(room.questions[0].question);
+    try {
+      if (room.selectedGameId === 'cah') {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await runCahRound(io, roomCode);
+      } else {
+        preSynthesizeQuestions(room.questions);
+        if (room.questions && room.questions.length > 0) {
+          await getOrSynthesizeTts(room.questions[0].question);
+        }
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        await runQuestionRound(io, roomCode);
       }
-      await new Promise(resolve => setTimeout(resolve, 2500));
-      await runQuestionRound(io, roomCode);
+    } catch (err) {
+      console.error(`[Start Game Error in Room ${roomCode}]:`, err);
+      io.to(`host_${roomCode}`).emit('error_message', { message: 'Failed to start game: ' + (err.message || err) });
+      io.to(`room_${roomCode}`).emit('error_message', { message: 'Failed to start game: ' + (err.message || err) });
     }
   });
 
@@ -838,6 +844,9 @@ async function runCahRound(ioInstance, roomCode) {
   const roundData = roomManager.startRound(roomCode);
   if (!roundData) return;
 
+  // 60-second submission timeout to prevent deadlocks from AFK/lagged players
+  const submissionDurationMs = 60000;
+
   const { room, roundNum, totalRounds, prompt, judgeSocketId, judgeNickname } = roundData;
   console.log(`[Room ${roomCode}] CAH Round ${roundNum}/${totalRounds}. Judge: ${judgeNickname}. Prompt: "${prompt}"`);
 
@@ -875,8 +884,6 @@ async function runCahRound(ioInstance, roomCode) {
     });
   });
 
-  // 60-second submission timeout to prevent deadlocks from AFK/lagged players
-  const submissionDurationMs = 60000;
   const subTimer = setTimeout(() => {
     const curRoom = roomManager.getRoom(roomCode);
     if (curRoom && curRoom.status === 'CAH_SUBMIT') {

@@ -6,7 +6,15 @@ Comprehensive guide to the architecture, infrastructure, neural TTS voice engine
 
 ## 📌 Executive Summary
 
-**Bad Data** is a self-hosted Jackbox-style high-stakes trivia party game. It features human-quality neural voice hosting (Kokoro 82M), instant zero-delay RAM pre-buffered audio playback, real-time Gen AI host roasting (Google Gemini API), and native Google TV launcher integration.
+**Bad Data** is a self-hosted Jackbox-style party game platform. Its **primary game mode is Bad Cards (`cah`)** — a Cards Against Humanity style card-matching party game with rotating judges, anonymous card judging, popular voting bonuses, and customizable card packs. It also features **Bad Data Trivia** as an alternate game mode with high-stakes cash betting, neural voice hosting (Kokoro 82M), instant zero-delay RAM pre-buffered audio playback, real-time Gen AI host roasting (Google Gemini API), and native Google TV launcher integration.
+
+### 🎮 Primary Game & Player Scaling Invariants
+* **Primary Default Mode**: **Bad Cards (`cah`)** is selected by default on all room creations across the TV receiver, mobile controller, and backend state machine.
+* **Alternate Mode Access**: Trivia remains accessible at any time via the lobby game mode selector.
+* **3-Player Rule for Bad Cards**: Bad Cards strictly requires at least 3 players (1 Judge + 2 submitters) to start.
+* **Test Bots Invariant**: AI bots are strictly manual testing helpers spawned via the `🤖 Add AI Bots (+2)` button and are never silently auto-injected behind players' backs.
+* **Default Win Condition**: First to 5 Points (~15–20 minute session).
+* **Dynamic Client Matching**: Room QR codes and play links dynamically match the incoming TV host header, preventing cross-server room mismatches.
 
 ---
 

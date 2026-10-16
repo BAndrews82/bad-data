@@ -14,6 +14,9 @@
   <script src="/socket.io/socket.io.js"></script>
   <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
   <style>
+    .hidden {
+      display: none !important;
+    }
     html, body {
       width: 100vw;
       height: 100vh;
@@ -420,6 +423,8 @@
           </div>
         </div>
 
+        <div id="lobby-error-banner" class="hidden w-full p-2 rounded-xl bg-rose-500/20 border border-rose-500/50 text-rose-300 font-bold text-xs text-center my-1 animate-pulse"></div>
+
         <button id="start-game-btn" onclick="event.stopPropagation(); triggerStartGame();" disabled class="w-full mt-1 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-sm tracking-wider shadow-lg transition transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
           START GAME
         </button>
@@ -437,7 +442,7 @@
         GET READY!
       </h2>
       <p class="text-slate-300 font-semibold text-base mb-2">
-        Look up at the TV screen!
+        Get ready on your phones — game starting now!
       </p>
     </div>
   </section>
@@ -1314,6 +1319,8 @@
       if (emitSocket && socket && roomCode) {
         socket.emit('select_game', { roomCode, gameId });
       }
+
+      updateRoster(currentRoster);
     }
 
     let currentTargetScore = 5;
@@ -1589,6 +1596,11 @@
       requestCreateRoom();
     });
 
+    socket.on('disconnect', () => {
+      console.log('[Socket] TV Host disconnected. Resetting roomCode for reconnect.');
+      roomCode = '';
+    });
+
     if (socket && socket.connected) {
       requestCreateRoom();
     }
@@ -1611,7 +1623,7 @@
       renderCardPacks(data.availableCardPacks || []);
       setPopularVoteEnabled(false);
       selectTheme(data.themeId || 'midnight');
-      selectGame(data.selectedGameId || 'trivia', false);
+      selectGame(data.selectedGameId || 'cah', false);
     });
 
     socket.on('roster_update', (data) => {
@@ -1627,26 +1639,47 @@
       if (currentRoster.length === 0) {
         rosterContainer.innerHTML = '<span class="text-slate-500 italic text-[10px]">Waiting for players to join...</span>';
         startBtn.disabled = true;
+        startBtn.textContent = 'START GAME';
         return;
       }
 
-      startBtn.disabled = false;
       rosterContainer.innerHTML = currentRoster.map(p => `
         <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 font-bold text-xs shadow">
           <span class="text-base">${p.avatar || '👾'}</span>
           <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${p.color}"></span>
           <span>${p.nickname}</span>
+          ${p.isBot ? '<span class="text-[9px] text-violet-400 bg-violet-950/60 px-1 rounded">BOT</span>' : ''}
         </div>
       `).join('');
+
+      if (selectedGameId === 'cah' && currentRoster.length < 3) {
+        startBtn.disabled = true;
+        startBtn.textContent = `NEED 3+ PLAYERS (${currentRoster.length}/3)`;
+      } else {
+        startBtn.disabled = false;
+        startBtn.textContent = 'START GAME';
+      }
+    }
+
+    function showLobbyError(msg) {
+      const el = document.getElementById('lobby-error-banner');
+      if (el) {
+        el.textContent = msg;
+        el.classList.remove('hidden');
+        setTimeout(() => {
+          el.classList.add('hidden');
+        }, 6000);
+      }
     }
 
     function triggerStartGame() {
       if (!roomCode) return;
       unlockAudioHost();
-      showScreen('screen-getready');
-      document.getElementById('mini-room-badge').classList.remove('hidden');
-      sfx.playQuestionChime();
-      speakText("Get ready! Starting game!");
+      const startBtn = document.getElementById('start-game-btn');
+      if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.textContent = 'STARTING...';
+      }
 
       socket.emit('start_game', {
         roomCode,
@@ -1659,6 +1692,15 @@
     socket.on('game_starting_notice', () => {
       showScreen('screen-getready');
       document.getElementById('mini-room-badge').classList.remove('hidden');
+      sfx.playQuestionChime();
+      speakText("Get ready! Starting game!");
+    });
+
+    socket.on('error_message', (data) => {
+      console.warn('[Server Error]', data.message);
+      showScreen('screen-lobby');
+      updateRoster(currentRoster);
+      showLobbyError(data.message || 'Error starting game');
     });
 
     // ================= TRIVIA EVENTS =================
