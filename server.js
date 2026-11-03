@@ -281,7 +281,7 @@ app.get('/api/tts', async (req, res) => {
 const revealAudioStore = new Map();
 
 app.get('/api/tts/reveal', (req, res) => {
-  const roomCode = (req.query.roomCode || '').toUpperCase().trim();
+  const roomCode = (req.query.roomCode || 'MAIN').toUpperCase().trim();
   const round = req.query.round || '';
   const key = `${roomCode}_${round}`;
 
@@ -304,13 +304,13 @@ io.on('connection', (socket) => {
     // Dynamically match the connecting client host to prevent cross-server room mismatches
     const clientHost = (socket.handshake && socket.handshake.headers && socket.handshake.headers.host) ? socket.handshake.headers.host : null;
     const effectiveBaseUrl = clientHost ? `http://${clientHost}` : baseUrl;
-    const playUrl = `${effectiveBaseUrl}/play/index.html?code=${room.code}`;
+    const playUrl = `${effectiveBaseUrl}/play/`;
     let qrCodeDataUrl = '';
     try {
       qrCodeDataUrl = await QRCode.toDataURL(playUrl, { margin: 1, color: { dark: '#000000', light: '#FFFFFF' } });
     } catch (err) {}
 
-    console.log(`[Room] Created room ${room.code} by host ${socket.id}`);
+    console.log(`[Room] TV Host ${socket.id} attached to single-room session (${room.code})`);
 
     socket.emit('room_created', {
       roomCode: room.code,
@@ -329,7 +329,7 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on('reconnect_host', ({ roomCode, hostToken }) => {
+  socket.on('reconnect_host', ({ roomCode, hostToken } = {}) => {
     const room = roomManager.reconnectHost(roomCode, hostToken, socket.id);
     if (!room) {
       return socket.emit('reconnect_host_error');
@@ -348,66 +348,66 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on('select_game', ({ roomCode, gameId }) => {
+  socket.on('select_game', ({ roomCode, gameId } = {}) => {
     const room = roomManager.selectGame(roomCode, gameId);
     if (!room) return;
 
-    console.log(`[Room ${roomCode}] Selected Game: ${gameId}`);
+    console.log(`[Room ${room.code}] Selected Game: ${gameId}`);
     io.to(`host_${room.code}`).emit('game_selected', { selectedGameId: room.selectedGameId });
     io.to(`room_${room.code}`).emit('game_selected', { selectedGameId: room.selectedGameId });
   });
 
-  socket.on('select_theme', ({ roomCode, themeId }) => {
+  socket.on('select_theme', ({ roomCode, themeId } = {}) => {
     const room = roomManager.selectTheme(roomCode, themeId);
     if (!room) return;
 
-    console.log(`[Room ${roomCode}] Selected Theme: ${themeId}`);
+    console.log(`[Room ${room.code}] Selected Theme: ${themeId}`);
     io.to(`host_${room.code}`).emit('theme_selected', { themeId: room.themeId, sfxPack: room.sfxPack });
     io.to(`room_${room.code}`).emit('theme_selected', { themeId: room.themeId, sfxPack: room.sfxPack });
     io.to(`host_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack, themeId: room.themeId });
     io.to(`room_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack, themeId: room.themeId });
   });
 
-  socket.on('select_sfx_pack', ({ roomCode, sfxPack }) => {
+  socket.on('select_sfx_pack', ({ roomCode, sfxPack } = {}) => {
     const room = roomManager.selectSfxPack(roomCode, sfxPack);
     if (!room) return;
 
-    console.log(`[Room ${roomCode}] Selected SFX Pack / Theme: ${sfxPack}`);
+    console.log(`[Room ${room.code}] Selected SFX Pack / Theme: ${sfxPack}`);
     io.to(`host_${room.code}`).emit('theme_selected', { themeId: room.themeId, sfxPack: room.sfxPack });
     io.to(`room_${room.code}`).emit('theme_selected', { themeId: room.themeId, sfxPack: room.sfxPack });
     io.to(`host_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack, themeId: room.themeId });
     io.to(`room_${room.code}`).emit('sfx_pack_selected', { sfxPack: room.sfxPack, themeId: room.themeId });
   });
 
-  socket.on('set_tts_enabled', ({ roomCode, enabled }) => {
+  socket.on('set_tts_enabled', ({ roomCode, enabled } = {}) => {
     const room = roomManager.setRoomSetting(roomCode, 'ttsEnabled', enabled);
     if (!room) return;
     io.to(`host_${room.code}`).emit('tts_toggled', { ttsEnabled: room.ttsEnabled });
     io.to(`room_${room.code}`).emit('tts_toggled', { ttsEnabled: room.ttsEnabled });
   });
 
-  socket.on('set_music_enabled', ({ roomCode, enabled }) => {
+  socket.on('set_music_enabled', ({ roomCode, enabled } = {}) => {
     const room = roomManager.setRoomSetting(roomCode, 'musicEnabled', enabled);
     if (!room) return;
-    console.log(`[Room ${roomCode}] Music toggled: ${room.musicEnabled}`);
+    console.log(`[Room ${room.code}] Music toggled: ${room.musicEnabled}`);
     io.to(`host_${room.code}`).emit('music_toggled', { musicEnabled: room.musicEnabled });
     io.to(`room_${room.code}`).emit('music_toggled', { musicEnabled: room.musicEnabled });
   });
 
-  socket.on('set_sfx_enabled', ({ roomCode, enabled }) => {
+  socket.on('set_sfx_enabled', ({ roomCode, enabled } = {}) => {
     const room = roomManager.setRoomSetting(roomCode, 'sfxEnabled', enabled);
     if (!room) return;
-    console.log(`[Room ${roomCode}] SFX toggled: ${room.sfxEnabled}`);
+    console.log(`[Room ${room.code}] SFX toggled: ${room.sfxEnabled}`);
     io.to(`host_${room.code}`).emit('sfx_toggled', { sfxEnabled: room.sfxEnabled });
     io.to(`room_${room.code}`).emit('sfx_toggled', { sfxEnabled: room.sfxEnabled });
   });
 
-  socket.on('set_sound_enabled', ({ roomCode, enabled }) => {
+  socket.on('set_sound_enabled', ({ roomCode, enabled } = {}) => {
     const room = roomManager.setRoomSetting(roomCode, 'soundEnabled', enabled);
     if (!room) return;
-    roomManager.setRoomSetting(roomCode, 'musicEnabled', enabled);
-    roomManager.setRoomSetting(roomCode, 'sfxEnabled', enabled);
-    console.log(`[Room ${roomCode}] Sound & Music toggled: ${room.soundEnabled}`);
+    roomManager.setRoomSetting(room.code, 'musicEnabled', enabled);
+    roomManager.setRoomSetting(room.code, 'sfxEnabled', enabled);
+    console.log(`[Room ${room.code}] Sound & Music toggled: ${room.soundEnabled}`);
     io.to(`host_${room.code}`).emit('sound_toggled', { soundEnabled: room.soundEnabled, musicEnabled: room.musicEnabled, sfxEnabled: room.sfxEnabled });
     io.to(`room_${room.code}`).emit('sound_toggled', { soundEnabled: room.soundEnabled, musicEnabled: room.musicEnabled, sfxEnabled: room.sfxEnabled });
     io.to(`host_${room.code}`).emit('music_toggled', { musicEnabled: room.musicEnabled });
@@ -416,21 +416,21 @@ io.on('connection', (socket) => {
     io.to(`room_${room.code}`).emit('sfx_toggled', { sfxEnabled: room.sfxEnabled });
   });
 
-  socket.on('set_roaster_enabled', ({ roomCode, enabled }) => {
+  socket.on('set_roaster_enabled', ({ roomCode, enabled } = {}) => {
     const room = roomManager.setRoomSetting(roomCode, 'roasterEnabled', enabled);
     if (!room) return;
     io.to(`host_${room.code}`).emit('roaster_toggled', { roasterEnabled: room.roasterEnabled });
     io.to(`room_${room.code}`).emit('roaster_toggled', { roasterEnabled: room.roasterEnabled });
   });
 
-  socket.on('set_popular_vote_enabled', ({ roomCode, enabled }) => {
+  socket.on('set_popular_vote_enabled', ({ roomCode, enabled } = {}) => {
     const room = roomManager.setRoomSetting(roomCode, 'popularVoteEnabled', enabled);
     if (!room) return;
     io.to(`host_${room.code}`).emit('popular_vote_toggled', { popularVoteEnabled: room.popularVoteEnabled });
     io.to(`room_${room.code}`).emit('popular_vote_toggled', { popularVoteEnabled: room.popularVoteEnabled });
   });
 
-  socket.on('verify_vip_pin', ({ pin }) => {
+  socket.on('verify_vip_pin', ({ pin } = {}) => {
     const targetPin = process.env.VIP_PIN || '8282';
     const targetToken = process.env.VIP_TOKEN || 'VIP_AUTHENTICATED_8282';
     if (String(pin).trim() === targetPin) {
@@ -440,20 +440,20 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('add_bot_players', ({ roomCode, count }) => {
+  socket.on('add_bot_players', ({ roomCode, count } = {}) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || room.status !== 'LOBBY') return;
 
-    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(room.code, socket.id));
     if (!isAuth) {
       return socket.emit('error_message', { message: 'Only host or VIP can add bot players.' });
     }
 
     const numToAdd = Math.min(count || 2, 8);
     for (let i = 0; i < numToAdd; i++) {
-      const result = roomManager.addBotPlayer(roomCode);
+      const result = roomManager.addBotPlayer(room.code);
       if (result) {
-        console.log(`[Room ${roomCode}] Added bot player: '${result.player.nickname}'`);
+        console.log(`[Room ${room.code}] Added bot player: '${result.player.nickname}'`);
       }
     }
 
@@ -501,7 +501,7 @@ io.on('connection', (socket) => {
     };
   }
 
-  socket.on('join_room', ({ roomCode, nickname, vipToken, avatar, color }) => {
+  socket.on('join_room', ({ roomCode, nickname, vipToken, avatar, color } = {}) => {
     const result = roomManager.joinRoom(roomCode, nickname, socket.id, vipToken, avatar, color);
     if (result.error) {
       return socket.emit('join_error', { message: result.error });
@@ -533,7 +533,7 @@ io.on('connection', (socket) => {
     io.to(`room_${room.code}`).emit('roster_update', { players: room.players });
   });
 
-  socket.on('reconnect_player', ({ roomCode, sessionToken }) => {
+  socket.on('reconnect_player', ({ roomCode, sessionToken } = {}) => {
     const result = roomManager.reconnectPlayer(roomCode, sessionToken, socket.id);
     if (!result) {
       return socket.emit('reconnect_error', { message: 'Session expired or room unavailable.' });
@@ -550,9 +550,9 @@ io.on('connection', (socket) => {
     io.to(`room_${room.code}`).emit('roster_update', { players: room.players });
   });
 
-  socket.on('start_game', async ({ roomCode, sourceMode, selectedPacks, selectedCardPacks, enableRoaster, enablePopularVote }) => {
+  socket.on('start_game', async ({ roomCode, sourceMode, selectedPacks, selectedCardPacks, enableRoaster, enablePopularVote } = {}) => {
     const room = roomManager.getRoom(roomCode);
-    const isAuth = room && (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    const isAuth = room && (room.hostSocketId === socket.id || roomManager.isVipPlayer(room.code, socket.id));
     if (!isAuth) {
       return socket.emit('error_message', { message: 'Only room host or VIP can start game.' });
     }
@@ -566,9 +566,10 @@ io.on('connection', (socket) => {
       return socket.emit('error_message', { message: 'Bad Cards requires at least 3 players to start! (Use "Add AI Bots" for solo testing)' });
     }
 
+    const code = room.code;
     room.enableRoaster = Boolean(enableRoaster);
 
-    await roomManager.setupGame(roomCode, {
+    await roomManager.setupGame(code, {
       sourceMode,
       selectedPacks,
       selectedCardPacks: selectedCardPacks || room.selectedCardPacks || [],
@@ -576,30 +577,30 @@ io.on('connection', (socket) => {
       targetScore: room.targetScore || 5
     });
 
-    io.to(`host_${roomCode}`).emit('game_starting_notice', { selectedGameId: room.selectedGameId });
-    io.to(`room_${roomCode}`).emit('game_starting_notice', { selectedGameId: room.selectedGameId });
+    io.to(`host_${code}`).emit('game_starting_notice', { selectedGameId: room.selectedGameId });
+    io.to(`room_${code}`).emit('game_starting_notice', { selectedGameId: room.selectedGameId });
 
     try {
       if (room.selectedGameId === 'cah') {
         await new Promise(resolve => setTimeout(resolve, 2000));
-        await runCahRound(io, roomCode);
+        await runCahRound(io, code);
       } else {
         preSynthesizeQuestions(room.questions);
         if (room.questions && room.questions.length > 0) {
           await getOrSynthesizeTts(room.questions[0].question);
         }
         await new Promise(resolve => setTimeout(resolve, 2500));
-        await runQuestionRound(io, roomCode);
+        await runQuestionRound(io, code);
       }
     } catch (err) {
-      console.error(`[Start Game Error in Room ${roomCode}]:`, err);
-      io.to(`host_${roomCode}`).emit('error_message', { message: 'Failed to start game: ' + (err.message || err) });
-      io.to(`room_${roomCode}`).emit('error_message', { message: 'Failed to start game: ' + (err.message || err) });
+      console.error(`[Start Game Error in Room ${code}]:`, err);
+      io.to(`host_${code}`).emit('error_message', { message: 'Failed to start game: ' + (err.message || err) });
+      io.to(`room_${code}`).emit('error_message', { message: 'Failed to start game: ' + (err.message || err) });
     }
   });
 
   // Trivia answer submission
-  socket.on('submit_answer', ({ roomCode, answerIndex }) => {
+  socket.on('submit_answer', ({ roomCode, answerIndex } = {}) => {
     const res = roomManager.submitPlayerInput(roomCode, socket.id, { answerIndex });
     if (res.error) return socket.emit('answer_error', { message: res.error });
 
@@ -623,7 +624,7 @@ io.on('connection', (socket) => {
   });
 
   // Bad Cards white card submission
-  socket.on('submit_card', ({ roomCode, cardIndex }) => {
+  socket.on('submit_card', ({ roomCode, cardIndex } = {}) => {
     const res = roomManager.submitPlayerInput(roomCode, socket.id, { action: 'SUBMIT_CARD', cardIndex });
     if (res.error) return socket.emit('card_error', { message: res.error });
 
@@ -654,7 +655,7 @@ io.on('connection', (socket) => {
   });
 
   // Discard & Redraw socket handler
-  socket.on('discard_redraw', ({ roomCode, cardIndices }) => {
+  socket.on('discard_redraw', ({ roomCode, cardIndices } = {}) => {
     const res = roomManager.submitPlayerInput(roomCode, socket.id, { action: 'DISCARD_REDRAW', cardIndices });
     if (res.error) return socket.emit('redraw_error', { message: res.error });
 
@@ -662,17 +663,19 @@ io.on('connection', (socket) => {
   });
 
   // Popular vote socket handler
-  socket.on('popular_vote', ({ roomCode, submissionId }) => {
+  socket.on('popular_vote', ({ roomCode, submissionId } = {}) => {
     const res = roomManager.submitPlayerInput(roomCode, socket.id, { action: 'POPULAR_VOTE', submissionId });
     if (res.error) return socket.emit('vote_error', { message: res.error });
 
+    const room = roomManager.getRoom(roomCode);
+    const code = room ? room.code : 'MAIN';
     socket.emit('popular_vote_confirm', { success: true, submissionId: res.submissionId });
-    io.to(`host_${roomCode}`).emit('cah_popular_vote_update', { totalVotesCast: res.totalVotesCast || 0 });
+    io.to(`host_${code}`).emit('cah_popular_vote_update', { totalVotesCast: res.totalVotesCast || 0 });
   });
 
   // Live player reaction emoji handler
-  socket.on('player_reaction', ({ roomCode, emoji }) => {
-    if (!roomCode || !emoji) return;
+  socket.on('player_reaction', ({ roomCode, emoji } = {}) => {
+    if (!emoji) return;
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
     const player = room.players.find(p => p.socketId === socket.id);
@@ -687,7 +690,7 @@ io.on('connection', (socket) => {
     }
     socket.lastReactionTime = now;
 
-    io.to(`host_${roomCode}`).emit('room_reaction', {
+    io.to(`host_${room.code}`).emit('room_reaction', {
       emoji,
       nickname: player.nickname,
       avatar: player.avatar || '👾',
@@ -696,55 +699,56 @@ io.on('connection', (socket) => {
   });
 
   // Target score socket handler
-  socket.on('select_target_score', ({ roomCode, targetScore }) => {
+  socket.on('select_target_score', ({ roomCode, targetScore } = {}) => {
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
 
-    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(room.code, socket.id));
     if (!isAuth) return;
 
     const validScores = [3, 5, 7, 10];
     const score = validScores.includes(Number(targetScore)) ? Number(targetScore) : 5;
     room.targetScore = score;
 
-    io.to(`host_${roomCode}`).emit('target_score_updated', { targetScore: score });
-    io.to(`room_${roomCode}`).emit('target_score_updated', { targetScore: score });
+    io.to(`host_${room.code}`).emit('target_score_updated', { targetScore: score });
+    io.to(`room_${room.code}`).emit('target_score_updated', { targetScore: score });
   });
 
   // Card packs socket handler
-  socket.on('select_card_packs', ({ roomCode, selectedCardPacks }) => {
+  socket.on('select_card_packs', ({ roomCode, selectedCardPacks } = {}) => {
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
 
-    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(room.code, socket.id));
     if (!isAuth) return;
 
     if (Array.isArray(selectedCardPacks)) {
       room.selectedCardPacks = selectedCardPacks;
-      io.to(`host_${roomCode}`).emit('card_packs_updated', { selectedCardPacks });
-      io.to(`room_${roomCode}`).emit('card_packs_updated', { selectedCardPacks });
+      io.to(`host_${room.code}`).emit('card_packs_updated', { selectedCardPacks });
+      io.to(`room_${room.code}`).emit('card_packs_updated', { selectedCardPacks });
     }
   });
 
   // Bad Cards Judge winner pick
-  socket.on('pick_winner', ({ roomCode, submissionId }) => {
+  socket.on('pick_winner', ({ roomCode, submissionId } = {}) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || room.status !== 'CAH_JUDGE') return;
     roomManager.clearRoomTimer(room);
 
-    const res = roomManager.submitPlayerInput(roomCode, socket.id, { action: 'PICK_WINNER', submissionId });
+    const res = roomManager.submitPlayerInput(room.code, socket.id, { action: 'PICK_WINNER', submissionId });
     if (res.error) return socket.emit('pick_error', { message: res.error });
 
-    evaluateAndRevealCah(io, roomCode, res);
+    evaluateAndRevealCah(io, room.code, res);
   });
 
-  socket.on('next_question_request', async ({ roomCode }) => {
+  socket.on('next_question_request', async ({ roomCode } = {}) => {
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
+    const code = room.code;
 
     const isAuth = (
       room.hostSocketId === socket.id ||
-      roomManager.isVipPlayer(roomCode, socket.id) ||
+      roomManager.isVipPlayer(code, socket.id) ||
       (room.selectedGameId === 'cah' && room.currentJudgeSocketId === socket.id)
     );
     if (!isAuth) return;
@@ -752,46 +756,48 @@ io.on('connection', (socket) => {
     if (room.selectedGameId === 'cah') {
       if (room.status === 'CAH_REVEAL') {
         roomManager.clearRoomTimer(room);
-        const adv = roomManager.advanceNextRound(roomCode);
+        const adv = roomManager.advanceNextRound(code);
         if (adv && !adv.isGameOver) {
-          await runCahRound(io, roomCode);
+          await runCahRound(io, code);
         } else if (adv && adv.isGameOver) {
           const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
-          io.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
+          io.to(`room_${code}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
         }
       }
     } else {
       if (room.status === 'REVEAL') {
         roomManager.clearRoomTimer(room);
-        const adv = roomManager.advanceNextRound(roomCode);
+        const adv = roomManager.advanceNextRound(code);
         if (adv && !adv.isGameOver) {
-          await runQuestionRound(io, roomCode);
+          await runQuestionRound(io, code);
         } else if (adv && adv.isGameOver) {
           const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
-          io.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
+          io.to(`room_${code}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
         }
       }
     }
   });
 
-  socket.on('end_game_early', ({ roomCode }) => {
+  socket.on('end_game_early', ({ roomCode } = {}) => {
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
+    const code = room.code;
 
-    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(code, socket.id));
     if (!isAuth) return;
 
     roomManager.clearRoomTimer(room);
     room.status = 'GAME_OVER';
     const leaderboard = room.players ? [...room.players].sort((a, b) => b.score - a.score) : [];
-    io.to(`room_${roomCode}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
+    io.to(`room_${code}`).emit('game_over', { leaderboard, selectedGameId: room.selectedGameId });
   });
 
-  socket.on('vip_roast_player', async ({ roomCode, targetNickname }) => {
+  socket.on('vip_roast_player', async ({ roomCode, targetNickname } = {}) => {
     const room = roomManager.getRoom(roomCode);
     if (!room || !targetNickname) return;
+    const code = room.code;
 
-    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(code, socket.id));
     if (!isAuth) return;
 
     const now = Date.now();
@@ -806,7 +812,7 @@ io.on('connection', (socket) => {
     const rankIndex = sorted.findIndex(p => p.nickname === targetNickname);
     const rank = (rankIndex !== -1) ? (rankIndex + 1) : 1;
 
-    console.log(`[VIP Roast] Targeted player "${targetNickname}" in room ${roomCode}`);
+    console.log(`[VIP Roast] Targeted player "${targetNickname}" in room ${code}`);
 
     const roastText = await AiRoaster.generateTargetRoast({ targetNickname, score, rank });
     let ttsAudio = '';
@@ -814,23 +820,24 @@ io.on('connection', (socket) => {
       ttsAudio = await getOrSynthesizeTts(roastText);
     } catch(e) {}
 
-    io.to(`host_${roomCode}`).emit('vip_roast_broadcast', {
+    io.to(`host_${code}`).emit('vip_roast_broadcast', {
       targetNickname,
       roastText,
       ttsAudio
     });
 
-    io.to(`room_${roomCode}`).emit('vip_roast_toast', {
+    io.to(`room_${code}`).emit('vip_roast_toast', {
       targetNickname,
       roastText
     });
   });
 
-  socket.on('vip_glitch_bomb', ({ roomCode }) => {
+  socket.on('vip_glitch_bomb', ({ roomCode } = {}) => {
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
+    const code = room.code;
 
-    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(roomCode, socket.id));
+    const isAuth = (room.hostSocketId === socket.id || roomManager.isVipPlayer(code, socket.id));
     if (!isAuth) return;
 
     const now = Date.now();
@@ -839,22 +846,23 @@ io.on('connection', (socket) => {
     }
     room.lastVipGlitchTime = now;
 
-    console.log(`[VIP Glitch] Launched glitch bomb in room ${roomCode}`);
+    console.log(`[VIP Glitch] Launched glitch bomb in room ${code}`);
 
-    io.to(`host_${roomCode}`).emit('vip_glitch_broadcast', { durationMs: 2500 });
-    io.to(`room_${roomCode}`).emit('vip_glitch_toast', { durationMs: 2500 });
+    io.to(`host_${code}`).emit('vip_glitch_broadcast', { durationMs: 2500 });
+    io.to(`room_${code}`).emit('vip_glitch_toast', { durationMs: 2500 });
   });
 
-  socket.on('reset_to_lobby', ({ roomCode }) => {
+  socket.on('reset_to_lobby', ({ roomCode } = {}) => {
     const room = roomManager.getRoom(roomCode);
     if (!room) return;
+    const code = room.code;
 
     roomManager.clearRoomTimer(room);
-    const resetRoom = roomManager.resetRoomToLobby(roomCode);
+    const resetRoom = roomManager.resetRoomToLobby(code);
     if (resetRoom) {
-      console.log(`[Room ${roomCode}] Reset room back to LOBBY home screen.`);
-      io.to(`host_${roomCode}`).emit('room_reset_lobby', {
-        roomCode,
+      console.log(`[Room ${code}] Reset room back to LOBBY home screen.`);
+      io.to(`host_${code}`).emit('room_reset_lobby', {
+        roomCode: code,
         selectedGameId: resetRoom.selectedGameId,
         themeId: resetRoom.themeId || 'midnight',
         players: resetRoom.players,
@@ -863,8 +871,8 @@ io.on('connection', (socket) => {
         selectedCardPacks: resetRoom.selectedCardPacks || []
       });
 
-      io.to(`room_${roomCode}`).emit('controller_reset_lobby', {
-        roomCode,
+      io.to(`room_${code}`).emit('controller_reset_lobby', {
+        roomCode: code,
         selectedGameId: resetRoom.selectedGameId,
         themeId: resetRoom.themeId || 'midnight',
         players: resetRoom.players
