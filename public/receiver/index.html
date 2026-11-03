@@ -1908,10 +1908,17 @@
       reconnectionDelayMax: 3000
     });
 
+    let hostToken = '';
+
     function requestCreateRoom() {
-      if (socket && socket.connected && !roomCode) {
-        console.log('[Socket] TV Host requesting room creation:', socket.id);
-        socket.emit('create_room');
+      if (socket && socket.connected) {
+        if (roomCode && hostToken) {
+          console.log('[Socket] TV Host attempting to reconnect to existing room:', roomCode);
+          socket.emit('reconnect_host', { roomCode, hostToken });
+        } else if (!roomCode) {
+          console.log('[Socket] TV Host requesting room creation:', socket.id);
+          socket.emit('create_room');
+        }
       }
     }
 
@@ -1921,8 +1928,19 @@
     });
 
     socket.on('disconnect', () => {
-      console.log('[Socket] TV Host disconnected. Resetting roomCode for reconnect.');
+      console.log('[Socket] TV Host disconnected temporarily. Preserving roomCode for seamless reconnect.');
+    });
+
+    socket.on('reconnect_host_error', () => {
+      console.log('[Socket] Previous room expired; creating fresh room.');
       roomCode = '';
+      hostToken = '';
+      requestCreateRoom();
+    });
+
+    socket.on('host_reconnected', (data) => {
+      console.log('[Socket] TV Host restored room:', data.roomCode);
+      updateRoster(data.players || []);
     });
 
     if (socket && socket.connected) {
@@ -1939,6 +1957,7 @@
 
     socket.on('room_created', (data) => {
       roomCode = data.roomCode;
+      hostToken = data.hostToken || '';
       document.getElementById('room-code-display').textContent = roomCode;
       document.getElementById('mini-code-text').textContent = roomCode;
       document.getElementById('qr-code-img').src = data.qrCodeDataUrl;

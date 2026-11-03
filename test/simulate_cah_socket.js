@@ -36,11 +36,30 @@ async function testCahSocketIntegration() {
       const res = roomManager.joinRoom(roomCode, nickname, socket.id, null, avatar, color);
       if (res.error) return socket.emit('join_error', { message: res.error });
       socket.join(`room_${res.room.code}`);
-      socket.emit('joined_successfully', {
-        roomCode: res.room.code,
-        nickname: res.player.nickname
-      });
+      if (res.reconnected) {
+        socket.emit('reconnected_successfully', {
+          roomCode: res.room.code,
+          nickname: res.player.nickname,
+          status: res.room.status,
+          selectedGameId: res.room.selectedGameId,
+          hand: res.player.hand || [],
+          prompt: res.room.currentPrompt ? res.room.currentPrompt.text : null
+        });
+      } else {
+        socket.emit('joined_successfully', {
+          roomCode: res.room.code,
+          nickname: res.player.nickname
+        });
+      }
       ioServer.to(`host_${res.room.code}`).emit('roster_update', { players: res.room.players });
+    });
+
+    socket.on('reconnect_host', ({ roomCode, hostToken }) => {
+      const room = roomManager.reconnectHost(roomCode, hostToken, socket.id);
+      if (!room) return socket.emit('reconnect_host_error');
+      socket.join(`room_${room.code}`);
+      socket.join(`host_${room.code}`);
+      socket.emit('host_reconnected', { roomCode: room.code, players: room.players });
     });
 
     socket.on('start_game', async ({ roomCode }) => {
@@ -155,7 +174,33 @@ async function testCahSocketIntegration() {
     throw new Error('Invalid round start data');
   }
 
+  // Test 1: Player re-joining by nickname during an active game (e.g., Private Browsing / no localStorage)
+  console.log('[Test] Testing nickname-based re-join into active game (Private Browsing fallback)...');
+  const client2Rejoin = io(`http://localhost:${PORT}`);
+  const rejoinData = await new Promise(resolve => {
+    client2Rejoin.once('reconnected_successfully', resolve);
+    client2Rejoin.emit('join_room', { roomCode, nickname: 'Bob', avatar: '🍕', color: '#EF4444' });
+  });
+  if (rejoinData.nickname !== 'Bob' || rejoinData.hand.length !== 7) {
+    throw new Error('Expected Bob to seamlessly reclaim seat and hand via join_room!');
+  }
+  console.log(`[Test SUCCESS] Bob reclaimed active seat via join_room! Hand size: ${rejoinData.hand.length}`);
+
+  // Test 2: Late player joining mid-game
+  console.log('[Test] Testing late player joining mid-game...');
+  const clientLate = io(`http://localhost:${PORT}`);
+  const lateData = await new Promise(resolve => {
+    clientLate.once('reconnected_successfully', resolve);
+    clientLate.emit('join_room', { roomCode, nickname: 'LatePlayer', avatar: '🤠', color: '#F59E0B' });
+  });
+  if (lateData.nickname !== 'LatePlayer' || lateData.hand.length !== 7) {
+    throw new Error('Expected LatePlayer to join mid-game with 7 dealt cards!');
+  }
+  console.log(`[Test SUCCESS] LatePlayer joined mid-game seamlessly! Hand size: ${lateData.hand.length}`);
+
   // Cleanup
+  client2Rejoin.disconnect();
+  clientLate.disconnect();
   hostSocket.disconnect();
   client1.disconnect();
   client2.disconnect();

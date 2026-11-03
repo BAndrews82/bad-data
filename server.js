@@ -15,7 +15,9 @@ const AiRoaster = require('./lib/AiRoaster');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: '*' }
+  cors: { origin: '*' },
+  pingTimeout: 30000,
+  pingInterval: 10000
 });
 
 app.use(express.json());
@@ -312,6 +314,7 @@ io.on('connection', (socket) => {
 
     socket.emit('room_created', {
       roomCode: room.code,
+      hostToken: room.hostToken,
       qrCodeDataUrl,
       playUrl,
       players: room.players,
@@ -323,6 +326,25 @@ io.on('connection', (socket) => {
       musicEnabled: (room.musicEnabled !== false),
       sfxEnabled: (room.sfxEnabled !== false),
       soundEnabled: (room.soundEnabled !== false)
+    });
+  });
+
+  socket.on('reconnect_host', ({ roomCode, hostToken }) => {
+    const room = roomManager.reconnectHost(roomCode, hostToken, socket.id);
+    if (!room) {
+      return socket.emit('reconnect_host_error');
+    }
+    socket.join(`room_${room.code}`);
+    socket.join(`host_${room.code}`);
+    console.log(`[Room ${room.code}] TV Host reconnected successfully: ${socket.id}`);
+    socket.emit('host_reconnected', {
+      roomCode: room.code,
+      status: room.status,
+      players: room.players,
+      selectedGameId: room.selectedGameId,
+      themeId: room.themeId || 'midnight',
+      musicEnabled: (room.musicEnabled !== false),
+      sfxEnabled: (room.sfxEnabled !== false)
     });
   });
 
@@ -439,44 +461,8 @@ io.on('connection', (socket) => {
     io.to(`room_${room.code}`).emit('roster_update', { players: room.players });
   });
 
-  socket.on('join_room', ({ roomCode, nickname, vipToken, avatar, color }) => {
-    const result = roomManager.joinRoom(roomCode, nickname, socket.id, vipToken, avatar, color);
-    if (result.error) {
-      return socket.emit('join_error', { message: result.error });
-    }
-
-    const { room, player } = result;
-    socket.join(`room_${room.code}`);
-
-    socket.emit('joined_successfully', {
-      roomCode: room.code,
-      nickname: player.nickname,
-      color: player.color,
-      avatar: player.avatar,
-      sessionToken: player.sessionToken,
-      selectedGameId: room.selectedGameId,
-      themeId: room.themeId || 'midnight',
-      musicEnabled: (room.musicEnabled !== false),
-      sfxEnabled: (room.sfxEnabled !== false),
-      soundEnabled: (room.soundEnabled !== false),
-      isVip: Boolean(player.isVip)
-    });
-
-    io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
-  });
-
-  socket.on('reconnect_player', ({ roomCode, sessionToken }) => {
-    const result = roomManager.reconnectPlayer(roomCode, sessionToken, socket.id);
-    if (!result) {
-      return socket.emit('reconnect_error', { message: 'Session expired or room unavailable.' });
-    }
-
-    const { room, player } = result;
-    socket.join(`room_${room.code}`);
-
-    console.log(`[Room ${room.code}] Player '${player.nickname}' reconnected successfully.`);
-
-    socket.emit('reconnected_successfully', {
+  function buildReconnectedPayload(room, player) {
+    return {
       roomCode: room.code,
       nickname: player.nickname,
       color: player.color,
@@ -501,10 +487,67 @@ io.on('connection', (socket) => {
       roundNum: (room.currentRound || 0) + 1,
       totalRounds: room.totalRounds || 99,
       lastWinner: room.lastWinner ? { nickname: room.lastWinner.nickname, cardText: room.winningSubmission ? room.winningSubmission.cardText : '' } : null,
-      popularWinnerNickname: room.popularWinnerPlayer ? room.popularWinnerPlayer.nickname : null
-    });
+      popularWinnerNickname: room.popularWinnerPlayer ? room.popularWinnerPlayer.nickname : null,
+      // Trivia specific state
+      questionNum: (room.currentQuestionIndex || 0) + 1,
+      totalQuestions: room.questions ? room.questions.length : 10,
+      baseValue: room.currentQuestion ? room.currentQuestion.baseValue : 1000,
+      durationMs: room.roundDurationMs || 15000,
+      answered: Boolean(player.answered),
+      isCorrect: Boolean(player.answered && room.currentQuestion && player.answerIndex === room.currentQuestion.correctIndex),
+      cashChange: player.lastRoundGain || 0,
+      currentStreak: player.currentStreak || 0,
+      streakBonus: player.streakBonus || 0
+    };
+  }
+
+  socket.on('join_room', ({ roomCode, nickname, vipToken, avatar, color }) => {
+    const result = roomManager.joinRoom(roomCode, nickname, socket.id, vipToken, avatar, color);
+    if (result.error) {
+      return socket.emit('join_error', { message: result.error });
+    }
+
+    const { room, player, reconnected } = result;
+    socket.join(`room_${room.code}`);
+
+    if (reconnected) {
+      console.log(`[Room ${room.code}] Player '${player.nickname}' joined/reconnected into active game.`);
+      socket.emit('reconnected_successfully', buildReconnectedPayload(room, player));
+    } else {
+      socket.emit('joined_successfully', {
+        roomCode: room.code,
+        nickname: player.nickname,
+        color: player.color,
+        avatar: player.avatar,
+        sessionToken: player.sessionToken,
+        selectedGameId: room.selectedGameId,
+        themeId: room.themeId || 'midnight',
+        musicEnabled: (room.musicEnabled !== false),
+        sfxEnabled: (room.sfxEnabled !== false),
+        soundEnabled: (room.soundEnabled !== false),
+        isVip: Boolean(player.isVip)
+      });
+    }
 
     io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
+    io.to(`room_${room.code}`).emit('roster_update', { players: room.players });
+  });
+
+  socket.on('reconnect_player', ({ roomCode, sessionToken }) => {
+    const result = roomManager.reconnectPlayer(roomCode, sessionToken, socket.id);
+    if (!result) {
+      return socket.emit('reconnect_error', { message: 'Session expired or room unavailable.' });
+    }
+
+    const { room, player } = result;
+    socket.join(`room_${room.code}`);
+
+    console.log(`[Room ${room.code}] Player '${player.nickname}' reconnected successfully.`);
+
+    socket.emit('reconnected_successfully', buildReconnectedPayload(room, player));
+
+    io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
+    io.to(`room_${room.code}`).emit('roster_update', { players: room.players });
   });
 
   socket.on('start_game', async ({ roomCode, sourceMode, selectedPacks, selectedCardPacks, enableRoaster, enablePopularVote }) => {
@@ -833,7 +876,7 @@ io.on('connection', (socket) => {
     const { room, player, isHost } = roomManager.handleDisconnect(socket.id);
     if (room) {
       if (isHost) {
-        io.to(`room_${room.code}`).emit('host_disconnected', { message: 'The TV host disconnected. Room closed.' });
+        console.log(`[Room ${room.code}] TV Host socket disconnected (${socket.id}). Holding room open for 60s reconnect window.`);
       } else if (player) {
         io.to(`host_${room.code}`).emit('roster_update', { players: room.players });
 

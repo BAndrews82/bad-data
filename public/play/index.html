@@ -474,7 +474,13 @@
   </main>
 
   <script>
-    const socket = io();
+    const socket = io({
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 3000,
+      timeout: 20000
+    });
     let currentRoomCode = '';
     let playerNickname = '';
     let playerColor = '';
@@ -560,6 +566,13 @@
     if (codeParam) {
       document.getElementById('input-room-code').value = codeParam.toUpperCase().trim();
     }
+    try {
+      const savedNickname = localStorage.getItem('bad_data_nickname');
+      if (savedNickname) {
+        const nickEl = document.getElementById('input-nickname');
+        if (nickEl && !nickEl.value) nickEl.value = savedNickname;
+      }
+    } catch(e) {}
 
     let logoTapCount = 0;
     let logoTapTimer = null;
@@ -631,25 +644,42 @@
       if (!code || !nickname) return;
       currentRoomCode = code;
       playerNickname = nickname;
+      try { localStorage.setItem('bad_data_nickname', nickname); } catch(e) {}
+
+      const errEl = document.getElementById('join-error-msg');
+      if (errEl) errEl.classList.add('hidden');
 
       let vipToken = null;
       try {
         vipToken = localStorage.getItem('bad_data_vip_token') || null;
       } catch(err) {}
 
+      if (!socket.connected) {
+        socket.connect();
+      }
       socket.emit('join_room', { roomCode: code, nickname, vipToken, avatar: selectedAvatar, color: selectedColor });
     }
 
     socket.on('connect', () => {
       try {
+        const requestedCode = codeParam ? codeParam.toUpperCase().trim() : null;
         const lastRoom = localStorage.getItem('bad_data_last_room');
-        if (lastRoom) {
-          const token = localStorage.getItem(`bad_data_session_${lastRoom}`);
-          if (token && lastRoom) {
-            socket.emit('reconnect_player', { roomCode: lastRoom, sessionToken: token });
+        const targetRoom = requestedCode || lastRoom;
+        if (targetRoom) {
+          const token = localStorage.getItem(`bad_data_session_${targetRoom}`);
+          if (token) {
+            socket.emit('reconnect_player', { roomCode: targetRoom, sessionToken: token });
+          } else if (currentRoomCode && playerNickname) {
+            let vipToken = null;
+            try { vipToken = localStorage.getItem('bad_data_vip_token') || null; } catch(err) {}
+            socket.emit('join_room', { roomCode: currentRoomCode, nickname: playerNickname, vipToken, avatar: selectedAvatar, color: selectedColor });
           }
         }
       } catch(e) {}
+    });
+
+    socket.on('connect_error', (err) => {
+      console.warn('[Socket Connect Error]:', err.message);
     });
 
     socket.on('reconnected_successfully', (data) => {
@@ -658,6 +688,14 @@
       playerColor = data.color || selectedColor;
       playerAvatar = data.avatar || selectedAvatar || '👾';
       isVipHost = Boolean(data.isVip);
+
+      if (data.sessionToken && data.roomCode) {
+        try {
+          localStorage.setItem(`bad_data_session_${data.roomCode}`, data.sessionToken);
+          localStorage.setItem('bad_data_last_room', data.roomCode);
+          localStorage.setItem('bad_data_nickname', data.nickname);
+        } catch(e) {}
+      }
 
       document.getElementById('mobile-header').classList.remove('hidden');
       const badge = document.getElementById('player-avatar-badge');
@@ -748,12 +786,34 @@
             advanceBtn.textContent = data.isJudge ? 'START NEXT ROUND ➔ 👑' : 'START NEXT ROUND ➔';
           }
         }
+      } else {
+        if (data.status === 'QUESTION') {
+          showScreen('screen-answer');
+          document.getElementById('question-num-mobile').textContent = `Q ${data.questionNum || 1}/${data.totalQuestions || 10}`;
+          if (data.answered) {
+            document.getElementById('buttons-grid').classList.add('hidden');
+            document.getElementById('locked-banner').classList.remove('hidden');
+          } else {
+            document.getElementById('buttons-grid').classList.remove('hidden');
+            document.getElementById('locked-banner').classList.add('hidden');
+            startMobileTicker(data.durationMs || 15000, data.baseValue || 1000);
+          }
+        } else if (data.status === 'REVEAL') {
+          showScreen('screen-result');
+          const totalScore = document.getElementById('result-total-score');
+          if (totalScore) totalScore.textContent = `$${(data.score || 0).toLocaleString()}`;
+        }
       }
     });
 
     socket.on('reconnect_error', () => {
       try {
         localStorage.removeItem('bad_data_last_room');
+        if (currentRoomCode && playerNickname) {
+          let vipToken = null;
+          try { vipToken = localStorage.getItem('bad_data_vip_token') || null; } catch(err) {}
+          socket.emit('join_room', { roomCode: currentRoomCode, nickname: playerNickname, vipToken, avatar: selectedAvatar, color: selectedColor });
+        }
       } catch(e) {}
     });
 
